@@ -1,0 +1,62 @@
+
+
+frontend/node_modules/
+# python
+
+__pycache__/
+*.pyc
+.env
+venv/
+media/
+staticfiles/
+
+# Python (suite)
+.env.*
+*.env.local
+*.sqlite3
+
+# React / Node
+node_modules/
+dist/
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+
+# Fichiers système et IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Backend (Django)
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+backend/*.pyc
+backend/.env
+backend/db.sqlite3
+backend/media/
+backend/static/
+backend/logs/
+
+# Frontend (Node / React)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Environnement virtuel Python (si tu en crées un plus tard)
+venv/
+.venv/
+env/
