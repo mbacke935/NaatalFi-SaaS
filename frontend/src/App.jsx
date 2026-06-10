@@ -1,7 +1,8 @@
+import React from 'react'
+import AppRoutes from './routes/index.jsx'
+
 function App() {
-  return (
-    <h1>NaatalFi Marketplace</h1>
-  );
+  return <AppRoutes />
 }
 
-export default App;
+export default App

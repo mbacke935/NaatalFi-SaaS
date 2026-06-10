@@ -1,0 +1,132 @@
+# Routes Frontend — NaatalFi SaaS
+
+Toutes les routes sont déclarées dans `src/routes/index.jsx`. Elles sont organisées en quatre périmètres : **public**, **authentification**, **vendeur** (protégé) et **administration** (protégé + rôle admin).
+
+---
+
+## Système de protection
+
+| Composant | Fichier | Comportement |
+| :--- | :--- | :--- |
+| `PrivateRoute` | `src/routes/PrivateRoute.jsx` | Vérifie `isAuthenticated` dans le store Zustand. Redirige vers `/login` si faux. |
+| `AdminGuard` | `src/routes/AdminGuard.jsx` | Vérifie `isAuthenticated` ET `role === 'admin'`. Redirige vers `/login` ou `/dashboard`. |
+
+L'état d'authentification est persisté dans `src/store/authStore.js` (Zustand + `localStorage`).
+
+---
+
+## Layouts
+
+| Composant | Fichier | Utilisé par |
+| :--- | :--- | :--- |
+| `AuthLayout` | `src/layouts/AuthLayout.jsx` | Pages d'authentification |
+| `DashboardLayout` | `src/layouts/DashboardLayout.jsx` | Dashboard vendeur (sidebar + header) |
+| `AdminLayout` | `src/layouts/AdminLayout.jsx` | Interface d'administration |
+
+---
+
+## 1. Routes Publiques
+
+Accessibles sans authentification.
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/` | `HomePage` | `src/pages/home/HomePage.jsx` |
+| `/marketplace` | `MarketplacePage` | `src/pages/marketplace/MarketplacePage.jsx` |
+| `/marketplace/:productId` | `ProductDetailPage` | `src/pages/marketplace/ProductDetailPage.jsx` |
+
+---
+
+## 2. Routes d'Authentification
+
+Encapsulées dans `<AuthLayout>`. Redirigent vers `/dashboard` après connexion réussie.
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/login` | `LoginPage` | `src/pages/auth/login/LoginPage.jsx` |
+| `/register` | `RegisterPage` | `src/pages/auth/register/RegisterPage.jsx` |
+| `/forgot-password` | `ForgotPasswordPage` | `src/pages/auth/forgotpassword/ForgotPasswordPage.jsx` |
+| `/reset-password/:token` | `ResetPasswordPage` | `src/pages/auth/resetpassword/ResetPasswordPage.jsx` |
+
+---
+
+## 3. Dashboard Vendeur
+
+Protégées par `<PrivateRoute>` + encapsulées dans `<DashboardLayout>`.
+Redirigent vers `/login` si l'utilisateur n'est pas authentifié.
+
+### Vue d'ensemble
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/dashboard` | `DashboardPage` | `src/pages/dashboard/DashboardPage.jsx` |
+
+### Produits
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/dashboard/products` | `ProductsPage` | `src/pages/dashboard/products/ProductsPage.jsx` |
+| `/dashboard/products/new` | `NewProductPage` | `src/pages/dashboard/products/NewProductPage.jsx` |
+| `/dashboard/products/:id/edit` | `EditProductPage` | `src/pages/dashboard/products/EditProductPage.jsx` |
+
+### Commandes
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/dashboard/orders` | `OrdersPage` | `src/pages/dashboard/orders/OrdersPage.jsx` |
+| `/dashboard/orders/:id` | `OrderDetailPage` | `src/pages/dashboard/orders/OrderDetailPage.jsx` |
+
+### Finance & Boutique
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/dashboard/wallet` | `WalletPage` | `src/pages/dashboard/wallet/WalletPage.jsx` |
+| `/dashboard/analytics` | `AnalyticsPage` | `src/pages/dashboard/analytics/AnalyticsPage.jsx` |
+| `/dashboard/shop` | `ShopSettingsPage` | `src/pages/dashboard/shop/ShopSettingsPage.jsx` |
+
+### Services annexes
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/dashboard/ads` | `AdsPage` | `src/pages/dashboard/ads/AdsPage.jsx` |
+| `/dashboard/disputes` | `DisputesPage` | `src/pages/dashboard/disputes/DisputesPage.jsx` |
+| `/dashboard/notifications` | `NotificationsPage` | `src/pages/dashboard/notifications/NotificationsPage.jsx` |
+| `/dashboard/profile` | `ProfilePage` | `src/pages/dashboard/profile/ProfilePage.jsx` |
+
+---
+
+## 4. Administration
+
+Protégées par `<AdminGuard>` + encapsulées dans `<AdminLayout>`.
+Accessibles uniquement avec `role === 'admin'`.
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/admin` | `AdminDashboardPage` | `src/pages/admin/AdminDashboardPage.jsx` |
+| `/admin/vendors` | `VendorsPage` | `src/pages/admin/vendors/VendorsPage.jsx` |
+| `/admin/vendors/:id` | `VendorDetailPage` | `src/pages/admin/vendors/VendorDetailPage.jsx` |
+| `/admin/users` | `UsersPage` | `src/pages/admin/users/UsersPage.jsx` |
+| `/admin/orders` | `AdminOrdersPage` | `src/pages/admin/orders/OrdersPage.jsx` |
+| `/admin/products` | `AdminProductsPage` | `src/pages/admin/products/ProductsPage.jsx` |
+| `/admin/payments` | `PaymentsPage` | `src/pages/admin/payments/PaymentsPage.jsx` |
+| `/admin/categories` | `CategoriesPage` | `src/pages/admin/categories/CategoriesPage.jsx` |
+| `/admin/analytics` | `AdminAnalyticsPage` | `src/pages/admin/analytics/AnalyticsPage.jsx` |
+| `/admin/disputes` | `AdminDisputesPage` | `src/pages/admin/disputes/DisputesPage.jsx` |
+| `/admin/ads` | `AdminAdsPage` | `src/pages/admin/ads/AdsPage.jsx` |
+
+---
+
+## 5. Erreurs
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `*` (toute route inconnue) | `NotFoundPage` | `src/pages/errors/NotFoundPage.jsx` |
+
+---
+
+## Ajouter une nouvelle route
+
+1. Créer le composant page dans le bon dossier `src/pages/<périmètre>/`
+2. L'importer dans `src/routes/index.jsx`
+3. Ajouter un `<Route path="..." element={<MonComposant />} />` dans le bon bloc (public, auth, `<PrivateRoute>`, ou `<AdminGuard>`)
+4. Mettre à jour ce fichier

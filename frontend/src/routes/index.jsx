@@ -1,0 +1,116 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
+// Guards
+import PrivateRoute from './PrivateRoute'
+import AdminGuard from './AdminGuard'
+
+// Layouts
+import AuthLayout from '../layouts/AuthLayout'
+import DashboardLayout from '../layouts/DashboardLayout'
+import AdminLayout from '../layouts/AdminLayout'
+
+// ── Pages publiques ────────────────────────────────────────────────
+import HomePage from '../pages/home/HomePage'
+import MarketplacePage from '../pages/marketplace/MarketplacePage'
+import ProductDetailPage from '../pages/marketplace/ProductDetailPage'
+
+// ── Pages d'authentification ───────────────────────────────────────
+import LoginPage from '../pages/auth/login/LoginPage'
+import RegisterPage from '../pages/auth/register/RegisterPage'
+import ForgotPasswordPage from '../pages/auth/forgotpassword/ForgotPasswordPage'
+import ResetPasswordPage from '../pages/auth/resetpassword/ResetPasswordPage'
+
+// ── Dashboard vendeur ──────────────────────────────────────────────
+import DashboardPage from '../pages/dashboard/DashboardPage'
+import ProductsPage from '../pages/dashboard/products/ProductsPage'
+import NewProductPage from '../pages/dashboard/products/NewProductPage'
+import EditProductPage from '../pages/dashboard/products/EditProductPage'
+import OrdersPage from '../pages/dashboard/orders/OrdersPage'
+import OrderDetailPage from '../pages/dashboard/orders/OrderDetailPage'
+import WalletPage from '../pages/dashboard/wallet/WalletPage'
+import AnalyticsPage from '../pages/dashboard/analytics/AnalyticsPage'
+import ShopSettingsPage from '../pages/dashboard/shop/ShopSettingsPage'
+import AdsPage from '../pages/dashboard/ads/AdsPage'
+import DisputesPage from '../pages/dashboard/disputes/DisputesPage'
+import NotificationsPage from '../pages/dashboard/notifications/NotificationsPage'
+import ProfilePage from '../pages/dashboard/profile/ProfilePage'
+
+// ── Admin ──────────────────────────────────────────────────────────
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage'
+import VendorsPage from '../pages/admin/vendors/VendorsPage'
+import VendorDetailPage from '../pages/admin/vendors/VendorDetailPage'
+import UsersPage from '../pages/admin/users/UsersPage'
+import AdminOrdersPage from '../pages/admin/orders/OrdersPage'
+import AdminProductsPage from '../pages/admin/products/ProductsPage'
+import PaymentsPage from '../pages/admin/payments/PaymentsPage'
+import CategoriesPage from '../pages/admin/categories/CategoriesPage'
+import AdminAnalyticsPage from '../pages/admin/analytics/AnalyticsPage'
+import AdminDisputesPage from '../pages/admin/disputes/DisputesPage'
+import AdminAdsPage from '../pages/admin/ads/AdsPage'
+
+// ── Erreurs ────────────────────────────────────────────────────────
+import NotFoundPage from '../pages/errors/NotFoundPage'
+
+function AppRoutes() {
+  return (
+    <BrowserRouter>
+      <Routes>
+
+        {/* ── Public ──────────────────────────────────────────────── */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/marketplace" element={<MarketplacePage />} />
+        <Route path="/marketplace/:productId" element={<ProductDetailPage />} />
+
+        {/* ── Authentification ────────────────────────────────────── */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        </Route>
+
+        {/* ── Vendeur (authentifié) ────────────────────────────────── */}
+        <Route element={<PrivateRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard/products" element={<ProductsPage />} />
+            <Route path="/dashboard/products/new" element={<NewProductPage />} />
+            <Route path="/dashboard/products/:id/edit" element={<EditProductPage />} />
+            <Route path="/dashboard/orders" element={<OrdersPage />} />
+            <Route path="/dashboard/orders/:id" element={<OrderDetailPage />} />
+            <Route path="/dashboard/wallet" element={<WalletPage />} />
+            <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
+            <Route path="/dashboard/shop" element={<ShopSettingsPage />} />
+            <Route path="/dashboard/ads" element={<AdsPage />} />
+            <Route path="/dashboard/disputes" element={<DisputesPage />} />
+            <Route path="/dashboard/notifications" element={<NotificationsPage />} />
+            <Route path="/dashboard/profile" element={<ProfilePage />} />
+          </Route>
+        </Route>
+
+        {/* ── Admin (rôle admin requis) ────────────────────────────── */}
+        <Route element={<AdminGuard />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/vendors" element={<VendorsPage />} />
+            <Route path="/admin/vendors/:id" element={<VendorDetailPage />} />
+            <Route path="/admin/users" element={<UsersPage />} />
+            <Route path="/admin/orders" element={<AdminOrdersPage />} />
+            <Route path="/admin/products" element={<AdminProductsPage />} />
+            <Route path="/admin/payments" element={<PaymentsPage />} />
+            <Route path="/admin/categories" element={<CategoriesPage />} />
+            <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+            <Route path="/admin/disputes" element={<AdminDisputesPage />} />
+            <Route path="/admin/ads" element={<AdminAdsPage />} />
+          </Route>
+        </Route>
+
+        {/* ── 404 ─────────────────────────────────────────────────── */}
+        <Route path="*" element={<NotFoundPage />} />
+
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default AppRoutes

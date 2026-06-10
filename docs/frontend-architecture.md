@@ -15,6 +15,20 @@ frontend/
 └── src/
     ├── main.jsx
     ├── App.jsx
+    ├── routes/
+    │   └── index.jsx
+    ├── pages/
+    │   ├── home/
+    │   │   └── HomePage.jsx
+    │   ├── marketplace/
+    │   │   └── MarketplacePage.jsx
+    │   └── auth/
+    │       ├── login/
+    │       │   └── LoginPage.jsx
+    │       ├── register/
+    │       │   └── RegisterPage.jsx
+    │       └── forgotpassword/
+    │           └── ForgotPasswordPage.jsx
     └── services/
         ├── api.js
         ├── auth.js
@@ -39,7 +53,27 @@ frontend/
 | Fichier | Rôle |
 | :--- | :--- |
 | `main.jsx` | Point de montage React. Appelle `ReactDOM.createRoot` sur `#root` et rend `<App />` encapsulé dans `<React.StrictMode>`. |
-| `App.jsx` | Composant racine de l'application. Actuellement squelette minimaliste — c'est ici que sera configuré le routeur (React Router) et la structure globale des pages. |
+| `App.jsx` | Composant racine de l'application. Délègue intégralement le rendu à `<AppRoutes />` défini dans `src/routes/index.jsx`. |
+
+### `src/routes/`
+
+Centralise toute la configuration du routage client.
+
+| Fichier | Rôle |
+| :--- | :--- |
+| `index.jsx` | Déclare le `<BrowserRouter>` et toutes les `<Route>` de l'application via `<Routes>`. Importe chaque composant de page et lui associe un chemin URL. |
+
+### `src/pages/`
+
+Chaque page est isolée dans son propre sous-dossier (un dossier par route). Les composants sont actuellement des squelettes vides, prêts à être implémentés.
+
+| Composant | Fichier | Route | Description |
+| :--- | :--- | :--- | :--- |
+| `HomePage` | `pages/home/HomePage.jsx` | `/` | Page d'accueil — vitrine principale de NaatalFi |
+| `MarketplacePage` | `pages/marketplace/MarketplacePage.jsx` | `/marketplace` | Catalogue produits / marketplace |
+| `LoginPage` | `pages/auth/login/LoginPage.jsx` | `/login` | Formulaire de connexion |
+| `RegisterPage` | `pages/auth/register/RegisterPage.jsx` | `/register` | Formulaire d'inscription |
+| `ForgotPasswordPage` | `pages/auth/forgotpassword/ForgotPasswordPage.jsx` | `/forgot-password` | Réinitialisation de mot de passe |
 
 ### `src/services/`
 
