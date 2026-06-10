@@ -104,13 +104,14 @@ Le projet est en phase d'**initialisation structurelle**. Les deux segments (fro
 
 | Fichier | État |
 | :--- | :--- |
-| `docs/architecture.md` | Rédigé — architecture technique globale |
-| `docs/roadmap.md` | Rédigé — segment frontend (partiel) |
-| `docs/frontend-architecture.md` | Rédigé — structure fichiers frontend à jour |
-| `docs/frontend-routes.md` | Rédigé — toutes les routes documentées |
-| `docs/database.md` | Créé — contenu à rédiger |
-| `docs/api.md` | Créé — contenu à rédiger |
-| `docs/deployment.md` | Créé — contenu à rédiger |
+| `docs/architecture.md` | ✅ Rédigé — architecture technique globale |
+| `docs/roadmap.md` | ✅ Rédigé — 20 phases complètes |
+| `docs/business-rules.md` | ✅ Rédigé — rôles, commissions, wallet, trust score, litiges |
+| `docs/database.md` | ✅ Rédigé — 18 tables, champs, relations, index |
+| `docs/api.md` | ✅ Rédigé — tous les endpoints, payloads, codes retour |
+| `docs/deployment.md` | ✅ Rédigé — Vercel, Render, Supabase, CI/CD |
+| `docs/frontend-architecture.md` | ✅ Rédigé — structure fichiers frontend à jour |
+| `docs/frontend-routes.md` | ✅ Rédigé — toutes les routes documentées |
 | `docs/role-des-fichiers.pdf` | Présent |
 | `docs/compte-rendu.md` | Ce document |
 
