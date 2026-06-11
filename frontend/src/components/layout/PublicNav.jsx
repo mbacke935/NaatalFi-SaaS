@@ -2,10 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX } from 'react-icons/fi'
 import useAuthStore from '../../store/authStore'
+import useCartStore from '../../store/cartStore'
 
 function PublicNav() {
   const navigate          = useNavigate()
   const { user, token }   = useAuthStore()
+  const countItems        = useCartStore((s) => s.countItems)
+  const cartCount         = countItems()
   const [q, setQ]         = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -44,18 +47,33 @@ function PublicNav() {
 
         {/* Right actions */}
         <div className="flex items-center gap-3 ml-auto">
-          {/* Cart placeholder */}
-          <button className="relative text-gray-400 hover:text-white transition p-1">
+          {/* Cart */}
+          <Link to="/cart" className="relative text-gray-400 hover:text-white transition p-1">
             <FiShoppingCart size={20} />
-          </button>
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#D4AF37] text-black text-xs font-bold rounded-full flex items-center justify-center leading-none">
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
+          </Link>
 
           {token ? (
-            <Link
-              to="/dashboard"
-              className="hidden sm:flex items-center gap-2 text-sm bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-3 py-1.5 rounded-lg transition"
-            >
-              <FiUser size={14} /> Dashboard
-            </Link>
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                to="/account"
+                className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition px-2 py-1.5"
+              >
+                <FiUser size={14} /> Mon compte
+              </Link>
+              {user?.role === 'VENDOR' || user?.role === 'ADMIN' ? (
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2 text-sm bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-3 py-1.5 rounded-lg transition"
+                >
+                  Dashboard
+                </Link>
+              ) : null}
+            </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
               <Link to="/login" className="text-sm text-gray-400 hover:text-white transition px-3 py-1.5">
@@ -95,7 +113,12 @@ function PublicNav() {
           </form>
           <Link to="/marketplace" className="block text-gray-300 py-1" onClick={() => setMenuOpen(false)}>Marketplace</Link>
           {token ? (
-            <Link to="/dashboard" className="block text-[#D4AF37] py-1" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+            <>
+              <Link to="/account" className="block text-gray-300 py-1" onClick={() => setMenuOpen(false)}>Mon compte</Link>
+              {(user?.role === 'VENDOR' || user?.role === 'ADMIN') && (
+                <Link to="/dashboard" className="block text-[#D4AF37] py-1" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              )}
+            </>
           ) : (
             <>
               <Link to="/login" className="block text-gray-300 py-1" onClick={() => setMenuOpen(false)}>Connexion</Link>

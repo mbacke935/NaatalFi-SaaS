@@ -7,6 +7,7 @@ import AdminGuard from './AdminGuard'
 // Layouts
 import AuthLayout from '../layouts/AuthLayout'
 import PublicLayout from '../layouts/PublicLayout'
+import AccountLayout from '../layouts/AccountLayout'
 import DashboardLayout from '../layouts/DashboardLayout'
 import AdminLayout from '../layouts/AdminLayout'
 
@@ -16,6 +17,20 @@ import MarketplacePage from '../pages/marketplace/MarketplacePage'
 import ProductDetailPage from '../pages/marketplace/ProductDetailPage'
 import SearchPage from '../pages/search/SearchPage'
 import VendorProfilePage from '../pages/vendors/VendorProfilePage'
+import CartPage from '../pages/cart/CartPage'
+
+// ── Checkout + commandes acheteur ──────────────────────────────────
+import CheckoutPage from '../pages/checkout/CheckoutPage'
+import CustomerOrdersPage from '../pages/orders/OrdersPage'
+import CustomerOrderDetailPage from '../pages/orders/OrderDetailPage'
+
+// ── Espace client ──────────────────────────────────────────────────
+import AccountPage            from '../pages/account/AccountPage'
+import AccountOrdersPage      from '../pages/account/AccountOrdersPage'
+import AccountOrderDetailPage from '../pages/account/AccountOrderDetailPage'
+import AccountAddressesPage   from '../pages/account/AccountAddressesPage'
+import AccountFavoritesPage   from '../pages/account/AccountFavoritesPage'
+import AccountSettingsPage    from '../pages/account/AccountSettingsPage'
 
 // ── Pages d'authentification ───────────────────────────────────────
 import LoginPage from '../pages/auth/login/LoginPage'
@@ -67,6 +82,30 @@ function AppRoutes() {
           <Route path="/marketplace/:slug" element={<ProductDetailPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/vendors/:slug" element={<VendorProfilePage />} />
+          <Route path="/cart" element={<CartPage />} />
+        </Route>
+
+        {/* ── Checkout + commandes acheteur (auth requise) ─────────── */}
+        <Route element={<PrivateRoute />}>
+          <Route element={<PublicLayout />}>
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/orders" element={<CustomerOrdersPage />} />
+            <Route path="/orders/:id" element={<CustomerOrderDetailPage />} />
+          </Route>
+        </Route>
+
+        {/* ── Espace client (auth requise) ─────────────────────────── */}
+        <Route element={<PrivateRoute />}>
+          <Route element={<PublicLayout />}>
+            <Route element={<AccountLayout />}>
+              <Route path="/account"                   element={<AccountPage />} />
+              <Route path="/account/orders"            element={<AccountOrdersPage />} />
+              <Route path="/account/orders/:id"        element={<AccountOrderDetailPage />} />
+              <Route path="/account/addresses"         element={<AccountAddressesPage />} />
+              <Route path="/account/favorites"         element={<AccountFavoritesPage />} />
+              <Route path="/account/settings"          element={<AccountSettingsPage />} />
+            </Route>
+          </Route>
         </Route>
 
         {/* ── Authentification ────────────────────────────────────── */}

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiStar, FiShoppingCart, FiPackage } from 'react-icons/fi'
+import { FiStar, FiShoppingCart, FiPackage, FiCheck } from 'react-icons/fi'
+import toast from 'react-hot-toast'
 import { getMarketplaceProduct } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
+import useCartStore from '../../store/cartStore'
 
 function ProductDetailPage() {
   const { slug }               = useParams()
@@ -52,6 +54,9 @@ function ProductDetailPage() {
     )
   }
 
+  const addItem    = useCartStore((s) => s.addItem)
+  const [added, setAdded] = useState(false)
+
   const variantGroups = product.variants.reduce((acc, v) => {
     if (!acc[v.name]) acc[v.name] = []
     acc[v.name].push(v)
@@ -67,6 +72,33 @@ function ProductDetailPage() {
   }, 0)
   const finalPrice = Number(product.price) + totalDelta
   const selectedVariantObjects = Object.keys(selectedVariants).map(getVariantForType).filter(Boolean)
+
+  // Tous les types de variantes ont une sélection
+  const allTypesSelected = Object.keys(variantGroups).every((name) => selectedVariants[name])
+  const canAddToCart     = Object.keys(variantGroups).length === 0 || allTypesSelected
+
+  const handleAddToCart = () => {
+    const primaryVariant = selectedVariantObjects[0] ?? null
+    const variantLabel   = selectedVariantObjects
+      .map((v) => `${v.name}: ${v.value}`)
+      .join(', ')
+
+    addItem({
+      product_id:   product.id,
+      product_name: product.name,
+      product_slug: product.slug,
+      cover_image:  product.images[0]?.image_url ?? null,
+      vendor_id:    product.vendor,
+      vendor_name:  product.vendor_name,
+      vendor_slug:  product.vendor_slug,
+      variant_id:   primaryVariant?.id ?? null,
+      variant_label: variantLabel,
+      unit_price:   finalPrice,
+    })
+    toast.success(`${product.name} ajouté au panier !`)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -155,11 +187,19 @@ function ProductDetailPage() {
             </p>
           )}
 
-          {/* Add to cart — Phase 7 */}
-          <button disabled
-            className="w-full flex items-center justify-center gap-2 bg-[#D4AF37]/20 text-[#D4AF37]/50 font-semibold py-3.5 rounded-xl border border-[#D4AF37]/20 cursor-not-allowed text-sm mb-6"
+          {/* Add to cart */}
+          <button
+            onClick={handleAddToCart}
+            disabled={!canAddToCart}
+            className={`w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl text-sm mb-6 transition ${
+              canAddToCart
+                ? added
+                  ? 'bg-green-600 text-white'
+                  : 'bg-[#D4AF37] hover:bg-[#c49e30] text-black'
+                : 'bg-[#D4AF37]/20 text-[#D4AF37]/50 border border-[#D4AF37]/20 cursor-not-allowed'
+            }`}
           >
-            <FiShoppingCart size={18} /> Ajouter au panier (bientôt disponible)
+            {added ? <><FiCheck size={18} /> Ajouté au panier</> : <><FiShoppingCart size={18} /> Ajouter au panier</>}
           </button>
 
           {/* Vendor card */}
