@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
     AccountProfileView,
+    UploadAvatarView,
     AccountOrderListView,
     AccountOrderDetailView,
     AddressListView,
@@ -11,6 +12,7 @@ from .views import (
 
 urlpatterns = [
     path('profile/',                    AccountProfileView.as_view()),
+    path('profile/avatar/',             UploadAvatarView.as_view()),
     path('orders/',                     AccountOrderListView.as_view()),
     path('orders/<int:pk>/',            AccountOrderDetailView.as_view()),
     path('addresses/',                  AddressListView.as_view()),

@@ -2,6 +2,7 @@ from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 
 from .models import Address, Favorite
@@ -10,6 +11,7 @@ from apps.products.models import Product
 from apps.orders.models import Order
 from apps.orders.serializers import OrderSerializer
 from apps.users.serializers import UserSerializer
+from utils.storage import upload_to_supabase
 
 
 # ── Profil ────────────────────────────────────────────────────────────
@@ -27,6 +29,37 @@ class AccountProfileView(APIView):
         return Response(ser.data)
 
 
+class UploadAvatarView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes     = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        file = request.FILES.get('avatar')
+        if not file:
+            return Response({'error': 'Aucun fichier fourni.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if file.content_type not in ['image/jpeg', 'image/png', 'image/webp']:
+            return Response(
+                {'error': 'Format non supporté. Utilisez JPG, PNG ou WebP.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if file.size > 5 * 1024 * 1024:
+            return Response({'error': 'Fichier trop volumineux (max 5 Mo).'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            url = upload_to_supabase(file, bucket='avatars', folder=str(request.user.id))
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception:
+            return Response({'error': 'Erreur lors de l\'upload.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        request.user.avatar = url
+        request.user.save(update_fields=['avatar'])
+
+        return Response({'avatar': url})
+
+
 # ── Commandes ─────────────────────────────────────────────────────────
 
 class AccountOrderListView(APIView):
@@ -36,8 +69,7 @@ class AccountOrderListView(APIView):
         orders = (
             Order.objects
             .filter(buyer=request.user)
-            .select_related('vendor')
-            .prefetch_related('items')
+            .prefetch_related('vendor_orders__items', 'vendor_orders__vendor')
             .order_by('-created_at')
         )
         return Response(OrderSerializer(orders, many=True).data)
@@ -50,8 +82,11 @@ class AccountOrderDetailView(APIView):
         try:
             order = (
                 Order.objects
-                .select_related('vendor', 'buyer')
-                .prefetch_related('items__product', 'items__variant')
+                .prefetch_related(
+                    'vendor_orders__items__product',
+                    'vendor_orders__items__variant',
+                    'vendor_orders__vendor',
+                )
                 .get(pk=pk, buyer=request.user)
             )
         except Order.DoesNotExist:
