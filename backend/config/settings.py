@@ -39,6 +39,7 @@ LOCAL_APPS = [
     'apps.marketplace',
     'apps.orders',
     'apps.account',
+    'apps.payments',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -47,6 +48,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -127,6 +129,14 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://127.0.0.1:3000')
 SUPABASE_URL              = os.getenv('SUPABASE_URL', '')
 SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 
+# ── Paiements (PayTech) ────────────────────────────────────────────────
+PAYTECH_API_KEY        = os.getenv('PAYTECH_API_KEY', '')
+PAYTECH_API_SECRET     = os.getenv('PAYTECH_API_SECRET', '')
+PAYTECH_BASE_URL       = os.getenv('PAYTECH_BASE_URL', 'https://paytech.sn/api/payment/request-payment')
+PAYTECH_ENV            = os.getenv('PAYTECH_ENV', 'test' if DEBUG else 'prod')
+PAYTECH_WEBHOOK_SECRET = os.getenv('PAYTECH_WEBHOOK_SECRET', '')
+BACKEND_URL            = os.getenv('BACKEND_URL', 'http://127.0.0.1:8000')
+
 # ── Email ────────────────────────────────────────────────────────────
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -163,11 +173,11 @@ CACHES = {
 }
 
 # ── CORS ─────────────────────────────────────────────────────────────
+_default_cors = 'http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:5173,http://localhost:5173'
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'http://localhost:5173',
+    origin.strip()
+    for origin in os.getenv('CORS_ALLOWED_ORIGINS', _default_cors).split(',')
+    if origin.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
 

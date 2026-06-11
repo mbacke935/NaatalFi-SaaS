@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/v1/marketplace/',  include('apps.marketplace.urls')),
     path('api/v1/orders/',       include('apps.orders.urls')),
     path('api/v1/account/',      include('apps.account.urls')),
+    path('api/v1/payments/',     include('apps.payments.urls')),
 ]

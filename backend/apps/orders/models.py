@@ -6,6 +6,7 @@ from django.conf import settings
 class Order(models.Model):
     class Status(models.TextChoices):
         PENDING   = 'PENDING',   'En attente'
+        PAID      = 'PAID',      'Payee'
         CANCELLED = 'CANCELLED', 'Annulée'
 
     buyer            = models.ForeignKey(
