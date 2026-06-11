@@ -1,4 +1,4 @@
-# Tests - NaatalFi
+﻿# Tests - NaatalFi
 
 ## Backend
 
@@ -33,7 +33,7 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 | `products` | `apps/products/tests.py` | route admin produits, moderation statut |
 | `payments` | `apps/payments/tests.py` | liste admin paiements, statut webhook |
 
-Etat actuel : **9 tests OK**.
+Etat actuel : **11 tests OK**.
 
 ## Frontend
 
@@ -47,3 +47,4 @@ npm run build
 ```
 
 Etat actuel : build OK, avec warning Vite de taille de bundle.
+

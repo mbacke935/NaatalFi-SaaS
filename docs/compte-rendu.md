@@ -1,4 +1,4 @@
-# Compte Rendu - Etat Actuel NaatalFi
+﻿# Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 11 juin 2026  
 **Etat :** phases 0 a 13 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
@@ -89,7 +89,7 @@ Couverture actuelle ajoutee :
 - `apps.products.tests` : route admin produits et moderation statut ;
 - `apps.payments.tests` : liste admin paiements avec statut webhook.
 
-Resultat actuel : **9 tests OK**.
+Resultat actuel : **11 tests OK**.
 
 ---
 
@@ -134,3 +134,4 @@ VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
 3. Tester les parcours admin : users, produits, paiements, wallets.
 4. Demarrer Phase 14 : Celery complet + notifications in-app.
 5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async et release wallet automatique.
+
