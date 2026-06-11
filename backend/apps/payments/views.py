@@ -15,6 +15,7 @@ from .services import (
     webhook_marks_paid,
 )
 from tasks.payments import send_payment_confirmation_email
+from tasks.wallet import credit_vendor_wallets_task
 
 
 class InitiatePaymentView(APIView):
@@ -115,6 +116,9 @@ class PayTechWebhookView(APIView):
             if order.status != Order.Status.PAID:
                 order.status = Order.Status.PAID
                 order.save(update_fields=['status', 'updated_at'])
+                transaction.on_commit(
+                    lambda o_id=order.id: credit_vendor_wallets_task.delay(o_id)
+                )
             transaction.on_commit(
                 lambda payment_id=payment.id: send_payment_confirmation_email.delay(payment_id)
             )
