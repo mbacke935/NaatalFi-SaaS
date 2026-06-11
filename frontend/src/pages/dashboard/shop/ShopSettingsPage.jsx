@@ -1,5 +1,179 @@
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+import { FiCheck, FiClock, FiAlertTriangle } from 'react-icons/fi'
+import {
+  getMyVendor,
+  createVendor,
+  updateMyVendor,
+  uploadLogo,
+} from '../../../services/vendors'
+import ImageUpload from '../../../components/ui/ImageUpload'
+
+const STATUS_CONFIG = {
+  PENDING:   { label: 'En attente de validation', icon: FiClock, color: 'text-yellow-400' },
+  APPROVED:  { label: 'Boutique approuvée',        icon: FiCheck, color: 'text-green-400' },
+  SUSPENDED: { label: 'Boutique suspendue',         icon: FiAlertTriangle, color: 'text-red-400' },
+}
+
 function ShopSettingsPage() {
-  return <div>ShopSettingsPage</div>
+  const [vendor, setVendor]       = useState(null)
+  const [loading, setLoading]     = useState(true)
+  const [saving, setSaving]       = useState(false)
+  const [logoFile, setLogoFile]   = useState(null)
+  const [form, setForm] = useState({ name: '', description: '', phone: '', address: '' })
+
+  useEffect(() => {
+    getMyVendor()
+      .then(({ data }) => {
+        setVendor(data)
+        setForm({
+          name:        data.name        || '',
+          description: data.description || '',
+          phone:       data.phone       || '',
+          address:     data.address     || '',
+        })
+      })
+      .catch((err) => {
+        if (err.response?.status !== 404) toast.error('Erreur lors du chargement.')
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleChange = (e) =>
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      if (vendor) {
+        const { data } = await updateMyVendor(form)
+        setVendor(data)
+      } else {
+        const { data } = await createVendor(form)
+        setVendor(data)
+      }
+
+      if (logoFile) {
+        const { data: logoData } = await uploadLogo(logoFile)
+        setVendor((v) => ({ ...v, logo: logoData.logo }))
+        setLogoFile(null)
+      }
+
+      toast.success(vendor ? 'Boutique mise à jour !' : 'Boutique créée ! En attente de validation.')
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Une erreur est survenue.'
+      toast.error(msg)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="text-gray-400 text-sm">Chargement...</div>
+  }
+
+  const StatusBadge = vendor ? STATUS_CONFIG[vendor.status] : null
+
+  return (
+    <div className="max-w-2xl">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">Ma boutique</h1>
+        {StatusBadge && (
+          <div className={`flex items-center gap-2 text-sm font-medium ${StatusBadge.color}`}>
+            <StatusBadge.icon size={16} />
+            {StatusBadge.label}
+          </div>
+        )}
+      </div>
+
+      {vendor?.plan && (
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4 mb-6 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Plan actuel</p>
+            <p className="text-white font-semibold">{vendor.plan.name}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-500">Commission</p>
+            <p className="text-[#D4AF37] font-bold">{vendor.plan.commission_rate}%</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-500">Produits max</p>
+            <p className="text-white font-medium">{vendor.plan.max_products ?? '∞'}</p>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-sm text-gray-400 mb-3">Logo de la boutique</label>
+          <ImageUpload
+            currentUrl={vendor?.logo}
+            onFile={setLogoFile}
+            label="Ajouter un logo"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Nom de la boutique *</label>
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+            placeholder="Ma Boutique Sénégal"
+            className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">Description</label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            rows={4}
+            placeholder="Décrivez votre boutique..."
+            className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition resize-none"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Téléphone</label>
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="+221 77 000 00 00"
+              className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">Adresse</label>
+            <input
+              type="text"
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              placeholder="Dakar, Sénégal"
+              className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold py-2.5 px-6 rounded-lg transition disabled:opacity-50"
+        >
+          {saving ? 'Enregistrement...' : vendor ? 'Mettre à jour' : 'Créer ma boutique'}
+        </button>
+      </form>
+    </div>
+  )
 }
 
 export default ShopSettingsPage

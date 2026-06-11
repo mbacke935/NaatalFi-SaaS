@@ -32,6 +32,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     'apps.users',
+    'apps.vendors',
     'apps.products',
 ]
 
@@ -116,6 +117,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://127.0.0.1:3000')
+
+# ── Supabase Storage ─────────────────────────────────────────────────
+SUPABASE_URL              = os.getenv('SUPABASE_URL', '')
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 
 # ── Email ────────────────────────────────────────────────────────────
 if DEBUG:
