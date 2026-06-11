@@ -69,7 +69,7 @@ function CheckoutPage() {
       await createOrder(payload)
       clearCart()
       toast.success('Commande passée avec succès !')
-      navigate('/orders')
+      navigate('/account/orders')
     } catch (err) {
       const msg = err.response?.data?.error || 'Une erreur est survenue.'
       toast.error(msg)

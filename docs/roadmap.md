@@ -72,12 +72,12 @@ Relations à modéliser et valider :
 - Rôles : `ADMIN`, `VENDOR`, `CUSTOMER`
 - Endpoints :
   - `POST /auth/register` — inscription + envoi email de vérification
-  - `POST /auth/verify-email/:token` — confirmation email
+  - `POST /auth/verify-email` — confirmation email (`uid`, `token`)
   - `POST /auth/login` — retourne `access` + `refresh` token
   - `POST /auth/logout` — blacklist du refresh token
   - `POST /auth/token/refresh` — renouvellement access token
   - `POST /auth/forgot-password` — envoi lien de réinitialisation
-  - `POST /auth/reset-password/:token` — changement de mot de passe
+  - `POST /auth/reset-password` — changement de mot de passe (`uid`, `token`)
   - `GET /auth/me` — profil de l'utilisateur connecté
   - `PATCH /auth/me` — mise à jour du profil
 
@@ -87,7 +87,7 @@ Relations à modéliser et valider :
 - Deuxième tâche : `send_password_reset_email`
 
 ### Frontend
-- Pages : `/login`, `/register`, `/forgot-password`, `/reset-password/:token`
+- Pages : `/login`, `/register`, `/forgot-password`, `/reset-password/:uid/:token`, `/verify-email/:uid/:token`
 - `AuthLayout` implémenté (centré, fond sombre)
 - Instance Axios configurée (base URL, intercepteur JWT, refresh automatique sur 401)
 - Zustand `authStore` connecté à l'API réelle
@@ -193,7 +193,7 @@ Relations à modéliser et valider :
   - `GET /marketplace/vendors` — liste vendeurs approuvés
   - `GET /marketplace/vendors/:slug` — profil vendeur public
   - `GET /marketplace/categories` — arbre catégories
-  - `GET /marketplace/search?q=` — recherche full-text PostgreSQL (`tsvector`)
+  - `GET /marketplace/search?q=` — recherche PostgreSQL full-text avec fallback `icontains`
   - `GET /marketplace/featured` — produits mis en avant
 - Stratégie cache : Redis sur les endpoints les plus lus (catalogue, catégories) — TTL 5 min
 - Pagination : cursor-based pour les performances
@@ -206,7 +206,7 @@ Relations à modéliser et valider :
   - `/search?q=` — Page résultats recherche
   - `/vendors/:slug` — Profil vendeur public
 - Meta tags dynamiques pour SEO (titre, description, og:image)
-- Pagination avec scroll infini ou numérotée
+- Pagination progressive avec `next_cursor`
 
 **Livrables :**
 - ✅ Catalogue public et recherche
@@ -230,7 +230,8 @@ Relations à modéliser et valider :
   - `GET /account/favorites` — produits favoris
   - `POST /account/favorites/:productId`
   - `DELETE /account/favorites/:productId`
-  - `PATCH /account/profile` — modifier profil + avatar
+  - `PATCH /account/profile` — modifier profil
+  - `POST /account/profile/avatar` — upload avatar Supabase
 
 ### Frontend
 - Pages :
@@ -253,7 +254,7 @@ Relations à modéliser et valider :
 
 ### Backend
 - Validation stock en temps réel à l'ajout
-- Endpoint `POST /cart/validate` — vérifie disponibilité avant paiement
+- Endpoint `POST /orders/validate` — vérifie disponibilité avant paiement
 
 ### Frontend
 - Store Zustand `cartStore` persistant (localStorage)
@@ -275,8 +276,8 @@ Relations à modéliser et valider :
 **Objectif :** Moteur de commande qui fragmente automatiquement par vendeur.
 
 ### Backend — App `orders`
-- Modèle `Order` : `customer`, `status`, `total`, `shipping_address`
-- Modèle `OrderItem` : `order`, `product`, `variant`, `quantity`, `unit_price`
+- Modèle `Order` : `buyer`, `status`, `total`, `delivery_address`
+- Modèle `OrderItem` : `vendor_order`, `product`, `variant`, `quantity`, `unit_price`
 - Modèle `VendorOrder` : `order`, `vendor`, `status`, `subtotal`, `shipping_cost`
 - Logique de fragmentation :
 ```
@@ -287,7 +288,7 @@ Commande client (1 Order)
 - Statuts `VendorOrder` : `PENDING` → `CONFIRMED` → `SHIPPED` → `DELIVERED`
 - Endpoints :
   - `POST /orders` — créer une commande
-  - `GET /orders/:id` — détail commande
+  - `GET /orders/me/:id` — détail commande acheteur
   - `GET /vendors/me/orders` — commandes reçues par le vendeur
   - `PATCH /vendors/me/orders/:id/status` — mettre à jour le statut
 - Celery : `send_order_confirmation_email`, `send_vendor_new_order_email`

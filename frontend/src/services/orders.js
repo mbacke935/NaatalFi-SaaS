@@ -1,5 +1,8 @@
 import api from './api'
 
+// Phase 7 — Validation panier
+export const validateCart      = (items)          => api.post('/orders/validate/', { items })
+
 // Acheteur
 export const createOrder       = (data)           => api.post('/orders/', data)
 export const getMyOrders       = ()               => api.get('/orders/me/')

@@ -1,20 +1,21 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { FiUser, FiCamera, FiSave } from 'react-icons/fi'
-import useAuthStore      from '../../store/authStore'
-import { updateProfile } from '../../services/account'
-import { useMeta }       from '../../hooks/useMeta'
+import useAuthStore from '../../store/authStore'
+import { updateProfile, uploadAvatar } from '../../services/account'
+import { useMeta } from '../../hooks/useMeta'
+import ImageUpload from '../../components/ui/ImageUpload'
 
 function AccountSettingsPage() {
   useMeta({ title: 'Paramètres du compte' })
 
-  const { user, setUser }   = useAuthStore()
+  const { user, setUser } = useAuthStore()
   const [saving, setSaving] = useState(false)
-  const [form, setForm]     = useState({
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [form, setForm] = useState({
     first_name: user?.first_name ?? '',
-    last_name:  user?.last_name  ?? '',
-    phone:      user?.phone      ?? '',
-    avatar:     user?.avatar     ?? '',
+    last_name: user?.last_name ?? '',
+    phone: user?.phone ?? '',
   })
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -24,10 +25,19 @@ function AccountSettingsPage() {
     setSaving(true)
     try {
       const { data } = await updateProfile(form)
-      setUser(data)
+
+      let nextUser = data
+      if (avatarFile) {
+        const { data: avatarData } = await uploadAvatar(avatarFile)
+        nextUser = { ...data, avatar: avatarData.avatar }
+        setAvatarFile(null)
+      }
+
+      setUser(nextUser)
       toast.success('Profil mis à jour.')
-    } catch {
-      toast.error('Erreur lors de la sauvegarde.')
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Erreur lors de la sauvegarde.'
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -40,36 +50,18 @@ function AccountSettingsPage() {
       <h1 className="text-2xl font-bold text-white mb-6">Paramètres du compte</h1>
 
       <form onSubmit={handleSave} className="space-y-6 max-w-lg">
-
-        {/* Avatar */}
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
           <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <FiCamera size={15} className="text-[#D4AF37]" /> Photo de profil
           </h2>
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex-shrink-0 overflow-hidden">
-              {form.avatar
-                ? <img src={form.avatar} alt="" className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center text-[#D4AF37] font-bold text-xl">
-                    {user?.first_name?.[0] ?? '?'}
-                  </div>
-              }
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">URL de l'avatar</label>
-              <input
-                type="url"
-                value={form.avatar}
-                onChange={set('avatar')}
-                placeholder="https://..."
-                className={inputCls}
-              />
-              <p className="text-xs text-gray-600 mt-1">Copiez l'URL d'une image hébergée (Supabase, Imgur…)</p>
-            </div>
-          </div>
+          <ImageUpload
+            currentUrl={user?.avatar}
+            onFile={setAvatarFile}
+            label="Ajouter une photo"
+            previewClassName="rounded-full"
+          />
         </div>
 
-        {/* Informations personnelles */}
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
           <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
             <FiUser size={15} className="text-[#D4AF37]" /> Informations personnelles

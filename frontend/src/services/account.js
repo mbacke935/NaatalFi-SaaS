@@ -3,6 +3,13 @@ import api from './api'
 // Profil
 export const getProfile    = ()         => api.get('/account/profile/')
 export const updateProfile = (data)     => api.patch('/account/profile/', data)
+export const uploadAvatar  = (file)     => {
+  const form = new FormData()
+  form.append('avatar', file)
+  return api.post('/account/profile/avatar/', form, {
+    headers: { 'Content-Type': undefined },
+  })
+}
 
 // Commandes client
 export const getAccountOrders      = ()   => api.get('/account/orders/')

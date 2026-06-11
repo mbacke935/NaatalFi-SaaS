@@ -1,6 +1,6 @@
 # Routes Frontend — NaatalFi SaaS
 
-Toutes les routes sont déclarées dans `src/routes/index.jsx`. Elles sont organisées en quatre périmètres : **public**, **authentification**, **vendeur** (protégé) et **administration** (protégé + rôle admin).
+Toutes les routes sont déclarées dans `src/routes/index.jsx`. Elles sont organisées en cinq périmètres : **public**, **authentification**, **espace client**, **vendeur** (protégé) et **administration** (protégé + rôle admin).
 
 ---
 
@@ -9,7 +9,7 @@ Toutes les routes sont déclarées dans `src/routes/index.jsx`. Elles sont organ
 | Composant | Fichier | Comportement |
 | :--- | :--- | :--- |
 | `PrivateRoute` | `src/routes/PrivateRoute.jsx` | Vérifie `isAuthenticated` dans le store Zustand. Redirige vers `/login` si faux. |
-| `AdminGuard` | `src/routes/AdminGuard.jsx` | Vérifie `isAuthenticated` ET `role === 'admin'`. Redirige vers `/login` ou `/dashboard`. |
+| `AdminGuard` | `src/routes/AdminGuard.jsx` | Vérifie `isAuthenticated` ET `role === 'ADMIN'`. Redirige vers `/login` ou `/dashboard`. |
 
 L'état d'authentification est persisté dans `src/store/authStore.js` (Zustand + `localStorage`).
 
@@ -20,6 +20,8 @@ L'état d'authentification est persisté dans `src/store/authStore.js` (Zustand 
 | Composant | Fichier | Utilisé par |
 | :--- | :--- | :--- |
 | `AuthLayout` | `src/layouts/AuthLayout.jsx` | Pages d'authentification |
+| `PublicLayout` | `src/layouts/PublicLayout.jsx` | Pages publiques, checkout et espace client |
+| `AccountLayout` | `src/layouts/AccountLayout.jsx` | Espace client |
 | `DashboardLayout` | `src/layouts/DashboardLayout.jsx` | Dashboard vendeur (sidebar + header) |
 | `AdminLayout` | `src/layouts/AdminLayout.jsx` | Interface d'administration |
 
@@ -33,7 +35,10 @@ Accessibles sans authentification.
 | :--- | :--- | :--- |
 | `/` | `HomePage` | `src/pages/home/HomePage.jsx` |
 | `/marketplace` | `MarketplacePage` | `src/pages/marketplace/MarketplacePage.jsx` |
-| `/marketplace/:productId` | `ProductDetailPage` | `src/pages/marketplace/ProductDetailPage.jsx` |
+| `/marketplace/:slug` | `ProductDetailPage` | `src/pages/marketplace/ProductDetailPage.jsx` |
+| `/search` | `SearchPage` | `src/pages/search/SearchPage.jsx` |
+| `/vendors/:slug` | `VendorProfilePage` | `src/pages/vendors/VendorProfilePage.jsx` |
+| `/cart` | `CartPage` | `src/pages/cart/CartPage.jsx` |
 
 ---
 
@@ -46,11 +51,30 @@ Encapsulées dans `<AuthLayout>`. Redirigent vers `/dashboard` après connexion 
 | `/login` | `LoginPage` | `src/pages/auth/login/LoginPage.jsx` |
 | `/register` | `RegisterPage` | `src/pages/auth/register/RegisterPage.jsx` |
 | `/forgot-password` | `ForgotPasswordPage` | `src/pages/auth/forgotpassword/ForgotPasswordPage.jsx` |
-| `/reset-password/:token` | `ResetPasswordPage` | `src/pages/auth/resetpassword/ResetPasswordPage.jsx` |
+| `/reset-password/:uid/:token` | `ResetPasswordPage` | `src/pages/auth/resetpassword/ResetPasswordPage.jsx` |
+| `/verify-email/:uid/:token` | `VerifyEmailPage` | `src/pages/auth/verifyemail/VerifyEmailPage.jsx` |
 
 ---
 
-## 3. Dashboard Vendeur
+## 3. Espace Client
+
+Protégé par `<PrivateRoute>` + encapsulé dans `<AccountLayout>`.
+
+| Route | Composant | Fichier |
+| :--- | :--- | :--- |
+| `/checkout` | `CheckoutPage` | `src/pages/checkout/CheckoutPage.jsx` |
+| `/account` | `AccountPage` | `src/pages/account/AccountPage.jsx` |
+| `/account/orders` | `AccountOrdersPage` | `src/pages/account/AccountOrdersPage.jsx` |
+| `/account/orders/:id` | `AccountOrderDetailPage` | `src/pages/account/AccountOrderDetailPage.jsx` |
+| `/account/addresses` | `AccountAddressesPage` | `src/pages/account/AccountAddressesPage.jsx` |
+| `/account/favorites` | `AccountFavoritesPage` | `src/pages/account/AccountFavoritesPage.jsx` |
+| `/account/settings` | `AccountSettingsPage` | `src/pages/account/AccountSettingsPage.jsx` |
+| `/orders` | Redirection | `/account/orders` |
+| `/orders/:id` | Redirection | `/account/orders/:id` |
+
+---
+
+## 4. Dashboard Vendeur
 
 Protégées par `<PrivateRoute>` + encapsulées dans `<DashboardLayout>`.
 Redirigent vers `/login` si l'utilisateur n'est pas authentifié.
@@ -95,10 +119,10 @@ Redirigent vers `/login` si l'utilisateur n'est pas authentifié.
 
 ---
 
-## 4. Administration
+## 5. Administration
 
 Protégées par `<AdminGuard>` + encapsulées dans `<AdminLayout>`.
-Accessibles uniquement avec `role === 'admin'`.
+Accessibles uniquement avec `role === 'ADMIN'`.
 
 | Route | Composant | Fichier |
 | :--- | :--- | :--- |
@@ -116,7 +140,7 @@ Accessibles uniquement avec `role === 'admin'`.
 
 ---
 
-## 5. Erreurs
+## 6. Erreurs
 
 | Route | Composant | Fichier |
 | :--- | :--- | :--- |

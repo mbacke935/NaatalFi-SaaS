@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 
 // Guards
 import PrivateRoute from './PrivateRoute'
@@ -21,8 +21,6 @@ import CartPage from '../pages/cart/CartPage'
 
 // ── Checkout + commandes acheteur ──────────────────────────────────
 import CheckoutPage from '../pages/checkout/CheckoutPage'
-import CustomerOrdersPage from '../pages/orders/OrdersPage'
-import CustomerOrderDetailPage from '../pages/orders/OrderDetailPage'
 
 // ── Espace client ──────────────────────────────────────────────────
 import AccountPage            from '../pages/account/AccountPage'
@@ -70,6 +68,11 @@ import AdminAdsPage from '../pages/admin/ads/AdsPage'
 // ── Erreurs ────────────────────────────────────────────────────────
 import NotFoundPage from '../pages/errors/NotFoundPage'
 
+function LegacyOrderRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/account/orders/${id}`} replace />
+}
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -89,8 +92,8 @@ function AppRoutes() {
         <Route element={<PrivateRoute />}>
           <Route element={<PublicLayout />}>
             <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/orders" element={<CustomerOrdersPage />} />
-            <Route path="/orders/:id" element={<CustomerOrderDetailPage />} />
+            <Route path="/orders" element={<Navigate to="/account/orders" replace />} />
+            <Route path="/orders/:id" element={<LegacyOrderRedirect />} />
           </Route>
         </Route>
 

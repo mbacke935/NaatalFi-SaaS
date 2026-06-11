@@ -3,7 +3,7 @@
 Base URL : `https://api.naatalfi.com/api/v1`
 Format : JSON
 Authentification : Bearer Token (JWT)
-Pagination : `?page=1&page_size=20` (cursor-based pour les listes publiques)
+Pagination publique : `?page_size=20&cursor=<next_cursor>`
 
 ---
 
@@ -68,8 +68,13 @@ Créer un compte. Envoie un email de vérification.
 
 ---
 
-### `POST /auth/verify-email/:token`
+### `POST /auth/verify-email`
 Vérifier l'email via le lien reçu.
+
+**Body**
+```json
+{ "uid": "<uid>", "token": "<token>" }
+```
 
 **Réponse 200**
 ```json
@@ -135,12 +140,12 @@ Envoyer un email de réinitialisation.
 
 ---
 
-### `POST /auth/reset-password/:token`
+### `POST /auth/reset-password`
 Changer le mot de passe via le lien reçu.
 
 **Body**
 ```json
-{ "password": "nouveaumotdepasse123" }
+{ "uid": "<uid>", "token": "<token>", "password": "nouveaumotdepasse123" }
 ```
 **Réponse 200**
 ```json
@@ -263,7 +268,18 @@ CRUD catégories. **Admin.**
 
 ### `GET /marketplace/products`
 Catalogue public paginé. **Public.**
-Query params : `?category=mode&vendor=uuid&min_price=1000&max_price=50000&sort=price_asc&page=1`
+Query params : `?category=mode&vendor=boutique-slug&min_price=1000&max_price=50000&sort=price_asc&page_size=20&cursor=<next_cursor>`
+
+**Réponse 200**
+```json
+{
+  "count": 42,
+  "page_size": 20,
+  "next_cursor": "eyJjcmVhdGVkX2F0IjoiLi4uIiwiaWQiOiIxMjMifQ==",
+  "has_next": true,
+  "results": [ ... ]
+}
+```
 
 ---
 
@@ -325,13 +341,15 @@ Supprimer une image. **Vendor.**
 
 ### `GET /marketplace/search`
 Recherche full-text PostgreSQL. **Public.**
-Query params : `?q=boubou+wax&category=mode&page=1`
+Query params : `?q=boubou+wax&page_size=20&cursor=<next_cursor>`
 
 **Réponse 200**
 ```json
 {
   "count": 42,
-  "next": "/marketplace/search?q=boubou&page=2",
+  "page_size": 20,
+  "next_cursor": "eyJ0cnVzdF9zY29yZSI6IjAuMCIsImNyZWF0ZWRfYXQiOiIuLi4iLCJpZCI6IjEyMyJ9",
+  "has_next": true,
   "results": [ ... ]
 }
 ```
@@ -352,12 +370,20 @@ Gestion des adresses. **Auth requis.**
 ### `GET /account/favorites` · `POST /account/favorites/:productId` · `DELETE /account/favorites/:productId`
 Favoris. **Auth requis.**
 
+### `GET /account/profile` · `PATCH /account/profile`
+Profil client. **Auth requis.**
+
+### `POST /account/profile/avatar`
+Uploader l'avatar. **Auth requis.** `Content-Type: multipart/form-data`
+
+**Body** : `avatar` (fichier image JPG, PNG ou WebP, max 5 Mo)
+
 ---
 
 ## 7. Panier — `/cart`
 
-### `POST /cart/validate`
-Valider le stock avant paiement. **Auth requis.**
+### `POST /orders/validate`
+Valider le stock avant paiement. **Public.**
 
 **Body**
 ```json
@@ -382,20 +408,26 @@ Créer une commande. **Auth requis.**
   "items": [
     { "product_id": "uuid", "variant_id": "uuid", "quantity": 2 }
   ],
-  "shipping_address": {
-    "name": "Aminata Diallo",
-    "phone": "+221771234567",
-    "address": "123 Rue de Dakar",
-    "city": "Dakar"
-  }
+  "delivery_address": "Aminata Diallo, +221771234567, 123 Rue de Dakar, Dakar",
+  "notes": "Appeler avant livraison"
 }
 ```
 **Réponse 201** → Objet Order avec `vendor_orders` inclus
 
+Effets secondaires :
+- décrémente le stock des variantes commandées
+- envoie `send_order_confirmation_email` au client
+- envoie `send_vendor_new_order_email` à chaque vendeur concerné
+
 ---
 
-### `GET /orders/:id`
-Détail commande. **Auth requis (client propriétaire ou admin).**
+### `GET /orders/me`
+Mes commandes. **Auth requis.**
+
+---
+
+### `GET /orders/me/:id`
+Détail commande. **Auth requis (client propriétaire).**
 
 ---
 

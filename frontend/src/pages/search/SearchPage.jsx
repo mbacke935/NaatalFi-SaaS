@@ -1,47 +1,78 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiSearch } from 'react-icons/fi'
 import { searchMarketplace } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
 
+function ProductResultCard({ product }) {
+  return (
+    <Link
+      to={`/marketplace/${product.slug}`}
+      className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
+    >
+      <div className="aspect-square bg-[#2a2a3a] overflow-hidden">
+        {product.cover_image ? (
+          <img src={product.cover_image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
+        )}
+      </div>
+      <div className="p-3">
+        {product.category_name && <p className="text-xs text-gray-500 mb-0.5">{product.category_name}</p>}
+        <h3 className="text-white text-sm font-medium line-clamp-2 leading-snug">{product.name}</h3>
+        <p className="text-[#D4AF37] font-bold mt-1 text-sm">{Number(product.price).toLocaleString('fr-SN')} FCFA</p>
+        <p className="text-gray-600 text-xs mt-0.5">{product.vendor_name}</p>
+      </div>
+    </Link>
+  )
+}
+
 function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const q    = searchParams.get('q') || ''
-  const page = Number(searchParams.get('page') || 1)
+  const q = searchParams.get('q') || ''
 
-  const [result, setResult]   = useState(null)
+  const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [input, setInput]     = useState(q)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [input, setInput] = useState(q)
 
   useMeta({ title: q ? `Recherche : ${q}` : 'Recherche' })
 
+  const load = useCallback((cursor = null, append = false) => {
+    if (!q) {
+      setResult(null)
+      return
+    }
+
+    append ? setLoadingMore(true) : setLoading(true)
+    const params = { q }
+    if (cursor) params.cursor = cursor
+
+    searchMarketplace(params)
+      .then(({ data }) => {
+        setResult((prev) => append && prev
+          ? { ...data, results: [...prev.results, ...data.results] }
+          : data
+        )
+      })
+      .catch(() => {})
+      .finally(() => append ? setLoadingMore(false) : setLoading(false))
+  }, [q])
+
   useEffect(() => {
     setInput(q)
-    if (!q) { setResult(null); return }
-    setLoading(true)
-    searchMarketplace({ q, page })
-      .then(({ data }) => setResult(data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [q, page])
+    load()
+  }, [q, load])
 
   const handleSearch = (e) => {
     e.preventDefault()
     const next = new URLSearchParams()
     if (input.trim()) next.set('q', input.trim())
-    next.set('page', '1')
-    setSearchParams(next)
-  }
-
-  const setPage = (p) => {
-    const next = new URLSearchParams(searchParams)
-    next.set('page', String(p))
     setSearchParams(next)
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-      {/* Search bar */}
       <form onSubmit={handleSearch} className="flex gap-2 mb-8">
         <div className="relative flex-1">
           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
@@ -62,14 +93,12 @@ function SearchPage() {
         </button>
       </form>
 
-      {/* Results header */}
       {q && !loading && result && (
         <p className="text-sm text-gray-500 mb-5">
-          {result.count} résultat{result.count !== 1 ? 's' : ''} pour <span className="text-white">"{q}"</span>
+          {result.count} resultat{result.count !== 1 ? 's' : ''} pour <span className="text-white">"{q}"</span>
         </p>
       )}
 
-      {/* Loading skeleton */}
       {loading && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -84,69 +113,36 @@ function SearchPage() {
         </div>
       )}
 
-      {/* No query */}
       {!q && !loading && (
         <div className="text-center py-16 text-gray-500">
           <FiSearch size={40} className="mx-auto mb-4 opacity-40" />
-          <p>Tapez un mot-clé pour rechercher des produits.</p>
+          <p>Tapez un mot-cle pour rechercher des produits.</p>
         </div>
       )}
 
-      {/* No results */}
       {q && !loading && result?.results.length === 0 && (
         <div className="text-center py-16 text-gray-500">
-          <p className="text-lg mb-2">Aucun résultat pour "{q}"</p>
+          <p className="text-lg mb-2">Aucun resultat pour "{q}"</p>
           <p className="text-sm mb-6">Essayez avec d'autres termes ou parcourez la marketplace.</p>
-          <Link to="/marketplace" className="text-[#D4AF37] hover:underline text-sm">Voir tous les produits →</Link>
+          <Link to="/marketplace" className="text-[#D4AF37] hover:underline text-sm">Voir tous les produits</Link>
         </div>
       )}
 
-      {/* Results grid */}
       {!loading && result?.results.length > 0 && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {result.results.map((p) => (
-              <Link key={p.id} to={`/marketplace/${p.slug}`}
-                className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
-              >
-                <div className="aspect-square bg-[#2a2a3a] overflow-hidden">
-                  {p.cover_image
-                    ? <img src={p.cover_image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                    : <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">📦</div>
-                  }
-                </div>
-                <div className="p-3">
-                  {p.category_name && <p className="text-xs text-gray-500 mb-0.5">{p.category_name}</p>}
-                  <h3 className="text-white text-sm font-medium line-clamp-2 leading-snug">{p.name}</h3>
-                  <p className="text-[#D4AF37] font-bold mt-1 text-sm">{Number(p.price).toLocaleString('fr-SN')} FCFA</p>
-                  <p className="text-gray-600 text-xs mt-0.5">{p.vendor_name}</p>
-                </div>
-              </Link>
-            ))}
+            {result.results.map((product) => <ProductResultCard key={product.id} product={product} />)}
           </div>
 
-          {/* Pagination */}
-          {result.total_pages > 1 && (
-            <div className="flex items-center justify-center gap-1 mt-10">
-              <button onClick={() => setPage(page - 1)} disabled={!result.has_prev}
-                className="p-2 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white disabled:opacity-30 transition"
+          {result.has_next && (
+            <div className="flex justify-center mt-10">
+              <button
+                type="button"
+                onClick={() => load(result.next_cursor, true)}
+                disabled={loadingMore}
+                className="px-5 py-2.5 border border-[#2a2a3a] text-gray-300 hover:text-white hover:border-[#D4AF37] rounded-lg transition disabled:opacity-50"
               >
-                <FiChevronLeft size={16} />
-              </button>
-              {Array.from({ length: result.total_pages }, (_, i) => i + 1)
-                .filter((p) => Math.abs(p - page) <= 2)
-                .map((p) => (
-                  <button key={p} onClick={() => setPage(p)}
-                    className={`w-9 h-9 rounded-lg text-sm font-medium transition ${p === page ? 'bg-[#D4AF37] text-black' : 'border border-[#2a2a3a] text-gray-400 hover:text-white'}`}
-                  >
-                    {p}
-                  </button>
-                ))
-              }
-              <button onClick={() => setPage(page + 1)} disabled={!result.has_next}
-                className="p-2 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white disabled:opacity-30 transition"
-              >
-                <FiChevronRight size={16} />
+                {loadingMore ? 'Chargement...' : 'Voir plus'}
               </button>
             </div>
           )}

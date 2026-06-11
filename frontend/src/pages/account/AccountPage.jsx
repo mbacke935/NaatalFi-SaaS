@@ -78,15 +78,14 @@ function AccountPage() {
           <div>
             {orders.slice(0, 5).map((order) => {
               const cfg = STATUS_LABEL[order.status] || STATUS_LABEL.PENDING
+              const orderDate = new Date(order.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
               return (
                 <Link key={order.id} to={`/account/orders/${order.id}`}
                   className="flex items-center justify-between px-4 py-3 border-b border-[#2a2a3a] last:border-0 hover:bg-white/5 transition"
                 >
                   <div>
                     <span className="text-white text-sm font-medium">#{order.id}</span>
-                    <span className="text-gray-500 text-xs ml-2">
-                      {new Date(order.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                    </span>
+                    <span className="text-gray-500 text-xs ml-2">{orderDate}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-xs px-2 py-0.5 rounded font-medium ${cfg.cls}`}>{cfg.label}</span>

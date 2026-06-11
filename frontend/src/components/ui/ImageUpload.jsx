@@ -1,7 +1,13 @@
 import { useRef, useState } from 'react'
 import { FiUpload, FiX } from 'react-icons/fi'
 
-function ImageUpload({ currentUrl, onFile, label = 'Choisir une image', accept = 'image/jpeg,image/png,image/webp' }) {
+function ImageUpload({
+  currentUrl,
+  onFile,
+  label = 'Choisir une image',
+  accept = 'image/jpeg,image/png,image/webp',
+  previewClassName = 'rounded-xl',
+}) {
   const inputRef = useRef(null)
   const [preview, setPreview] = useState(currentUrl || null)
   const [dragging, setDragging] = useState(false)
@@ -34,7 +40,7 @@ function ImageUpload({ currentUrl, onFile, label = 'Choisir une image', accept =
           <img
             src={preview}
             alt="Aperçu"
-            className="w-32 h-32 object-cover rounded-xl border border-[#2a2a3a]"
+            className={`w-32 h-32 object-cover border border-[#2a2a3a] ${previewClassName}`}
           />
           <button
             type="button"
@@ -50,7 +56,7 @@ function ImageUpload({ currentUrl, onFile, label = 'Choisir une image', accept =
           onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
-          className={`w-32 h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition
+          className={`w-32 h-32 border-2 border-dashed ${previewClassName} flex flex-col items-center justify-center cursor-pointer transition
             ${dragging ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-[#2a2a3a] hover:border-[#D4AF37]'}`}
         >
           <FiUpload className="text-gray-500 mb-1" size={20} />

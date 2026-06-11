@@ -49,8 +49,8 @@ function AccountOrdersPage() {
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
           {orders.map((order) => {
             const cfg       = STATUS_CONFIG[order.status] || STATUS_CONFIG.PENDING
-            const itemCount = order.items?.reduce((s, i) => s + i.quantity, 0) ?? 0
-            const cover     = order.items?.[0]?.cover_image
+            const itemCount = order.item_count ?? 0
+            const cover     = order.cover_image ?? null
 
             return (
               <Link key={order.id} to={`/account/orders/${order.id}`}

@@ -1,22 +1,52 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiTrash2, FiMinus, FiPlus, FiShoppingCart, FiArrowRight } from 'react-icons/fi'
+import toast from 'react-hot-toast'
+import { FiTrash2, FiMinus, FiPlus, FiShoppingCart, FiArrowRight, FiAlertCircle } from 'react-icons/fi'
 import useCartStore from '../../store/cartStore'
+import { validateCart } from '../../services/orders'
 import { useMeta } from '../../hooks/useMeta'
 
 function CartPage() {
   useMeta({ title: 'Mon panier' })
   const navigate = useNavigate()
 
-  const items         = useCartStore((s) => s.items)
-  const removeItem    = useCartStore((s) => s.removeItem)
+  const items          = useCartStore((s) => s.items)
+  const removeItem     = useCartStore((s) => s.removeItem)
   const updateQuantity = useCartStore((s) => s.updateQuantity)
-  const totalPrice    = useCartStore((s) => s.totalPrice)
-  const byVendor      = useCartStore((s) => s.byVendor)
-  const countItems    = useCartStore((s) => s.countItems)
+  const totalPrice     = useCartStore((s) => s.totalPrice)
+  const byVendor       = useCartStore((s) => s.byVendor)
+  const countItems     = useCartStore((s) => s.countItems)
 
   const total  = totalPrice()
   const count  = countItems()
   const groups = byVendor()
+
+  const [validating,   setValidating]   = useState(false)
+  const [stockErrors,  setStockErrors]  = useState([])
+
+  const handleCheckout = async () => {
+    setStockErrors([])
+    setValidating(true)
+    try {
+      const payload = items.map((i) => ({
+        product_id: i.product_id,
+        variant_id: i.variant_id ?? null,
+        quantity:   i.quantity,
+      }))
+      await validateCart(payload)
+      navigate('/checkout')
+    } catch (err) {
+      const errors = err.response?.data?.errors
+      if (errors?.length) {
+        setStockErrors(errors)
+        toast.error('Certains articles ne sont plus disponibles.')
+      } else {
+        toast.error('Erreur lors de la validation du panier.')
+      }
+    } finally {
+      setValidating(false)
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -42,6 +72,23 @@ function CartPage() {
         Mon panier <span className="text-gray-500 font-normal text-base">({count} article{count !== 1 ? 's' : ''})</span>
       </h1>
 
+      {/* Erreurs de stock */}
+      {stockErrors.length > 0 && (
+        <div className="mb-5 bg-red-900/20 border border-red-500/30 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <FiAlertCircle size={16} className="text-red-400" />
+            <p className="text-red-400 text-sm font-medium">Articles insuffisants en stock :</p>
+          </div>
+          <ul className="space-y-1">
+            {stockErrors.map((e, i) => (
+              <li key={i} className="text-red-300 text-xs">
+                {e.product_name} ({e.variant_label}) — demandé : {e.requested}, disponible : {e.available}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Items */}
         <div className="flex-1 space-y-6">
@@ -59,64 +106,74 @@ function CartPage() {
                 </span>
               </div>
 
-              {group.items.map((item) => (
-                <div
-                  key={`${item.product_id}-${item.variant_id ?? 'x'}`}
-                  className="flex items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0"
-                >
-                  {/* Image */}
-                  <Link to={`/marketplace/${item.product_slug}`} className="flex-shrink-0">
-                    <div className="w-16 h-16 rounded-lg bg-[#2a2a3a] overflow-hidden">
-                      {item.cover_image ? (
-                        <img src={item.cover_image} alt={item.product_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-700 text-xl">📦</div>
+              {group.items.map((item) => {
+                const hasStockError = stockErrors.some(
+                  (e) => e.product_id === item.product_id && e.variant_id === item.variant_id
+                )
+                return (
+                  <div
+                    key={`${item.product_id}-${item.variant_id ?? 'x'}`}
+                    className={`flex items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0 ${hasStockError ? 'bg-red-900/10' : ''}`}
+                  >
+                    {/* Image */}
+                    <Link to={`/marketplace/${item.product_slug}`} className="flex-shrink-0">
+                      <div className="w-16 h-16 rounded-lg bg-[#2a2a3a] overflow-hidden">
+                        {item.cover_image ? (
+                          <img src={item.cover_image} alt={item.product_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-700 text-xl">📦</div>
+                        )}
+                      </div>
+                    </Link>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        to={`/marketplace/${item.product_slug}`}
+                        className="text-white text-sm font-medium hover:text-[#D4AF37] transition line-clamp-1"
+                      >
+                        {item.product_name}
+                      </Link>
+                      {item.variant_label && (
+                        <p className="text-gray-500 text-xs mt-0.5">{item.variant_label}</p>
+                      )}
+                      <p className="text-[#D4AF37] font-bold text-sm mt-1">
+                        {(item.unit_price * item.quantity).toLocaleString('fr-SN')} FCFA
+                      </p>
+                      {hasStockError && (
+                        <p className="text-red-400 text-xs mt-0.5 flex items-center gap-1">
+                          <FiAlertCircle size={10} /> Stock insuffisant
+                        </p>
                       )}
                     </div>
-                  </Link>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      to={`/marketplace/${item.product_slug}`}
-                      className="text-white text-sm font-medium hover:text-[#D4AF37] transition line-clamp-1"
-                    >
-                      {item.product_name}
-                    </Link>
-                    {item.variant_label && (
-                      <p className="text-gray-500 text-xs mt-0.5">{item.variant_label}</p>
-                    )}
-                    <p className="text-[#D4AF37] font-bold text-sm mt-1">
-                      {(item.unit_price * item.quantity).toLocaleString('fr-SN')} FCFA
-                    </p>
-                  </div>
+                    {/* Quantity */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity - 1)}
+                        className="w-7 h-7 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white hover:border-gray-500 transition flex items-center justify-center"
+                      >
+                        <FiMinus size={12} />
+                      </button>
+                      <span className="text-white text-sm w-5 text-center">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity + 1)}
+                        className="w-7 h-7 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white hover:border-gray-500 transition flex items-center justify-center"
+                      >
+                        <FiPlus size={12} />
+                      </button>
+                    </div>
 
-                  {/* Quantity */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Delete */}
                     <button
-                      onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity - 1)}
-                      className="w-7 h-7 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white hover:border-gray-500 transition flex items-center justify-center"
+                      onClick={() => removeItem(item.product_id, item.variant_id)}
+                      className="text-gray-600 hover:text-red-400 transition flex-shrink-0"
                     >
-                      <FiMinus size={12} />
-                    </button>
-                    <span className="text-white text-sm w-5 text-center">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity + 1)}
-                      className="w-7 h-7 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white hover:border-gray-500 transition flex items-center justify-center"
-                    >
-                      <FiPlus size={12} />
+                      <FiTrash2 size={16} />
                     </button>
                   </div>
-
-                  {/* Delete */}
-                  <button
-                    onClick={() => removeItem(item.product_id, item.variant_id)}
-                    className="text-gray-600 hover:text-red-400 transition flex-shrink-0"
-                  >
-                    <FiTrash2 size={16} />
-                  </button>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ))}
         </div>
@@ -146,10 +203,11 @@ function CartPage() {
             </div>
 
             <button
-              onClick={() => navigate('/checkout')}
-              className="w-full bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
+              onClick={handleCheckout}
+              disabled={validating}
+              className="w-full bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              Commander <FiArrowRight size={16} />
+              {validating ? 'Vérification...' : <>Commander <FiArrowRight size={16} /></>}
             </button>
             <Link
               to="/marketplace"
