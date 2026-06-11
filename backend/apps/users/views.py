@@ -80,14 +80,22 @@ class LoginView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
 
         user = authenticate(
             request,
-            username=serializer.validated_data['email'],
-            password=serializer.validated_data['password'],
+            username=email,
+            password=password,
         )
 
         if not user:
+            existing_user = CustomUser.objects.filter(email__iexact=email).first()
+            if existing_user and existing_user.check_password(password) and not existing_user.is_active:
+                return Response(
+                    {"error": "Ce compte est desactive. Contactez un administrateur."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             return Response(
                 {"error": "Email ou mot de passe incorrect."},
                 status=status.HTTP_401_UNAUTHORIZED,

@@ -43,3 +43,37 @@ class AdminUserApiTests(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.is_active)
+
+
+class LoginApiTests(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            email='login@example.com',
+            password='password123',
+            first_name='Login',
+            last_name='User',
+            is_verified=True,
+        )
+
+    def test_login_accepts_case_insensitive_email(self):
+        response = self.client.post(
+            '/api/v1/auth/login/',
+            {'email': 'LOGIN@EXAMPLE.COM', 'password': 'password123'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('access', response.data)
+
+    def test_login_returns_clear_error_for_inactive_user(self):
+        self.user.is_active = False
+        self.user.save(update_fields=['is_active'])
+
+        response = self.client.post(
+            '/api/v1/auth/login/',
+            {'email': 'login@example.com', 'password': 'password123'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertIn('desactive', response.data['error'])
