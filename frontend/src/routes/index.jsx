@@ -61,7 +61,9 @@ import UsersPage from '../pages/admin/users/UsersPage'
 import AdminOrdersPage from '../pages/admin/orders/OrdersPage'
 import AdminProductsPage from '../pages/admin/products/ProductsPage'
 import PaymentsPage from '../pages/admin/payments/PaymentsPage'
+import WalletsPage from '../pages/admin/wallets/WalletsPage'
 import CategoriesPage from '../pages/admin/categories/CategoriesPage'
+import ReviewsPage from '../pages/admin/reviews/ReviewsPage'
 import AdminAnalyticsPage from '../pages/admin/analytics/AnalyticsPage'
 import AdminDisputesPage from '../pages/admin/disputes/DisputesPage'
 import AdminAdsPage from '../pages/admin/ads/AdsPage'
@@ -151,7 +153,9 @@ function AppRoutes() {
             <Route path="/admin/orders" element={<AdminOrdersPage />} />
             <Route path="/admin/products" element={<AdminProductsPage />} />
             <Route path="/admin/payments" element={<PaymentsPage />} />
+            <Route path="/admin/wallets" element={<WalletsPage />} />
             <Route path="/admin/categories" element={<CategoriesPage />} />
+            <Route path="/admin/reviews" element={<ReviewsPage />} />
             <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             <Route path="/admin/disputes" element={<AdminDisputesPage />} />
             <Route path="/admin/ads" element={<AdminAdsPage />} />

@@ -26,3 +26,16 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class PaymentInitiatedSerializer(PaymentSerializer):
     payment_url = serializers.URLField(read_only=True)
+
+
+class AdminPaymentSerializer(PaymentSerializer):
+    buyer_email = serializers.EmailField(source='buyer.email', read_only=True)
+    has_webhook = serializers.SerializerMethodField()
+
+    class Meta(PaymentSerializer.Meta):
+        fields = PaymentSerializer.Meta.fields + [
+            'buyer_email', 'has_webhook', 'raw_webhook', 'raw_response',
+        ]
+
+    def get_has_webhook(self, obj):
+        return bool(obj.raw_webhook)

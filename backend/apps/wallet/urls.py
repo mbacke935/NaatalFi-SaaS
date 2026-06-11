@@ -6,6 +6,7 @@ from .views import (
     AdminWalletListView,
     AdminApprovePayoutView,
     AdminRejectPayoutView,
+    AdminPayoutListView,
 )
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
 
     # Admin
     path('admin/',                         AdminWalletListView.as_view(),    name='admin-wallet-list'),
+    path('admin/payouts/',                  AdminPayoutListView.as_view(),    name='admin-payout-list'),
     path('admin/payouts/<int:pk>/approve/', AdminApprovePayoutView.as_view(), name='admin-payout-approve'),
     path('admin/payouts/<int:pk>/reject/',  AdminRejectPayoutView.as_view(),  name='admin-payout-reject'),
 ]

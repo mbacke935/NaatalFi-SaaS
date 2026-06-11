@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from apps.orders.models import Order
 from .models import Payment
-from .serializers import InitiatePaymentSerializer, PaymentSerializer
+from .serializers import InitiatePaymentSerializer, PaymentSerializer, AdminPaymentSerializer
 from .services import (
     PayTechError,
     request_paytech_payment,
@@ -16,6 +16,11 @@ from .services import (
 )
 from tasks.payments import send_payment_confirmation_email
 from tasks.wallet import credit_vendor_wallets_task
+
+
+class IsAdmin(IsAuthenticated):
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.role == 'ADMIN'
 
 
 class InitiatePaymentView(APIView):
@@ -78,6 +83,18 @@ class PaymentStatusView(APIView):
             return Response({'error': 'Accès refusé.'}, status=status.HTTP_403_FORBIDDEN)
 
         return Response(PaymentSerializer(payment).data)
+
+
+class AdminPaymentListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        payments = Payment.objects.select_related('order', 'buyer').order_by('-created_at')
+        if status_filter := request.query_params.get('status'):
+            payments = payments.filter(status=status_filter.upper())
+        if provider := request.query_params.get('provider'):
+            payments = payments.filter(provider=provider.upper())
+        return Response(AdminPaymentSerializer(payments[:100], many=True).data)
 
 
 class PayTechWebhookView(APIView):

@@ -11,6 +11,7 @@ from .serializers import (
     ProductVariantSerializer, ProductVariantWriteSerializer,
 )
 from apps.vendors.models import Vendor
+from apps.users.models import CustomUser
 from utils.storage import upload_to_supabase
 
 
@@ -335,3 +336,45 @@ class ProductVariantDetailView(APIView):
             return err
         variant.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ── Admin ─────────────────────────────────────────────────────────────
+
+class IsAdmin(IsAuthenticated):
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.role == CustomUser.Role.ADMIN
+
+
+class AdminProductListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        qs = (
+            Product.objects
+            .select_related('vendor', 'category')
+            .prefetch_related('images')
+            .order_by('-created_at')
+        )
+        if s := request.query_params.get('status'):
+            qs = qs.filter(status=s.upper())
+        if v := request.query_params.get('vendor'):
+            qs = qs.filter(vendor__id=v)
+        return Response(ProductListSerializer(qs[:100], many=True).data)
+
+
+class AdminProductDetailView(APIView):
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, pk):
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({'error': 'Produit introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+        allowed_fields = {'status'}
+        data = {key: value for key, value in request.data.items() if key in allowed_fields}
+        serializer = ProductWriteSerializer(product, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        product = Product.objects.select_related('vendor', 'category').prefetch_related('images').get(pk=pk)
+        return Response(ProductListSerializer(product).data)

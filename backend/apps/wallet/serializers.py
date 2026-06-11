@@ -68,3 +68,14 @@ class AdminWalletSerializer(serializers.ModelSerializer):
 
     def get_commission_rate(self, obj):
         return str(obj.vendor.plan.commission_rate) if obj.vendor.plan else '10.00'
+
+
+class AdminPayoutRequestSerializer(serializers.ModelSerializer):
+    vendor_name = serializers.CharField(source='wallet.vendor.name', read_only=True)
+    vendor_id   = serializers.IntegerField(source='wallet.vendor.id', read_only=True)
+
+    class Meta:
+        model  = PayoutRequest
+        fields = ['id', 'vendor_id', 'vendor_name', 'amount', 'status',
+                  'bank_info', 'admin_note', 'created_at', 'updated_at']
+        read_only_fields = fields

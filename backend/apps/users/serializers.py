@@ -43,3 +43,16 @@ class ResetPasswordSerializer(serializers.Serializer):
 class VerifyEmailSerializer(serializers.Serializer):
     uid   = serializers.CharField()
     token = serializers.CharField()
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = CustomUser
+        fields = ['id', 'email', 'full_name', 'first_name', 'last_name', 'phone',
+                  'role', 'is_verified', 'is_active', 'date_joined']
+        read_only_fields = fields
+
+    def get_full_name(self, obj):
+        return obj.get_full_name() or obj.email

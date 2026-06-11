@@ -17,6 +17,7 @@ from .serializers import (
 )
 from apps.products.models import Product, ProductVariant
 from apps.shipping.services import get_shipping_rate
+from apps.users.models import CustomUser
 from tasks.orders import send_order_confirmation_email, send_vendor_new_order_email
 
 
@@ -343,3 +344,58 @@ class VendorOrderStatusView(APIView):
         vo.save(update_fields=['status', 'updated_at'])
 
         return Response({'status': vo.status})
+
+
+# ── Admin ─────────────────────────────────────────────────────────────
+
+class IsAdmin(IsAuthenticated):
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.role == CustomUser.Role.ADMIN
+
+
+class AdminOrderListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        qs = (
+            VendorOrder.objects
+            .select_related('order__buyer', 'vendor')
+            .prefetch_related('items')
+            .order_by('-created_at')
+        )
+        if s := request.query_params.get('status'):
+            qs = qs.filter(status=s.upper())
+        return Response(VendorOrderWithBuyerSerializer(qs[:100], many=True).data)
+
+
+class AdminStatsView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        from django.db.models import Sum, Count
+        from apps.vendors.models import Vendor
+        from apps.wallet.models import PayoutRequest
+
+        paid_statuses = [
+            VendorOrder.Status.CONFIRMED, VendorOrder.Status.PROCESSING,
+            VendorOrder.Status.SHIPPED,   VendorOrder.Status.DELIVERED,
+        ]
+        gmv_agg = VendorOrder.objects.filter(status__in=paid_statuses).aggregate(
+            subtotal=Sum('subtotal'), shipping=Sum('shipping_cost')
+        )
+        gmv = (gmv_agg['subtotal'] or 0) + (gmv_agg['shipping'] or 0)
+
+        payout_agg = PayoutRequest.objects.filter(
+            status=PayoutRequest.Status.PENDING
+        ).aggregate(count=Count('id'), amount=Sum('amount'))
+
+        return Response({
+            'total_users':            CustomUser.objects.count(),
+            'total_vendors':          Vendor.objects.count(),
+            'pending_vendors':        Vendor.objects.filter(status=Vendor.Status.PENDING).count(),
+            'total_orders':           Order.objects.count(),
+            'paid_orders':            Order.objects.filter(status=Order.Status.PAID).count(),
+            'gmv':                    str(gmv),
+            'pending_payouts':        payout_agg['count'] or 0,
+            'pending_payouts_amount': str(payout_agg['amount'] or 0),
+        })

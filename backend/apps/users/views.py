@@ -171,3 +171,53 @@ class MeView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+# ── Admin ──────────────────────────────────────────────────────────────
+
+class IsAdmin(IsAuthenticated):
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.role == CustomUser.Role.ADMIN
+
+
+class AdminUserListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        from .serializers import AdminUserSerializer
+        qs = CustomUser.objects.order_by('-date_joined')
+        if role := request.query_params.get('role'):
+            qs = qs.filter(role=role.upper())
+        return Response(AdminUserSerializer(qs, many=True).data)
+
+
+class AdminUserDetailView(APIView):
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, pk):
+        from .serializers import AdminUserSerializer
+        try:
+            user = CustomUser.objects.get(pk=pk)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'Utilisateur introuvable.'}, status=404)
+
+        if user.pk == request.user.pk and request.data.get('is_active') is False:
+            return Response({'error': 'Impossible de desactiver votre propre compte.'}, status=400)
+
+        update_fields = []
+        if 'role' in request.data:
+            role = str(request.data['role']).upper()
+            if role not in CustomUser.Role.values:
+                return Response({'error': 'Role invalide.'}, status=400)
+            user.role = role
+            update_fields.append('role')
+        if 'is_active' in request.data:
+            user.is_active = bool(request.data['is_active'])
+            update_fields.append('is_active')
+        if 'is_verified' in request.data:
+            user.is_verified = bool(request.data['is_verified'])
+            update_fields.append('is_verified')
+        if update_fields:
+            update_fields.append('updated_at')
+            user.save(update_fields=update_fields)
+        return Response(AdminUserSerializer(user).data)

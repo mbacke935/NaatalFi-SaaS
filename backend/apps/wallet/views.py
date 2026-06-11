@@ -13,6 +13,7 @@ from .serializers import (
     PayoutRequestSerializer,
     CreatePayoutRequestSerializer,
     AdminWalletSerializer,
+    AdminPayoutRequestSerializer,
 )
 
 
@@ -181,3 +182,13 @@ class AdminRejectPayoutView(APIView):
         )
 
         return Response(PayoutRequestSerializer(payout).data)
+
+
+class AdminPayoutListView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        qs = PayoutRequest.objects.select_related('wallet__vendor').order_by('-created_at')
+        if s := request.query_params.get('status'):
+            qs = qs.filter(status=s.upper())
+        return Response(AdminPayoutRequestSerializer(qs, many=True).data)
