@@ -6,12 +6,15 @@ const useAuthStore = create(
     (set) => ({
       isAuthenticated: false,
       user: null,
-      role: null, // 'admin' | 'vendor' | 'customer'
+      role: null,
       token: null,
-      login: (user, token) =>
-        set({ isAuthenticated: true, user, role: user.role, token }),
+      refreshToken: null,
+      login: (user, token, refreshToken) =>
+        set({ isAuthenticated: true, user, role: user.role, token, refreshToken }),
+      setToken: (token) =>
+        set({ token }),
       logout: () =>
-        set({ isAuthenticated: false, user: null, role: null, token: null }),
+        set({ isAuthenticated: false, user: null, role: null, token: null, refreshToken: null }),
     }),
     { name: 'naatalfi-auth' }
   )

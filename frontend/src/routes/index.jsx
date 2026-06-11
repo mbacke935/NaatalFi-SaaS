@@ -19,6 +19,7 @@ import LoginPage from '../pages/auth/login/LoginPage'
 import RegisterPage from '../pages/auth/register/RegisterPage'
 import ForgotPasswordPage from '../pages/auth/forgotpassword/ForgotPasswordPage'
 import ResetPasswordPage from '../pages/auth/resetpassword/ResetPasswordPage'
+import VerifyEmailPage from '../pages/auth/verifyemail/VerifyEmailPage'
 
 // ── Dashboard vendeur ──────────────────────────────────────────────
 import DashboardPage from '../pages/dashboard/DashboardPage'
@@ -66,7 +67,8 @@ function AppRoutes() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email/:uid/:token" element={<VerifyEmailPage />} />
         </Route>
 
         {/* ── Vendeur (authentifié) ────────────────────────────────── */}
