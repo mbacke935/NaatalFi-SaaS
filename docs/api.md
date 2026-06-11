@@ -66,6 +66,15 @@ Créer un compte. Envoie un email de vérification.
 { "message": "Compte créé. Vérifiez votre email." }
 ```
 
+Si l'email SMTP échoue mais que le compte est créé, la réponse reste `201` avec un warning :
+
+```json
+{
+  "message": "Compte créé. Vérifiez votre email pour activer votre compte.",
+  "warning": "Compte créé, mais l'email de vérification n'a pas pu être envoyé. Vérifiez la configuration SMTP."
+}
+```
+
 ---
 
 ### `POST /auth/verify-email`

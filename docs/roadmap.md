@@ -318,9 +318,12 @@ Commande client (1 Order)
   4. Préparation du point d'extension wallet (crédit vendeur en Phase 10)
 
 **Livrables :**
-- ✅ Paiement réel fonctionnel (PayTech)
-- ✅ Webhook sécurisé
-- ✅ **Marketplace utilisable en production**
+- ✅ App `payments`, modèle `Payment`, initiation PayTech et statut paiement
+- ✅ Webhook PayTech implémenté (`/payments/webhook`) avec HMAC optionnel
+- ✅ Commande parent marquée `PAID` après confirmation webhook
+- ✅ Checkout frontend redirigé vers PayTech
+- ⏳ Test paiement réel PayTech à valider après configuration finale du compte PayTech
+- ⏳ Crédit wallet vendeur reporté en Phase 10
 
 ---
 

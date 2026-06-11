@@ -1,131 +1,106 @@
-# Compte Rendu — État du Projet NaatalFi SaaS
+# Compte Rendu — État Actuel NaatalFi
 
-**Date :** 10 juin 2026
-**Branche :** `main` — synchronisée avec `origin/main`
-**Commits :** 2
-
-| # | Hash | Message |
-|---|---|---|
-| 2 | `709ab36` | L'initialisation du frontend ; mise en place des routes et sa documentation |
-| 1 | `c75fc6b` | Initialisation de la structure et de la documentation NaatalFi |
+**Date :** 11 juin 2026  
+**État :** Phases 0 à 9 implémentées, déploiement Render/Vercel engagé.
 
 ---
 
-## Vue d'ensemble
+## Résumé
 
-Le projet est en phase d'**initialisation structurelle**. Les deux segments (frontend et backend) ont leur arborescence en place, mais aucune logique métier n'est encore implémentée. L'objectif atteint à ce stade est d'avoir une base solide et cohérente pour commencer le développement fonctionnel sans dette structurelle.
+La marketplace NaatalFi dispose maintenant d'un socle fonctionnel complet jusqu'à la Phase 9 :
+
+- authentification JWT avec vérification email et reset password ;
+- vendeurs, KYC admin, plans vendeur et upload logo Supabase ;
+- catégories hiérarchiques avec gestion admin et réordonnancement ;
+- produits, galerie, variantes et stock ;
+- marketplace publique avec recherche, cache Redis et pagination cursor-based ;
+- espace client : commandes, adresses, favoris, paramètres, avatar Supabase ;
+- panier persistant multi-vendeurs avec validation stock ;
+- commandes multi-vendeurs : `Order` parent + `VendorOrder` par vendeur ;
+- paiements PayTech : initiation, webhook, statut, passage commande à `PAID`.
 
 ---
 
-## 1. Frontend — React + Vite
+## Déploiement Actuel
 
-### Fait
-
-| Élément | Détail |
+| Élément | URL / État |
 | :--- | :--- |
-| App React initialisée | Vite + React 19, serveur de dev sur `127.0.0.1:3000` |
-| Routing complet | 31 routes configurées dans `src/routes/index.jsx`, organisées en 4 périmètres |
-| Guards | `PrivateRoute` (auth) et `AdminGuard` (rôle admin) opérationnels |
-| Layouts | `AuthLayout`, `DashboardLayout`, `AdminLayout` — coquilles `<Outlet />` prêtes |
-| Store auth | `src/store/authStore.js` — Zustand persistant (`isAuthenticated`, `user`, `role`, `token`) |
-| Pages avec contenu minimal | `HomePage`, `MarketplacePage`, `LoginPage`, `RegisterPage`, `ForgotPasswordPage` |
-| Squelettes de pages | 26 pages squelettes prêtes à implémenter (dashboard vendeur + admin) |
-| Structure services | `api.js`, `auth.js`, `products.js`, `orders.js` — fichiers créés, vides |
-| Dépendances installées | `node_modules` présent, toutes les dépendances disponibles |
+| Backend Render | `https://naatalfi-backend.onrender.com` |
+| API testée | `https://naatalfi-backend.onrender.com/api/v1/marketplace/categories/` |
+| Frontend Vercel | `https://naatalfi.vercel.app` |
+| Webhook PayTech | `https://naatalfi-backend.onrender.com/api/v1/payments/webhook/` |
+| Worker Celery | Non déployé pour l'instant |
+| Mode Celery temporaire | `CELERY_TASK_ALWAYS_EAGER=True` |
 
-### Reste à faire
-
-| Priorité | Élément | Détail |
-| :--- | :--- | :--- |
-| Haute | `src/services/api.js` | Instance Axios, base URL, intercepteur JWT, gestion erreurs 401 |
-| Haute | `src/services/auth.js` | login, register, logout, refresh token |
-| Haute | Pages d'authentification | Formulaires login / register / forgot-password |
-| Haute | `AuthLayout` | Mise en page centrée pour les pages auth |
-| Moyenne | Pages dashboard vendeur | 13 pages à implémenter (DashboardPage, products, orders, wallet…) |
-| Moyenne | `DashboardLayout` | Sidebar + header de navigation vendeur |
-| Moyenne | `src/services/products.js` | Appels catalogue produits |
-| Moyenne | `src/services/orders.js` | Appels commandes |
-| Basse | Pages admin | 11 pages admin à implémenter |
-| Basse | `AdminLayout` | Interface d'administration |
-| Basse | `src/components/` | Composants réutilisables (boutons, inputs, cartes…) |
-| Basse | `src/hooks/` | Custom hooks (`useForm`, `useFetch`…) |
-| Basse | `src/contexts/` | Contextes (thème, traductions) |
+Le worker Celery Render est volontairement reporté pour éviter un coût supplémentaire. Les tâches email s'exécutent donc dans le process web via `CELERY_TASK_ALWAYS_EAGER=True`.
 
 ---
 
-## 2. Backend — Django REST Framework
+## Backend
 
-### Fait
+| App | État | Détail |
+| :--- | :--- | :--- |
+| `users` | Terminé Phase 1 | Register, verify email, login/logout, refresh, forgot/reset password, `/auth/me` |
+| `vendors` | Terminé Phase 2 | Boutique, KYC admin, plans, upload logo, emails approbation/suspension |
+| `categories` | Terminé Phase 3 | Arbre, CRUD admin, image, reorder |
+| `products` | Terminé Phase 4 | CRUD vendeur, images, cover/reorder, variantes, stock |
+| `marketplace` | Terminé Phase 5 | Catalogue public, recherche, cache Redis, cursor pagination |
+| `account` | Terminé Phase 6 | Profil, avatar, commandes client, adresses, favoris |
+| `orders` | Terminé Phases 7-8 | Validation panier, création commande, split multi-vendeurs, statuts vendeur |
+| `payments` | Démarré/actif Phase 9 | PayTech initiation, webhook, statut, `Payment`, commande `PAID` |
 
-| Élément | Détail |
+---
+
+## Frontend
+
+| Zone | État |
 | :--- | :--- |
-| Structure Django initialisée | `manage.py`, `config/`, `core/`, `apps/`, `tasks/` présents |
-| Configuration Celery | `backend/config/celery.py` créé |
-| Constants | `roles.py`, `plans.py`, `order_status.py`, `payment_status.py` — fichiers créés |
-| Validators | `phone_validator.py`, `image_validator.py` — fichiers créés |
-| Exceptions | `core/exceptions/custom_exceptions.py` créé |
-| Apps initialisées | `apps/users/`, `apps/products/` — structure de dossiers créée |
-| Tasks | `emails.py`, `payments.py`, `orders.py`, `analytics.py`, `notifications.py` — fichiers créés |
-| Variables d'environnement | `.env` présent |
-
-### Reste à faire
-
-| Priorité | Élément | Détail |
-| :--- | :--- | :--- |
-| Bloquant | `requirements.txt` | Vide — dépendances Django à définir |
-| Bloquant | `config/settings.py` | Vide — configuration Django complète à écrire |
-| Bloquant | `config/urls.py` | Vide — routage API à déclarer |
-| Haute | `apps/users/` | Modèle utilisateur, sérializers, vues JWT, RBAC |
-| Haute | `apps/vendors/` | À créer — profils boutiques, KYC |
-| Haute | `apps/categories/` | À créer |
-| Haute | `apps/products/` | Modèles, variants, galerie, pricing |
-| Moyenne | `apps/orders/` & `apps/shipping/` | À créer — split-order multi-vendeur |
-| Moyenne | `apps/payments/` & `apps/wallet/` | À créer — intégration PayTech, webhooks |
-| Basse | `apps/reviews/`, `apps/ads/`, `apps/disputes/` | À créer |
-| Basse | `apps/analytics/`, `apps/notifications/` | À créer |
-| Basse | `core/middleware/` | Tenant middleware |
-| Basse | `core/permissions/` | `IsVendorOwner`, `IsOrderCustomer` |
+| Auth | Login, register, verify email, forgot/reset password |
+| Public | Home, marketplace, recherche, fiche produit, profil vendeur |
+| Panier/checkout | Panier persistant, validation stock, checkout PayTech |
+| Espace client | Dashboard client, commandes, détail commande, adresses, favoris, paramètres |
+| Dashboard vendeur | Boutique, produits, commandes reçues, changement statut |
+| Admin | Vendeurs/KYC, catégories, pages de structure pour modules futurs |
 
 ---
 
-## 3. Infrastructure & DevOps
+## Points Techniques Importants
 
-| Élément | État | Détail |
-| :--- | :--- | :--- |
-| `docker-compose.yml` | Créé | Contenu à vérifier / compléter (Django, Celery, Redis, PostgreSQL) |
-| `README.md` | Créé | Contenu à rédiger |
-| Git | Opérationnel | Dépôt distant configuré (`origin/main`) |
-| CI/CD | Non démarré | Pipeline à mettre en place |
-| Déploiement | Non démarré | Voir `docs/deployment.md` |
-
----
-
-## 4. Documentation
-
-| Fichier | État |
-| :--- | :--- |
-| `docs/architecture.md` | ✅ Rédigé — architecture technique globale |
-| `docs/roadmap.md` | ✅ Rédigé — 20 phases complètes |
-| `docs/business-rules.md` | ✅ Rédigé — rôles, commissions, wallet, trust score, litiges |
-| `docs/database.md` | ✅ Rédigé — 18 tables, champs, relations, index |
-| `docs/api.md` | ✅ Rédigé — tous les endpoints, payloads, codes retour |
-| `docs/deployment.md` | ✅ Rédigé — Vercel, Render, Supabase, CI/CD |
-| `docs/frontend-architecture.md` | ✅ Rédigé — structure fichiers frontend à jour |
-| `docs/frontend-routes.md` | ✅ Rédigé — toutes les routes documentées |
-| `docs/role-des-fichiers.pdf` | Présent |
-| `docs/compte-rendu.md` | Ce document |
+- `backend/.env` et `frontend/.env` sont ignorés par Git.
+- `gunicorn` et `whitenoise` sont ajoutés pour Render.
+- `CORS_ALLOWED_ORIGINS` est configurable par variable d'environnement.
+- `CELERY_TASK_ALWAYS_EAGER=True` permet de fonctionner sans worker Celery au début.
+- L'inscription ne bloque plus si l'envoi email SMTP échoue ; l'API renvoie un `warning`.
+- PayTech utilise `BACKEND_URL` pour construire automatiquement `ipn_url`.
 
 ---
 
-## Prochaines étapes recommandées
+## Variables Clés En Production
 
-L'ordre logique pour démarrer le développement fonctionnel :
+Backend Render :
 
+```env
+DEBUG=False
+ALLOWED_HOSTS=naatalfi-backend.onrender.com
+BACKEND_URL=https://naatalfi-backend.onrender.com
+FRONTEND_URL=https://naatalfi.vercel.app
+CORS_ALLOWED_ORIGINS=https://naatalfi.vercel.app
+CELERY_TASK_ALWAYS_EAGER=True
+PAYTECH_ENV=prod
 ```
-1. Backend  →  settings.py + requirements.txt  (débloque tout le reste)
-2. Backend  →  apps/users  (modèle + JWT)
-3. Frontend →  src/services/api.js  (Axios + intercepteurs)
-4. Frontend →  src/services/auth.js  +  pages Login / Register
-5. Backend  →  apps/vendors  +  apps/products
-6. Frontend →  DashboardLayout  +  pages dashboard vendeur
+
+Frontend Vercel :
+
+```env
+VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
 ```
+
+---
+
+## Prochaines Étapes Recommandées
+
+1. Stabiliser la vérification email en production avec Resend.
+2. Tester le flux complet inscription → login → panier → checkout PayTech.
+3. Finaliser la Phase 9 avec test webhook PayTech réel.
+4. Démarrer Phase 10 : wallet vendeur, commissions, transactions, demandes de retrait.
+5. Ajouter un worker Celery Render quand le volume ou les emails le justifient.

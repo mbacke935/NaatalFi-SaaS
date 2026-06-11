@@ -15,6 +15,21 @@
 
 ---
 
+## Déploiement actuel
+
+| Élément | Valeur |
+| :--- | :--- |
+| Backend Render | `https://naatalfi-backend.onrender.com` |
+| Frontend Vercel | `https://naatalfi.vercel.app` |
+| API de test | `https://naatalfi-backend.onrender.com/api/v1/marketplace/categories/` |
+| Webhook PayTech | `https://naatalfi-backend.onrender.com/api/v1/payments/webhook/` |
+| Worker Celery | Reporté |
+| Mode tâches async | `CELERY_TASK_ALWAYS_EAGER=True` |
+
+Tant que le worker Celery n'est pas déployé, les emails et tâches Celery s'exécutent directement dans le process web.
+
+---
+
 ## Variables d'environnement
 
 ### Backend (Render)
@@ -53,6 +68,26 @@
 | `VITE_API_URL` | URL de l'API backend | `https://api.naatalfi.com/api/v1` |
 | `VITE_SUPABASE_URL` | URL Supabase | `https://xxx.supabase.co` |
 | `VITE_SUPABASE_ANON_KEY` | Clé publique Supabase | `eyJxxxxx` |
+
+---
+
+### Valeurs actuelles Render/Vercel
+
+Backend Render :
+
+```env
+ALLOWED_HOSTS=naatalfi-backend.onrender.com
+BACKEND_URL=https://naatalfi-backend.onrender.com
+FRONTEND_URL=https://naatalfi.vercel.app
+CORS_ALLOWED_ORIGINS=https://naatalfi.vercel.app
+CELERY_TASK_ALWAYS_EAGER=True
+```
+
+Frontend Vercel :
+
+```env
+VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
+```
 
 ---
 
@@ -98,10 +133,18 @@ pip freeze > requirements.txt
 
 ### 4. Celery Worker sur Render
 
-Créer un second service **Background Worker** :
+Optionnel au début. Si `CELERY_TASK_ALWAYS_EAGER=True`, ce service peut être reporté.
+
+Quand le worker devient nécessaire, créer un second service **Background Worker** :
 - **Root Directory** : `backend`
-- **Start Command** : `celery -A config.celery worker --loglevel=info`
+- **Start Command** : `celery -A config worker --loglevel=info`
 - Mêmes variables d'environnement
+
+Puis passer sur le Web Service et le worker :
+
+```env
+CELERY_TASK_ALWAYS_EAGER=False
+```
 
 ---
 
@@ -130,14 +173,13 @@ Ou via l'interface Vercel :
 5. **Output Directory** : `dist`
 6. Ajouter les variables d'environnement
 
-### 3. Configurer le routeur React (SPA)
+### 3. Redéploiement Vercel
 
-Créer `frontend/public/vercel.json` :
-```json
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
-```
+Après modification d'une variable `VITE_*`, redeployer le frontend :
+
+1. Aller dans **Deployments**
+2. Ouvrir le menu du dernier déploiement
+3. Cliquer **Redeploy**
 
 ---
 
@@ -182,7 +224,7 @@ Supabase est déjà configuré depuis le développement local.
 - [ ] Commande multi-vendeurs
 - [ ] Paiement PayTech (mode production)
 - [ ] Webhook PayTech reçu et traité
-- [ ] Wallet vendeur crédité
+- [ ] Wallet vendeur crédité (Phase 10)
 - [ ] Demande de retrait approuvée
 - [ ] Avis après livraison
 - [ ] Litige ouvert et résolu
