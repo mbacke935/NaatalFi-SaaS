@@ -33,8 +33,9 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 | `products` | `apps/products/tests.py` | route admin produits, moderation statut |
 | `payments` | `apps/payments/tests.py` | liste admin paiements, statut webhook |
 | `notifications` | `apps/notifications/tests.py` | liste utilisateur, isolation, mark read, read-all |
+| `reviews` | `apps/reviews/tests.py` | avis verifies, anti-doublon, recalcul notes, suppression admin |
 
-Etat actuel : **15 tests OK**.
+Etat actuel : **18 tests OK**.
 
 ## Frontend
 

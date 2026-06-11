@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FiStar, FiShoppingCart, FiPackage, FiCheck } from 'react-icons/fi'
 import toast from 'react-hot-toast'
-import { getMarketplaceProduct } from '../../services/marketplace'
+import { getMarketplaceProduct, getProductReviews } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
 import useCartStore from '../../store/cartStore'
 
@@ -13,6 +13,9 @@ function ProductDetailPage() {
   const [notFound, setNotFound]= useState(false)
   const [activeImage, setActiveImage] = useState(0)
   const [selectedVariants, setSelectedVariants] = useState({})
+  const [reviews, setReviews] = useState([])
+  const addItem = useCartStore((s) => s.addItem)
+  const [added, setAdded] = useState(false)
 
   useMeta({
     title:       product?.name,
@@ -28,6 +31,9 @@ function ProductDetailPage() {
       .then(({ data }) => setProduct(data))
       .catch((err) => { if (err.response?.status === 404) setNotFound(true) })
       .finally(() => setLoading(false))
+    getProductReviews(slug)
+      .then(({ data }) => setReviews(Array.isArray(data) ? data : []))
+      .catch(() => setReviews([]))
   }, [slug])
 
   if (loading) {
@@ -53,9 +59,6 @@ function ProductDetailPage() {
       </div>
     )
   }
-
-  const addItem    = useCartStore((s) => s.addItem)
-  const [added, setAdded] = useState(false)
 
   const variantGroups = product.variants.reduce((acc, v) => {
     if (!acc[v.name]) acc[v.name] = []
@@ -143,6 +146,18 @@ function ProductDetailPage() {
           {product.category_name && <p className="text-sm text-gray-500 mb-2">{product.category_name}</p>}
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">{product.name}</h1>
 
+          {Number(product.total_reviews) > 0 && (
+            <div className="flex items-center gap-2 text-sm mb-4">
+              <div className="flex items-center gap-1 text-[#D4AF37]">
+                <FiStar size={15} fill="currentColor" />
+                <span className="font-semibold">{product.average_rating}</span>
+              </div>
+              <span className="text-gray-500">
+                {product.total_reviews} avis verifie{product.total_reviews > 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+
           <div className="flex items-baseline gap-3 mb-4">
             <span className="text-3xl font-bold text-[#D4AF37]">{finalPrice.toLocaleString('fr-SN')} FCFA</span>
             {totalDelta !== 0 && (
@@ -218,6 +233,34 @@ function ProductDetailPage() {
       </div>
 
       {/* Produits similaires */}
+      <section className="mb-14">
+        <h2 className="text-lg font-bold text-white mb-5">Avis clients</h2>
+        {reviews.length === 0 ? (
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-8 text-center">
+            <p className="text-sm text-gray-500">Aucun avis pour ce produit.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {reviews.map((review) => (
+              <article key={review.id} className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4">
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div>
+                    <p className="text-white font-medium">{review.author_name}</p>
+                    <p className="text-xs text-gray-500">{new Date(review.created_at).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  <div className="flex items-center gap-0.5 text-[#D4AF37]">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <FiStar key={index} size={14} fill={index < review.rating ? 'currentColor' : 'none'} />
+                    ))}
+                  </div>
+                </div>
+                {review.comment && <p className="text-sm text-gray-400">{review.comment}</p>}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
       {product.related?.length > 0 && (
         <section>
           <h2 className="text-lg font-bold text-white mb-5">Produits similaires</h2>

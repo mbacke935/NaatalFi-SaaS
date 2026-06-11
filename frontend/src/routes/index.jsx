@@ -29,6 +29,7 @@ import AccountOrderDetailPage from '../pages/account/AccountOrderDetailPage'
 import AccountAddressesPage   from '../pages/account/AccountAddressesPage'
 import AccountFavoritesPage   from '../pages/account/AccountFavoritesPage'
 import AccountSettingsPage    from '../pages/account/AccountSettingsPage'
+import AccountReviewsPage     from '../pages/account/AccountReviewsPage'
 
 // ── Pages d'authentification ───────────────────────────────────────
 import LoginPage from '../pages/auth/login/LoginPage'
@@ -109,6 +110,7 @@ function AppRoutes() {
               <Route path="/account/orders/:id"        element={<AccountOrderDetailPage />} />
               <Route path="/account/addresses"         element={<AccountAddressesPage />} />
               <Route path="/account/favorites"         element={<AccountFavoritesPage />} />
+              <Route path="/account/reviews"           element={<AccountReviewsPage />} />
               <Route path="/account/settings"          element={<AccountSettingsPage />} />
             </Route>
           </Route>

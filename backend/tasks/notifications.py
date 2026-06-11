@@ -25,21 +25,20 @@ def create_notification_task(user_id, type, message, title='', link_url=''):
 def calculate_trust_score(vendor_id=None, product_id=None):
     from apps.products.models import Product
     from apps.vendors.models import Vendor
+    from apps.reviews.services import recalculate_product_rating, recalculate_vendor_trust_score
 
     updated = {'vendors': 0, 'products': 0}
 
     if vendor_id:
         vendor = Vendor.objects.filter(pk=vendor_id).first()
         if vendor:
-            products = Product.objects.filter(vendor=vendor)
-            if products.exists():
-                average = sum(float(product.trust_score) for product in products) / products.count()
-                vendor.trust_score = round(average, 1)
-                vendor.save(update_fields=['trust_score'])
-                updated['vendors'] = 1
+            recalculate_vendor_trust_score(vendor)
+            updated['vendors'] = 1
 
     if product_id:
-        # Review/dispute weighted product scoring is introduced in later phases.
-        updated['products'] = Product.objects.filter(pk=product_id).count()
+        product = Product.objects.filter(pk=product_id).first()
+        if product:
+            recalculate_product_rating(product)
+            updated['products'] = 1
 
     return updated

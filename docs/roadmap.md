@@ -453,7 +453,7 @@ AprÃ¨s dÃ©lai (ex: 7 jours)
 - Endpoint `GET /notifications` + `PATCH /notifications/:id/read` + `POST /notifications/read-all`
 - Polling toutes les 30 secondes (WebSocket en Phase suivante si besoin)
 
-**Livrable :** âœ… Notifications in-app operationnelles, taches Celery consolidees. Les calculs complets `trust_score` et `expire_ad_campaigns` dependent encore des modeles des phases 15 et 16.
+**Livrable :** âœ… Notifications in-app operationnelles, taches Celery consolidees. Le `trust_score` est alimente par les avis depuis la phase 15 ; la ponderation litiges/delais depend encore de la phase 17.
 
 ---
 
@@ -683,7 +683,7 @@ Routes disponibles : `/admin`, `/admin/vendors`, `/admin/vendors/:id`, `/admin/u
 
 Controles reels disponibles : KYC vendeur, roles utilisateurs, activation/desactivation users, moderation produit, historique paiements, logs webhook, wallets et retraits.
 
-Limite connue : `reviews`, `ads` et `disputes` seront finalises avec les phases 15, 16 et 17.
+Limite connue : `ads` et `disputes` seront finalises avec les phases 16 et 17.
 
 ### Phase 14 - Celery complet + notifications
 
@@ -699,7 +699,27 @@ Backend disponible :
 Frontend disponible :
 - `/dashboard/notifications` consomme l'API reelle, marque lu/lu global et rafraichit toutes les 30 secondes.
 
-Limites connues : `calculate_trust_score` sera complete avec les avis/litiges des phases 15 et 17 ; `expire_ad_campaigns` deviendra effectif avec le modele `AdCampaign` en phase 16.
+Limites connues : `calculate_trust_score` integre les avis depuis la phase 15 et sera enrichi avec les litiges/delais en phase 17 ; `expire_ad_campaigns` deviendra effectif avec le modele `AdCampaign` en phase 16.
+
+### Phase 15 - Avis + trust score
+
+Etat : implemente.
+
+Backend disponible :
+- app `reviews` avec modele `Review` ;
+- `POST /reviews/` pour publier un avis verifie sur une commande vendeur `DELIVERED` ;
+- `GET /marketplace/products/:slug/reviews/` et `GET /marketplace/vendors/:slug/reviews/` publics ;
+- `GET /reviews/me/` pour l'espace client ;
+- `GET /reviews/admin/` et `DELETE /reviews/admin/:id/` pour la moderation ;
+- recalcul automatique de `Product.average_rating`, `Product.total_reviews`, `Product.trust_score` et `Vendor.trust_score`.
+
+Frontend disponible :
+- notes visibles sur les fiches produit et boutique ;
+- formulaire d'avis depuis le detail d'une commande livree ;
+- page `/account/reviews` ;
+- page `/admin/reviews` connectee a l'API reelle.
+
+Limite connue : la ponderation avec litiges/delais sera enrichie en phase 17 quand les litiges seront reels.
 
 ### Phase 19 - Tests
 
@@ -711,7 +731,7 @@ cd backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications.
+Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews.
 
-Resultat actuel : 15 tests OK.
+Resultat actuel : 18 tests OK.
 

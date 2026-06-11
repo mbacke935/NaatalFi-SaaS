@@ -68,6 +68,7 @@ Protégé par `<PrivateRoute>` + encapsulé dans `<AccountLayout>`.
 | `/account/orders/:id` | `AccountOrderDetailPage` | `src/pages/account/AccountOrderDetailPage.jsx` |
 | `/account/addresses` | `AccountAddressesPage` | `src/pages/account/AccountAddressesPage.jsx` |
 | `/account/favorites` | `AccountFavoritesPage` | `src/pages/account/AccountFavoritesPage.jsx` |
+| `/account/reviews` | `AccountReviewsPage` | `src/pages/account/AccountReviewsPage.jsx` |
 | `/account/settings` | `AccountSettingsPage` | `src/pages/account/AccountSettingsPage.jsx` |
 | `/orders` | Redirection | `/account/orders` |
 | `/orders/:id` | Redirection | `/account/orders/:id` |

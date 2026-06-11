@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FiStar, FiPackage, FiMapPin, FiPhone } from 'react-icons/fi'
-import { getMarketplaceVendor } from '../../services/marketplace'
+import { getMarketplaceVendor, getVendorReviews } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
 
 function VendorProfilePage() {
   const { slug }              = useParams()
   const [vendor, setVendor]   = useState(null)
+  const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -22,6 +23,9 @@ function VendorProfilePage() {
       .then(({ data }) => setVendor(data))
       .catch((err) => { if (err.response?.status === 404) setNotFound(true) })
       .finally(() => setLoading(false))
+    getVendorReviews(slug)
+      .then(({ data }) => setReviews(Array.isArray(data) ? data : []))
+      .catch(() => setReviews([]))
   }, [slug])
 
   if (loading) {
@@ -125,6 +129,34 @@ function VendorProfilePage() {
           ))}
         </div>
       )}
+
+      <section className="mt-10">
+        <h2 className="text-lg font-bold text-white mb-5">Avis clients</h2>
+        {reviews.length === 0 ? (
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-8 text-center">
+            <p className="text-sm text-gray-500">Aucun avis pour cette boutique.</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-3">
+            {reviews.slice(0, 8).map((review) => (
+              <article key={review.id} className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4">
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div>
+                    <p className="text-white font-medium">{review.author_name}</p>
+                    <p className="text-xs text-gray-500">{review.product_name}</p>
+                  </div>
+                  <div className="flex items-center gap-0.5 text-[#D4AF37]">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <FiStar key={index} size={14} fill={index < review.rating ? 'currentColor' : 'none'} />
+                    ))}
+                  </div>
+                </div>
+                {review.comment && <p className="text-sm text-gray-400 line-clamp-3">{review.comment}</p>}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }

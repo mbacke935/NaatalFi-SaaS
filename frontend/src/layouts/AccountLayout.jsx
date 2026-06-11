@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { FiUser, FiShoppingBag, FiMapPin, FiHeart, FiSettings } from 'react-icons/fi'
+import { FiUser, FiShoppingBag, FiMapPin, FiHeart, FiSettings, FiStar } from 'react-icons/fi'
 import useAuthStore from '../store/authStore'
 
 const NAV = [
@@ -7,6 +7,7 @@ const NAV = [
   { to: '/account/orders',    label: 'Mes commandes',   icon: FiShoppingBag, end: false },
   { to: '/account/addresses', label: 'Mes adresses',    icon: FiMapPin,      end: false },
   { to: '/account/favorites', label: 'Mes favoris',     icon: FiHeart,       end: false },
+  { to: '/account/reviews',   label: 'Mes avis',        icon: FiStar,        end: false },
   { to: '/account/settings',  label: 'Paramètres',      icon: FiSettings,    end: false },
 ]
 

@@ -592,12 +592,23 @@ Soumettre un avis. **Auth requis (acheteur vÃ©rifiÃ©).**
 **Body**
 ```json
 {
-  "vendor_order_id": "uuid",
-  "product_id": "uuid",
+  "vendor_order_id": 42,
+  "product_id": 15,
   "rating": 5,
   "comment": "Produit conforme, livraison rapide !"
 }
 ```
+
+Conditions :
+- la commande vendeur doit appartenir a l'utilisateur connecte ;
+- la commande vendeur doit etre `DELIVERED` ;
+- le produit doit faire partie de cette commande vendeur ;
+- un seul avis par produit et par commande vendeur.
+
+Effets secondaires :
+- `Product.average_rating` et `Product.total_reviews` sont recalcules ;
+- `Product.trust_score` est aligne sur la note moyenne ;
+- `Vendor.trust_score` est recalcule depuis les avis verifies.
 
 ### `GET /marketplace/products/:slug/reviews`
 Avis d'un produit. **Public.**
@@ -607,6 +618,12 @@ Avis d'un vendeur. **Public.**
 
 ### `DELETE /admin/reviews/:id`
 ModÃ©rer un avis. **Admin.**
+
+### `GET /reviews/me`
+Mes avis. **Auth requis.**
+
+### `GET /reviews/admin/`
+Liste des avis. **Admin.**
 
 ---
 

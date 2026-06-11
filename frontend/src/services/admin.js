@@ -7,3 +7,5 @@ export const getAdminOrders   = (params) => api.get('/orders/admin/', { params }
 export const getAdminProducts = (params) => api.get('/products/admin/', { params })
 export const updateAdminProduct = (id, data) => api.patch(`/products/admin/${id}/`, data)
 export const getAdminPayments = (params) => api.get('/payments/admin/', { params })
+export const getAdminReviews  = (params) => api.get('/reviews/admin/', { params })
+export const deleteAdminReview = (id) => api.delete(`/reviews/admin/${id}/`)

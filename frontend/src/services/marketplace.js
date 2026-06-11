@@ -27,3 +27,9 @@ export const searchMarketplace = (params) =>
 
 export const getFeaturedProducts = () =>
   pub.get('/marketplace/featured/')
+
+export const getProductReviews = (slug) =>
+  pub.get(`/marketplace/products/${slug}/reviews/`)
+
+export const getVendorReviews = (slug) =>
+  pub.get(`/marketplace/vendors/${slug}/reviews/`)

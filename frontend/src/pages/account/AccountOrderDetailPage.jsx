@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { FiArrowLeft, FiX, FiPackage } from 'react-icons/fi'
+import { FiArrowLeft, FiX, FiPackage, FiStar } from 'react-icons/fi'
 import { getAccountOrder } from '../../services/account'
 import { cancelOrder }     from '../../services/orders'
+import { createReview }    from '../../services/reviews'
 import { useMeta }         from '../../hooks/useMeta'
 
 const VENDOR_STATUS = {
@@ -50,6 +51,8 @@ function AccountOrderDetailPage() {
   const [loading,    setLoading]    = useState(true)
   const [notFound,   setNotFound]   = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [reviewForms, setReviewForms] = useState({})
+  const [reviewed, setReviewed] = useState({})
 
   useEffect(() => {
     setLoading(true)
@@ -76,6 +79,29 @@ function AccountOrderDetailPage() {
       toast.error(err.response?.data?.error || 'Impossible d\'annuler.')
     } finally {
       setCancelling(false)
+    }
+  }
+
+  const updateReviewForm = (itemId, patch) => {
+    setReviewForms((forms) => ({
+      ...forms,
+      [itemId]: { rating: 5, comment: '', ...(forms[itemId] || {}), ...patch },
+    }))
+  }
+
+  const handleReview = async (vendorOrder, item) => {
+    const form = reviewForms[item.id] || { rating: 5, comment: '' }
+    try {
+      await createReview({
+        vendor_order_id: vendorOrder.id,
+        product_id: item.product,
+        rating: form.rating,
+        comment: form.comment,
+      })
+      setReviewed((state) => ({ ...state, [item.id]: true }))
+      toast.success('Avis publie.')
+    } catch (err) {
+      toast.error(err.response?.data?.product_id?.[0] || err.response?.data?.vendor_order_id?.[0] || 'Impossible de publier cet avis.')
     }
   }
 
@@ -143,7 +169,7 @@ function AccountOrderDetailPage() {
 
             {/* Articles */}
             {vo.items?.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0">
+              <div key={item.id} className="flex items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0 flex-wrap">
                 <div className="w-12 h-12 rounded-lg bg-[#2a2a3a] flex-shrink-0 overflow-hidden">
                   {item.cover_image
                     ? <img src={item.cover_image} alt={item.product_name} className="w-full h-full object-cover" />
@@ -160,6 +186,40 @@ function AccountOrderDetailPage() {
                 <p className="text-white text-sm font-medium whitespace-nowrap">
                   {Number(item.subtotal).toLocaleString('fr-SN')} FCFA
                 </p>
+                {vo.status === 'DELIVERED' && item.product && !reviewed[item.id] && (
+                  <div className="w-full sm:w-80 bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg p-3">
+                    <div className="flex items-center gap-1 mb-2">
+                      {Array.from({ length: 5 }).map((_, index) => {
+                        const value = reviewForms[item.id]?.rating || 5
+                        return (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => updateReviewForm(item.id, { rating: index + 1 })}
+                            className="text-[#D4AF37]"
+                            aria-label={`${index + 1} etoile`}
+                          >
+                            <FiStar size={16} fill={index < value ? 'currentColor' : 'none'} />
+                          </button>
+                        )
+                      })}
+                    </div>
+                    <textarea
+                      value={reviewForms[item.id]?.comment || ''}
+                      onChange={(event) => updateReviewForm(item.id, { comment: event.target.value })}
+                      placeholder="Votre avis"
+                      rows={2}
+                      className="w-full bg-[#16161E] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleReview(vo, item)}
+                      className="mt-2 px-3 py-2 rounded-lg bg-[#D4AF37] text-black text-xs font-semibold"
+                    >
+                      Publier
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
 

@@ -22,6 +22,8 @@ class Product(models.Model):
     price       = models.DecimalField(max_digits=12, decimal_places=2)
     status      = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
     trust_score = models.FloatField(default=0.0)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    total_reviews = models.PositiveIntegerField(default=0)
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
 
