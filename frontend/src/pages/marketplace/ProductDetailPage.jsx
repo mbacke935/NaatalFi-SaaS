@@ -58,10 +58,15 @@ function ProductDetailPage() {
     return acc
   }, {})
 
-  const selectedVariant = product.variants.find((v) =>
-    Object.entries(selectedVariants).every(([name, val]) => v.name === name && v.value === val)
-  )
-  const finalPrice = Number(product.price) + (selectedVariant ? Number(selectedVariant.price_delta) : 0)
+  const getVariantForType = (typeName) =>
+    product.variants.find((v) => v.name === typeName && v.value === selectedVariants[typeName])
+
+  const totalDelta = Object.keys(selectedVariants).reduce((sum, name) => {
+    const v = getVariantForType(name)
+    return sum + (v ? Number(v.price_delta) : 0)
+  }, 0)
+  const finalPrice = Number(product.price) + totalDelta
+  const selectedVariantObjects = Object.keys(selectedVariants).map(getVariantForType).filter(Boolean)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -70,7 +75,7 @@ function ProductDetailPage() {
         <Link to="/marketplace" className="hover:text-white transition">Marketplace</Link>
         {product.category_name && (
           <><span>/</span>
-          <Link to={`/marketplace?category=${product.category}`} className="hover:text-white transition">
+          <Link to={`/marketplace?category=${product.category_slug}`} className="hover:text-white transition">
             {product.category_name}
           </Link></>
         )}
@@ -108,7 +113,7 @@ function ProductDetailPage() {
 
           <div className="flex items-baseline gap-3 mb-4">
             <span className="text-3xl font-bold text-[#D4AF37]">{finalPrice.toLocaleString('fr-SN')} FCFA</span>
-            {selectedVariant && Number(selectedVariant.price_delta) !== 0 && (
+            {totalDelta !== 0 && (
               <span className="text-sm text-gray-500 line-through">{Number(product.price).toLocaleString('fr-SN')} FCFA</span>
             )}
           </div>
@@ -142,9 +147,11 @@ function ProductDetailPage() {
             </div>
           ))}
 
-          {selectedVariant && (
-            <p className={`text-sm mb-4 ${selectedVariant.stock > 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {selectedVariant.stock > 0 ? `${selectedVariant.stock} en stock` : 'Rupture de stock'}
+          {selectedVariantObjects.length > 0 && (
+            <p className={`text-sm mb-4 ${selectedVariantObjects.some((v) => v.stock === 0) ? 'text-red-400' : 'text-green-400'}`}>
+              {selectedVariantObjects.some((v) => v.stock === 0)
+                ? 'Rupture de stock'
+                : `${Math.min(...selectedVariantObjects.map((v) => v.stock))} en stock`}
             </p>
           )}
 
@@ -156,11 +163,11 @@ function ProductDetailPage() {
           </button>
 
           {/* Vendor card */}
-          <Link to={`/vendors/${product.vendor_name ? encodeURIComponent(product.vendor_name) : ''}`}
+          <Link to={`/vendors/${product.vendor_slug || ''}`}
             className="flex items-center gap-3 p-4 bg-[#16161E] border border-[#2a2a3a] rounded-xl hover:border-[#D4AF37]/40 transition"
           >
             <div className="w-10 h-10 rounded-lg bg-[#2a2a3a] flex-shrink-0 overflow-hidden">
-              {product.vendor?.logo && <img src={product.vendor.logo} alt="" className="w-full h-full object-cover" />}
+              {product.vendor_logo && <img src={product.vendor_logo} alt="" className="w-full h-full object-cover" />}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-medium text-sm">{product.vendor_name}</p>

@@ -38,13 +38,17 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     images        = ProductImageSerializer(many=True, read_only=True)
     variants      = ProductVariantSerializer(many=True, read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True, default=None)
+    category_slug = serializers.CharField(source='category.slug', read_only=True, default=None)
     vendor_name   = serializers.CharField(source='vendor.name', read_only=True)
+    vendor_slug   = serializers.CharField(source='vendor.slug', read_only=True)
+    vendor_logo   = serializers.CharField(source='vendor.logo', read_only=True, default=None)
 
     class Meta:
         model  = Product
         fields = [
             'id', 'name', 'slug', 'description', 'price', 'status', 'trust_score',
-            'category', 'category_name', 'vendor_name',
+            'category', 'category_name', 'category_slug',
+            'vendor_name', 'vendor_slug', 'vendor_logo',
             'images', 'variants', 'created_at', 'updated_at',
         ]
 
