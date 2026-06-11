@@ -5,7 +5,7 @@ from .models import Category
 class CategoryChildSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Category
-        fields = ['id', 'name', 'slug', 'image', 'order', 'is_active']
+        fields = ['id', 'parent_id', 'name', 'slug', 'image', 'order', 'is_active']
 
 
 class CategoryTreeSerializer(serializers.ModelSerializer):
