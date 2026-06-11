@@ -6,6 +6,8 @@ from django.core.mail import send_mail
 @shared_task
 def send_payment_confirmation_email(payment_id):
     from apps.payments.models import Payment
+    from apps.notifications.models import Notification
+    from apps.notifications.services import create_notification
 
     payment = Payment.objects.select_related('order', 'buyer').get(pk=payment_id)
     order_url = f"{settings.FRONTEND_URL}/account/orders/{payment.order_id}"
@@ -26,4 +28,11 @@ def send_payment_confirmation_email(payment_id):
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[payment.buyer.email],
         fail_silently=False,
+    )
+    create_notification(
+        user=payment.buyer,
+        type=Notification.Type.PAYMENT,
+        title=f"Paiement confirme #{payment.reference}",
+        message=f"Votre paiement de {payment.amount} {payment.currency} a ete confirme.",
+        link_url=f"/account/orders/{payment.order_id}",
     )

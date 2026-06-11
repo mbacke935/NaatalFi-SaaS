@@ -43,6 +43,7 @@ LOCAL_APPS = [
     'apps.payments',
     'apps.wallet',
     'apps.shipping',
+    'apps.notifications',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -166,6 +167,14 @@ CELERY_BEAT_SCHEDULE     = {
         'task': 'tasks.wallet.release_pending_balance_task',
         'schedule': crontab(hour=2, minute=0),
         'kwargs': {'days': 7},
+    },
+    'aggregate-daily-analytics': {
+        'task': 'tasks.analytics.aggregate_daily_analytics',
+        'schedule': crontab(hour=3, minute=0),
+    },
+    'expire-ad-campaigns-daily': {
+        'task': 'tasks.analytics.expire_ad_campaigns',
+        'schedule': crontab(hour=3, minute=30),
     },
 }
 

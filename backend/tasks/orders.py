@@ -6,6 +6,8 @@ from django.core.mail import send_mail
 @shared_task
 def send_order_confirmation_email(order_id):
     from apps.orders.models import Order
+    from apps.notifications.models import Notification
+    from apps.notifications.services import create_notification
 
     order = (
         Order.objects
@@ -43,11 +45,20 @@ def send_order_confirmation_email(order_id):
         recipient_list=[order.buyer.email],
         fail_silently=False,
     )
+    create_notification(
+        user=order.buyer,
+        type=Notification.Type.ORDER,
+        title=f"Commande #{order.id} creee",
+        message=f"Votre commande de {order.total} FCFA a bien ete enregistree.",
+        link_url=f"/account/orders/{order.id}",
+    )
 
 
 @shared_task
 def send_vendor_new_order_email(vendor_order_id):
     from apps.orders.models import VendorOrder
+    from apps.notifications.models import Notification
+    from apps.notifications.services import create_notification
 
     vendor_order = (
         VendorOrder.objects
@@ -84,4 +95,11 @@ def send_vendor_new_order_email(vendor_order_id):
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[vendor.user.email],
         fail_silently=False,
+    )
+    create_notification(
+        user=vendor.user,
+        type=Notification.Type.ORDER,
+        title=f"Nouvelle commande #{vendor_order.id}",
+        message=f"{vendor_order.items.count()} article(s), total vendeur {vendor_order.subtotal} FCFA.",
+        link_url=f"/dashboard/orders/{vendor_order.id}",
     )

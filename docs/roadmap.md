@@ -449,11 +449,11 @@ AprÃ¨s dÃ©lai (ex: 7 jours)
 | `expire_ad_campaigns` | Campagne pub terminÃ©e |
 
 ### Notifications in-app
-- ModÃ¨le `Notification` : `user`, `type`, `message`, `is_read`, `created_at`
-- Endpoint `GET /notifications` + `PATCH /notifications/:id/read`
+- ModÃ¨le `Notification` : `user`, `type`, `title`, `message`, `link_url`, `is_read`, `created_at`
+- Endpoint `GET /notifications` + `PATCH /notifications/:id/read` + `POST /notifications/read-all`
 - Polling toutes les 30 secondes (WebSocket en Phase suivante si besoin)
 
-**Livrable :** âœ… Toutes les tÃ¢ches async opÃ©rationnelles
+**Livrable :** âœ… Notifications in-app operationnelles, taches Celery consolidees. Les calculs complets `trust_score` et `expire_ad_campaigns` dependent encore des modeles des phases 15 et 16.
 
 ---
 
@@ -685,6 +685,22 @@ Controles reels disponibles : KYC vendeur, roles utilisateurs, activation/desact
 
 Limite connue : `reviews`, `ads` et `disputes` seront finalises avec les phases 15, 16 et 17.
 
+### Phase 14 - Celery complet + notifications
+
+Etat : demarree et fonctionnelle sur le socle actuel.
+
+Backend disponible :
+- app `notifications` avec modele `Notification` ;
+- endpoints `/notifications/`, `/notifications/:id/read/`, `/notifications/read-all/` ;
+- notifications creees pour commandes, nouvelles commandes vendeur, paiement confirme, KYC vendeur, retraits wallet et changements de statut commande ;
+- taches Celery `aggregate_daily_analytics`, `expire_ad_campaigns` et `calculate_trust_score` ajoutees ;
+- Celery Beat planifie `release_pending_balance_task`, `aggregate_daily_analytics` et `expire_ad_campaigns`.
+
+Frontend disponible :
+- `/dashboard/notifications` consomme l'API reelle, marque lu/lu global et rafraichit toutes les 30 secondes.
+
+Limites connues : `calculate_trust_score` sera complete avec les avis/litiges des phases 15 et 17 ; `expire_ad_campaigns` deviendra effectif avec le modele `AdCampaign` en phase 16.
+
 ### Phase 19 - Tests
 
 Premiers tests backend ajoutes avec `config.test_settings`.
@@ -695,7 +711,7 @@ cd backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle : wallet, shipping, users admin, products admin, payments admin.
+Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications.
 
-Resultat actuel : 11 tests OK.
+Resultat actuel : 15 tests OK.
 

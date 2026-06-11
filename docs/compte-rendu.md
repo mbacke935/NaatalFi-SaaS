@@ -1,7 +1,7 @@
 ﻿# Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 11 juin 2026  
-**Etat :** phases 0 a 13 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
+**Etat :** phases 0 a 14 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
 
 ---
 
@@ -22,6 +22,7 @@ La marketplace NaatalFi dispose maintenant d'un socle fonctionnel couvrant :
 - livraison : zones vendeur, tarifs par region et poids, estimation au checkout ;
 - dashboard vendeur Phase 12 : KPIs, produits, commandes, wallet, analytics, boutique, livraison, profil ;
 - dashboard admin Phase 13 : KPIs, vendeurs/KYC, users, produits, commandes, paiements, wallets, categories, analytics, pages reviews/ads/disputes pretes.
+- Phase 14 : notifications in-app, endpoints `/notifications`, polling frontend 30s, taches Celery consolidees.
 
 Les modules `reviews`, `ads` et `disputes` restent des surfaces UI/admin preparees, mais leur logique metier complete depend des phases 15, 16 et 17.
 
@@ -56,6 +57,7 @@ Le worker Celery Render est volontairement reporte pour eviter un cout supplemen
 | `payments` | Phases 9 + 13 | PayTech, webhook, statut, historique admin avec webhook |
 | `wallet` | Phase 10 + admin | Wallet, transactions, commission, retrait, approbation/rejet admin |
 | `shipping` | Phase 11 | Zones/tarifs vendeur, estimation region + poids, checkout |
+| `notifications` | Phase 14 | Modele Notification, liste utilisateur, mark read, read-all |
 
 ---
 
@@ -88,8 +90,9 @@ Couverture actuelle ajoutee :
 - `apps.users.tests` : admin update role/actif et protection auto-desactivation ;
 - `apps.products.tests` : route admin produits et moderation statut ;
 - `apps.payments.tests` : liste admin paiements avec statut webhook.
+- `apps.notifications.tests` : isolation utilisateur, mark read, read-all.
 
-Resultat actuel : **11 tests OK**.
+Resultat actuel : **15 tests OK**.
 
 ---
 
@@ -100,6 +103,7 @@ Resultat actuel : **11 tests OK**.
 - `gunicorn` et `whitenoise` sont ajoutes pour Render.
 - `CORS_ALLOWED_ORIGINS` est configurable par variable d'environnement.
 - `CELERY_TASK_ALWAYS_EAGER=True` permet de fonctionner sans worker Celery au debut.
+- Celery Beat declare `release_pending_balance_task`, `aggregate_daily_analytics` et `expire_ad_campaigns`.
 - PayTech utilise `BACKEND_URL` pour construire automatiquement `ipn_url`.
 - Routes critiques corrigees : `/products/admin/` et `/payments/admin/` sont declarees avant les routes dynamiques.
 
@@ -132,6 +136,7 @@ VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
 1. Redeployer Render + Vercel avec les phases 12-13.
 2. Relancer `python manage.py migrate` sur Render apres deploy.
 3. Tester les parcours admin : users, produits, paiements, wallets.
-4. Demarrer Phase 14 : Celery complet + notifications in-app.
-5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async et release wallet automatique.
+4. Appliquer la migration `notifications.0001_initial` en local et sur Render.
+5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async, release wallet automatique et cron Phase 14.
+6. Demarrer Phase 15 : avis + trust score dynamique.
 

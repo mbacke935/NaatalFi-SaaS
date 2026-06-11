@@ -665,7 +665,22 @@ RÃ©soudre un litige. **Admin.**
 
 ### `GET /notifications`
 Mes notifications. **Auth requis.**
-Query params : `?is_read=false&page=1`
+Query params : `?is_read=false` ou `?unread=true`.
+
+**Reponse 200**
+```json
+[
+  {
+    "id": 1,
+    "type": "ORDER",
+    "title": "Nouvelle commande #42",
+    "message": "2 article(s), total vendeur 25000.00 FCFA.",
+    "link_url": "/dashboard/orders/42",
+    "is_read": false,
+    "created_at": "2026-06-11T16:00:00Z"
+  }
+]
+```
 
 ### `PATCH /notifications/:id/read`
 Marquer comme lue. **Auth requis.**

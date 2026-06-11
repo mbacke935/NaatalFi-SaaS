@@ -18,6 +18,8 @@ from .serializers import (
 from apps.products.models import Product, ProductVariant
 from apps.shipping.services import get_shipping_rate
 from apps.users.models import CustomUser
+from apps.notifications.models import Notification
+from apps.notifications.services import create_notification
 from tasks.orders import send_order_confirmation_email, send_vendor_new_order_email
 
 
@@ -326,7 +328,7 @@ class VendorOrderStatusView(APIView):
             return Response({'error': 'Boutique introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            vo = VendorOrder.objects.select_for_update().get(pk=pk, vendor=vendor)
+            vo = VendorOrder.objects.select_for_update().select_related('order__buyer').get(pk=pk, vendor=vendor)
         except VendorOrder.DoesNotExist:
             return Response({'error': 'Commande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -342,6 +344,13 @@ class VendorOrderStatusView(APIView):
 
         vo.status = new_status
         vo.save(update_fields=['status', 'updated_at'])
+        create_notification(
+            user=vo.order.buyer,
+            type=Notification.Type.ORDER,
+            title=f"Commande vendeur #{vo.id} : {vo.status}",
+            message=f"Une partie de votre commande #{vo.order_id} est maintenant {vo.status}.",
+            link_url=f"/account/orders/{vo.order_id}",
+        )
 
         return Response({'status': vo.status})
 

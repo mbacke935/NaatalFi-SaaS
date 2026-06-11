@@ -6,6 +6,9 @@ from django.conf import settings
 @shared_task
 def send_vendor_approval_email(user_id):
     from apps.users.models import CustomUser
+    from apps.notifications.models import Notification
+    from apps.notifications.services import create_notification
+
     user = CustomUser.objects.get(id=user_id)
     send_mail(
         subject='Votre boutique a été approuvée — NaatalFi',
@@ -21,11 +24,21 @@ def send_vendor_approval_email(user_id):
         recipient_list=[user.email],
         fail_silently=False,
     )
+    create_notification(
+        user=user,
+        type=Notification.Type.VENDOR,
+        title="Boutique approuvee",
+        message="Votre boutique a ete approuvee. Vous pouvez publier vos produits.",
+        link_url="/dashboard",
+    )
 
 
 @shared_task
 def send_vendor_rejection_email(user_id, reason=''):
     from apps.users.models import CustomUser
+    from apps.notifications.models import Notification
+    from apps.notifications.services import create_notification
+
     user = CustomUser.objects.get(id=user_id)
     reason_text = f"\n\nMotif : {reason}" if reason else ''
     send_mail(
@@ -39,4 +52,11 @@ def send_vendor_rejection_email(user_id, reason=''):
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
         fail_silently=False,
+    )
+    create_notification(
+        user=user,
+        type=Notification.Type.VENDOR,
+        title="Boutique suspendue",
+        message=f"Votre boutique a ete suspendue.{reason_text}",
+        link_url="/dashboard/profile",
     )

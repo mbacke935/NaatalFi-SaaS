@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.users.models import CustomUser
+from apps.notifications.models import Notification
+from apps.notifications.services import create_notification
 from .models import Wallet, Transaction, PayoutRequest
 from .serializers import (
     WalletSerializer,
@@ -114,6 +116,15 @@ class PayoutRequestView(APIView):
             description=f"Demande de retrait #{payout.id}",
             reference=f"PAYOUT-{payout.id}",
         )
+        db_transaction.on_commit(
+            lambda payout_id=payout.id, payout_amount=amount, user=vendor.user: create_notification(
+                user=user,
+                type=Notification.Type.WALLET,
+                title=f"Retrait #{payout_id} demande",
+                message=f"Votre demande de retrait de {payout_amount} FCFA est en attente de validation.",
+                link_url="/dashboard/wallet",
+            )
+        )
 
         return Response(PayoutRequestSerializer(payout).data, status=status.HTTP_201_CREATED)
 
@@ -137,7 +148,7 @@ class AdminApprovePayoutView(APIView):
 
     def patch(self, request, pk):
         try:
-            payout = PayoutRequest.objects.select_related('wallet').get(pk=pk)
+            payout = PayoutRequest.objects.select_related('wallet__vendor__user').get(pk=pk)
         except PayoutRequest.DoesNotExist:
             return Response({'error': 'Demande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -147,6 +158,13 @@ class AdminApprovePayoutView(APIView):
         payout.status     = PayoutRequest.Status.APPROVED
         payout.admin_note = request.data.get('admin_note', '')
         payout.save(update_fields=['status', 'admin_note', 'updated_at'])
+        create_notification(
+            user=payout.wallet.vendor.user,
+            type=Notification.Type.WALLET,
+            title=f"Retrait #{payout.id} approuve",
+            message=f"Votre demande de retrait de {payout.amount} FCFA a ete approuvee.",
+            link_url="/dashboard/wallet",
+        )
 
         return Response(PayoutRequestSerializer(payout).data)
 
@@ -157,7 +175,7 @@ class AdminRejectPayoutView(APIView):
     @db_transaction.atomic
     def patch(self, request, pk):
         try:
-            payout = PayoutRequest.objects.select_related('wallet').select_for_update().get(pk=pk)
+            payout = PayoutRequest.objects.select_related('wallet__vendor__user').select_for_update().get(pk=pk)
         except PayoutRequest.DoesNotExist:
             return Response({'error': 'Demande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -179,6 +197,15 @@ class AdminRejectPayoutView(APIView):
             amount=payout.amount,
             description=f"Retrait #{payout.id} rejeté — montant restitué",
             reference=f"REJECT-PAYOUT-{payout.id}",
+        )
+        db_transaction.on_commit(
+            lambda payout_id=payout.id, amount=payout.amount, user=payout.wallet.vendor.user: create_notification(
+                user=user,
+                type=Notification.Type.WALLET,
+                title=f"Retrait #{payout_id} rejete",
+                message=f"Votre demande de retrait de {amount} FCFA a ete rejetee et le solde a ete restitue.",
+                link_url="/dashboard/wallet",
+            )
         )
 
         return Response(PayoutRequestSerializer(payout).data)

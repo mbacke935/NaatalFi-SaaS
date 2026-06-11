@@ -118,6 +118,8 @@ Redirigent vers `/login` si l'utilisateur n'est pas authentifié.
 | `/dashboard/notifications` | `NotificationsPage` | `src/pages/dashboard/notifications/NotificationsPage.jsx` |
 | `/dashboard/profile` | `ProfilePage` | `src/pages/dashboard/profile/ProfilePage.jsx` |
 
+La page `/dashboard/notifications` consomme l'API `/notifications/`, marque les notifications comme lues et rafraichit la liste toutes les 30 secondes.
+
 ---
 
 ## 5. Administration
