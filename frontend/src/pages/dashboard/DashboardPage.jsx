@@ -9,12 +9,12 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
 
 const statusLabel = {
   PENDING: 'En attente',
-  CONFIRMED: 'Confirmee',
-  PROCESSING: 'En preparation',
-  SHIPPED: 'Expediee',
-  DELIVERED: 'Livree',
-  CANCELLED: 'Annulee',
-  REFUNDED: 'Remboursee',
+  CONFIRMED: 'Confirmée',
+  PROCESSING: 'En préparation',
+  SHIPPED: 'Expédiée',
+  DELIVERED: 'Livrée',
+  CANCELLED: 'Annulée',
+  REFUNDED: 'Remboursée',
 }
 
 function DashboardPage() {
@@ -74,7 +74,7 @@ function DashboardPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-white">Tableau de bord</h1>
-          <p className="text-sm text-gray-500 mt-1">Vue operationnelle de votre boutique.</p>
+          <p className="text-sm text-gray-500 mt-1">Vue opérationnelle de votre boutique.</p>
         </div>
         <Link
           to="/dashboard/products/new"
@@ -103,7 +103,7 @@ function DashboardPage() {
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[#2a2a3a] flex items-center justify-between">
-            <h2 className="font-semibold text-white">Commandes recentes</h2>
+            <h2 className="font-semibold text-white">Commandes récentes</h2>
             <Link to="/dashboard/orders" className="text-xs text-[#D4AF37] hover:underline">Voir tout</Link>
           </div>
           {recentOrders.length === 0 ? (
@@ -135,7 +135,7 @@ function DashboardPage() {
               <div className="flex justify-between"><span className="text-gray-500">Disponible</span><span className="text-white font-semibold">{fmt(wallet?.available_balance)}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">En attente</span><span className="text-yellow-400 font-semibold">{fmt(wallet?.pending_balance)}</span></div>
             </div>
-            <Link to="/dashboard/wallet" className="block mt-4 text-xs text-[#D4AF37] hover:underline">Gerer le wallet</Link>
+            <Link to="/dashboard/wallet" className="block mt-4 text-xs text-[#D4AF37] hover:underline">Gérer le wallet</Link>
           </div>
 
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">

@@ -6,8 +6,8 @@ function AdsPage() {
     <div className="max-w-4xl">
       <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Publicites</h1>
-          <p className="text-sm text-gray-500 mt-1">Suivi des campagnes sponsorisees de votre boutique.</p>
+          <h1 className="text-2xl font-bold text-white">Publicités</h1>
+          <p className="text-sm text-gray-500 mt-1">Suivi des campagnes sponsorisées de votre boutique.</p>
         </div>
         <button
           disabled
@@ -21,7 +21,7 @@ function AdsPage() {
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         {[
           { label: 'Campagnes actives', value: 0 },
-          { label: 'Budget engage', value: '0 FCFA' },
+          { label: 'Budget engagé', value: '0 FCFA' },
           { label: 'Clics', value: 0 },
         ].map((item) => (
           <div key={item.label} className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
@@ -33,9 +33,9 @@ function AdsPage() {
 
       <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-12 text-center">
         <FiZap size={36} className="text-[#D4AF37] mx-auto mb-4" />
-        <h2 className="text-white font-semibold mb-2">Campagnes publicitaires a venir</h2>
+        <h2 className="text-white font-semibold mb-2">Campagnes publicitaires à venir</h2>
         <p className="text-sm text-gray-500 max-w-md mx-auto mb-5">
-          La page est prete dans le dashboard vendeur. La creation, le budget et la facturation par wallet seront branches avec le module publicite.
+          La page est prête dans le dashboard vendeur. La création, le budget et la facturation par wallet seront branchés avec le module publicité.
         </p>
         <Link to="/dashboard/analytics" className="inline-flex items-center gap-2 text-[#D4AF37] text-sm hover:underline">
           <FiBarChart2 size={15} />

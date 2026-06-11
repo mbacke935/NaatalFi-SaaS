@@ -30,7 +30,7 @@ function ProfilePage() {
         setAvatarFile(null)
       }
       setUser(nextUser)
-      toast.success('Profil mis a jour.')
+      toast.success('Profil mis à jour.')
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erreur lors de la sauvegarde.')
     } finally {
@@ -42,7 +42,7 @@ function ProfilePage() {
     <div className="max-w-3xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">Profil vendeur</h1>
-        <p className="text-sm text-gray-500 mt-1">Informations personnelles utilisees par votre compte vendeur.</p>
+        <p className="text-sm text-gray-500 mt-1">Informations personnelles utilisées par votre compte vendeur.</p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-5">
@@ -66,7 +66,7 @@ function ProfilePage() {
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Prenom</label>
+              <label className="block text-xs text-gray-500 mb-1">Prénom</label>
               <input value={form.first_name} onChange={set('first_name')} className={inputCls} />
             </div>
             <div>
@@ -90,8 +90,8 @@ function ProfilePage() {
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5 flex items-start gap-3">
           <FiShield className="text-green-400 mt-0.5" size={18} />
           <div>
-            <p className="text-sm text-white font-medium">Compte {user?.is_verified ? 'verifie' : 'non verifie'}</p>
-            <p className="text-xs text-gray-500 mt-1">Le role et l'email sont controles par le compte principal.</p>
+            <p className="text-sm text-white font-medium">Compte {user?.is_verified ? 'vérifié' : 'non vérifié'}</p>
+            <p className="text-xs text-gray-500 mt-1">Le rôle et l'email sont contrôlés par le compte principal.</p>
           </div>
         </div>
 

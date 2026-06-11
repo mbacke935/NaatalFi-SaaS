@@ -4,11 +4,11 @@ import { FiBell, FiCheckCircle, FiClock, FiShoppingBag, FiTruck } from 'react-ic
 import { getVendorOrders } from '../../../services/orders'
 
 const config = {
-  PENDING: { icon: FiClock, title: 'Commande a confirmer', tone: 'text-yellow-400' },
-  CONFIRMED: { icon: FiShoppingBag, title: 'Commande confirmee', tone: 'text-blue-400' },
-  PROCESSING: { icon: FiTruck, title: 'Commande en preparation', tone: 'text-purple-400' },
-  SHIPPED: { icon: FiTruck, title: 'Commande expediee', tone: 'text-indigo-400' },
-  DELIVERED: { icon: FiCheckCircle, title: 'Commande livree', tone: 'text-green-400' },
+  PENDING:    { icon: FiClock,         title: 'Commande à confirmer',   tone: 'text-yellow-400' },
+  CONFIRMED:  { icon: FiShoppingBag,   title: 'Commande confirmée',     tone: 'text-blue-400'   },
+  PROCESSING: { icon: FiTruck,         title: 'Commande en préparation', tone: 'text-purple-400' },
+  SHIPPED:    { icon: FiTruck,         title: 'Commande expédiée',      tone: 'text-indigo-400' },
+  DELIVERED:  { icon: FiCheckCircle,   title: 'Commande livrée',        tone: 'text-green-400'  },
 }
 
 function NotificationsPage() {
@@ -44,7 +44,7 @@ function NotificationsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Notifications</h1>
-          <p className="text-sm text-gray-500 mt-1">Evenements recents lies a vos commandes.</p>
+          <p className="text-sm text-gray-500 mt-1">Événements récents liés à vos commandes.</p>
         </div>
         <div className="w-10 h-10 bg-[#D4AF37]/10 rounded-xl flex items-center justify-center">
           <FiBell className="text-[#D4AF37]" size={20} />

@@ -4,6 +4,13 @@ import { getVendorOrders } from '../../../services/orders'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
 
+const fmtShort = (n) => {
+  if (!n) return '0'
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace('.0', '')}M`
+  if (n >= 1_000) return `${Math.round(n / 1_000)}k`
+  return Math.round(n).toString()
+}
+
 function startOfDay(date) {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
@@ -116,26 +123,47 @@ function AnalyticsPage() {
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
           <h2 className="font-semibold text-white mb-5">Revenus par jour</h2>
-          <div className="h-64 flex items-end gap-1">
-            {analytics.daily.map((day) => (
-              <div key={day.key} className="flex-1 min-w-0 h-full flex flex-col justify-end gap-2">
-                <div className="relative flex-1 flex items-end">
-                  <div
-                    className="w-full rounded-t bg-[#D4AF37]/80 hover:bg-[#D4AF37] transition"
-                    style={{ height: `${Math.max((day.revenue / maxRevenue) * 100, day.revenue ? 5 : 1)}%` }}
-                    title={`${day.label}: ${fmt(day.revenue)}`}
-                  />
-                </div>
-                <span className="text-[10px] text-gray-600 text-center truncate">{day.label}</span>
+
+          {/* Chart: Y-axis + bars */}
+          <div className="flex gap-3">
+            {/* Y-axis labels */}
+            <div className="w-10 flex flex-col justify-between items-end text-right pb-5 pt-0.5 flex-shrink-0">
+              <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue)}</span>
+              <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue * 0.5)}</span>
+              <span className="text-[10px] text-gray-500 leading-none">0</span>
+            </div>
+
+            {/* Bars area with grid lines */}
+            <div className="flex-1 relative">
+              {/* Horizontal grid lines */}
+              <div className="absolute inset-x-0 pointer-events-none" style={{ top: 0, bottom: '1.25rem' }}>
+                <div className="absolute top-0 inset-x-0 border-t border-[#2a2a3a]" />
+                <div className="absolute inset-x-0 border-t border-[#2a2a3a]" style={{ top: '50%' }} />
+                <div className="absolute bottom-0 inset-x-0 border-t border-[#2a2a3a]" />
               </div>
-            ))}
+
+              <div className="h-64 flex items-end gap-0.5">
+                {analytics.daily.map((day) => (
+                  <div key={day.key} className="flex-1 min-w-0 h-full flex flex-col justify-end gap-1.5">
+                    <div className="relative flex-1 flex items-end">
+                      <div
+                        className="w-full rounded-t bg-[#D4AF37]/80 hover:bg-[#D4AF37] transition"
+                        style={{ height: `${Math.max((day.revenue / maxRevenue) * 100, day.revenue ? 5 : 1)}%` }}
+                        title={`${day.label}: ${fmt(day.revenue)}`}
+                      />
+                    </div>
+                    <span className="text-[10px] text-gray-600 text-center truncate">{day.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
           <h2 className="font-semibold text-white mb-4">Top produits</h2>
           {analytics.topProducts.length === 0 ? (
-            <p className="text-sm text-gray-500">Pas encore de ventes sur cette periode.</p>
+            <p className="text-sm text-gray-500">Pas encore de ventes sur cette période.</p>
           ) : (
             <div className="space-y-4">
               {analytics.topProducts.map((product, index) => (

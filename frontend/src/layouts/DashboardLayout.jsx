@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   FiBarChart2,
   FiBell,
@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { to: '/dashboard/analytics', label: 'Analytics', icon: FiBarChart2 },
   { to: '/dashboard/shop', label: 'Boutique', icon: FiHome },
   { to: '/dashboard/delivery', label: 'Livraison', icon: FiTruck },
-  { to: '/dashboard/ads', label: 'Publicites', icon: FiZap },
+  { to: '/dashboard/ads', label: 'Publicités', icon: FiZap },
   { to: '/dashboard/disputes', label: 'Litiges', icon: FiMessageSquare },
   { to: '/dashboard/notifications', label: 'Notifications', icon: FiBell },
   { to: '/dashboard/profile', label: 'Profil', icon: FiUser },
@@ -36,6 +36,7 @@ const NAV_ITEMS = [
 function DashboardLayout() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
 
@@ -43,6 +44,15 @@ function DashboardLayout() {
     logout()
     navigate('/login')
   }
+
+  const currentPage = NAV_ITEMS.find((item) =>
+    item.end ? location.pathname === item.to : location.pathname.startsWith(item.to)
+  )
+
+  const userInitial = ((user?.first_name || user?.email || 'V')[0]).toUpperCase()
+  const userName = user?.first_name
+    ? `${user.first_name} ${user.last_name || ''}`.trim()
+    : user?.email
 
   const nav = (
     <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
@@ -72,32 +82,74 @@ function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-[#0B0B0F] text-white">
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-[#111118] border-r border-[#2a2a3a] flex-col">
+      {/* Sidebar desktop */}
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-[#111118] border-r border-[#2a2a3a] flex-col z-40">
         <Link to="/dashboard" className="h-16 px-5 flex items-center border-b border-[#2a2a3a]">
           <span className="text-lg font-bold tracking-wide">NaatalFi</span>
           <span className="ml-2 text-xs text-[#D4AF37]">vendeur</span>
         </Link>
         {nav}
         <div className="p-4 border-t border-[#2a2a3a]">
-          <p className="text-xs text-gray-500 mb-1">Connecte</p>
-          <p className="text-sm text-white truncate mb-3">{user?.email}</p>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-black text-sm font-bold flex-shrink-0">
+              {userInitial}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-500">Connecté</p>
+              <p className="text-xs text-white truncate">{user?.email}</p>
+            </div>
+          </div>
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition"
           >
             <FiLogOut size={15} />
-            Deconnexion
+            Déconnexion
           </button>
         </div>
       </aside>
 
-      <header className="lg:hidden sticky top-0 z-40 h-14 bg-[#111118] border-b border-[#2a2a3a] px-4 flex items-center justify-between">
-        <Link to="/dashboard" className="font-bold">NaatalFi <span className="text-[#D4AF37] text-xs">vendeur</span></Link>
-        <button onClick={() => setOpen(true)} className="p-2 text-gray-300 hover:text-white">
-          <FiMenu size={22} />
-        </button>
+      {/* Top header desktop — fixed, right of sidebar */}
+      <header className="hidden lg:flex fixed top-0 left-64 right-0 h-14 z-30 bg-[#111118] border-b border-[#2a2a3a] items-center justify-between px-6">
+        <p className="text-sm font-semibold text-white">
+          {currentPage?.label ?? 'Tableau de bord'}
+        </p>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/dashboard/notifications"
+            className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
+            aria-label="Notifications"
+          >
+            <FiBell size={19} />
+          </Link>
+          <Link
+            to="/dashboard/profile"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition"
+          >
+            <div className="w-7 h-7 rounded-full bg-[#D4AF37] flex items-center justify-center text-black text-xs font-bold">
+              {userInitial}
+            </div>
+            <span className="text-sm text-gray-300 max-w-[120px] truncate">{userName}</span>
+          </Link>
+        </div>
       </header>
 
+      {/* Mobile header */}
+      <header className="lg:hidden sticky top-0 z-40 h-14 bg-[#111118] border-b border-[#2a2a3a] px-4 flex items-center justify-between">
+        <Link to="/dashboard" className="font-bold">
+          NaatalFi <span className="text-[#D4AF37] text-xs">vendeur</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/dashboard/notifications" className="p-2 text-gray-400 hover:text-white">
+            <FiBell size={20} />
+          </Link>
+          <button onClick={() => setOpen(true)} className="p-2 text-gray-300 hover:text-white">
+            <FiMenu size={22} />
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile drawer */}
       {open && (
         <div className="lg:hidden fixed inset-0 z-50">
           <button className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} aria-label="Fermer" />
@@ -109,11 +161,27 @@ function DashboardLayout() {
               </button>
             </div>
             {nav}
+            <div className="p-4 border-t border-[#2a2a3a]">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center text-black text-sm font-bold flex-shrink-0">
+                  {userInitial}
+                </div>
+                <p className="text-xs text-white truncate">{user?.email}</p>
+              </div>
+              <button
+                onClick={() => { handleLogout(); setOpen(false) }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition"
+              >
+                <FiLogOut size={15} />
+                Déconnexion
+              </button>
+            </div>
           </aside>
         </div>
       )}
 
-      <main className="lg:pl-64">
+      {/* Main content — offset for sidebar + top header on desktop */}
+      <main className="lg:pl-64 lg:pt-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
           <Outlet />
         </div>
