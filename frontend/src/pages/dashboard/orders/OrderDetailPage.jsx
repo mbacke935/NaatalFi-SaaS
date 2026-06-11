@@ -144,9 +144,17 @@ function VendorOrderDetailPage() {
             </p>
           </div>
         ))}
-        <div className="px-4 py-3 flex justify-between text-sm font-semibold">
+        {Number(order.shipping_cost) > 0 && (
+          <div className="px-4 py-3 border-t border-[#2a2a3a] flex justify-between text-sm text-gray-400">
+            <span>Livraison</span>
+            <span>{Number(order.shipping_cost).toLocaleString('fr-SN')} FCFA</span>
+          </div>
+        )}
+        <div className="px-4 py-3 border-t border-[#2a2a3a] flex justify-between text-sm font-semibold">
           <span className="text-gray-400">Total</span>
-          <span className="text-[#D4AF37] text-base">{Number(order.total).toLocaleString('fr-SN')} FCFA</span>
+          <span className="text-[#D4AF37] text-base">
+            {(Number(order.subtotal ?? 0) + Number(order.shipping_cost ?? 0)).toLocaleString('fr-SN')} FCFA
+          </span>
         </div>
       </div>
     </div>

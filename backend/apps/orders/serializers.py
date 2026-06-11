@@ -40,12 +40,13 @@ class VendorOrderWithBuyerSerializer(serializers.ModelSerializer):
     buyer_email  = serializers.EmailField(source='order.buyer.email', read_only=True)
     delivery_address = serializers.CharField(source='order.delivery_address', read_only=True)
     notes        = serializers.CharField(source='order.notes', read_only=True)
+    total        = serializers.SerializerMethodField()
 
     class Meta:
         model  = VendorOrder
         fields = [
             'id', 'vendor_name', 'vendor_slug',
-            'status', 'subtotal', 'shipping_cost',
+            'status', 'subtotal', 'shipping_cost', 'total',
             'buyer_name', 'buyer_email',
             'delivery_address', 'notes',
             'items', 'created_at', 'updated_at',
@@ -53,6 +54,9 @@ class VendorOrderWithBuyerSerializer(serializers.ModelSerializer):
 
     def get_buyer_name(self, obj):
         return obj.order.buyer.get_full_name() or obj.order.buyer.email
+
+    def get_total(self, obj):
+        return obj.subtotal + obj.shipping_cost
 
 
 class OrderSerializer(serializers.ModelSerializer):

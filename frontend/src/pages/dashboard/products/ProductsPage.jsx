@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { FiPlus, FiEdit2, FiTrash2, FiImage, FiPackage } from 'react-icons/fi'
-import { getMyProducts, deleteProduct } from '../../../services/products'
+import { FiPlus, FiEdit2, FiTrash2, FiImage, FiPackage, FiToggleLeft, FiToggleRight } from 'react-icons/fi'
+import { getMyProducts, deleteProduct, updateProduct } from '../../../services/products'
 
 const STATUS_MAP = {
   DRAFT:        { label: 'Brouillon',          cls: 'bg-gray-700 text-gray-300' },
@@ -41,6 +41,17 @@ function ProductsPage() {
       load(tab)
     } catch (err) {
       toast.error(err.response?.data?.error || 'Impossible de supprimer.')
+    }
+  }
+
+  const handleToggleStatus = async (p) => {
+    const status = p.status === 'PUBLISHED' ? 'ARCHIVED' : 'PUBLISHED'
+    try {
+      await updateProduct(p.id, { status })
+      toast.success(status === 'PUBLISHED' ? 'Produit publie.' : 'Produit archive.')
+      load(tab)
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Impossible de modifier le statut.')
     }
   }
 
@@ -149,6 +160,13 @@ function ProductsPage() {
                     <td className="px-4 py-3 text-center text-gray-400">{p.variant_count}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition">
+                        <button
+                          onClick={() => handleToggleStatus(p)}
+                          className="text-gray-400 hover:text-green-400"
+                          title={p.status === 'PUBLISHED' ? 'Archiver' : 'Publier'}
+                        >
+                          {p.status === 'PUBLISHED' ? <FiToggleRight size={16} /> : <FiToggleLeft size={16} />}
+                        </button>
                         <button
                           onClick={() => navigate(`/dashboard/products/${p.id}/edit`)}
                           className="text-gray-400 hover:text-[#D4AF37]"
