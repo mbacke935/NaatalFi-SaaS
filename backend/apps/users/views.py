@@ -1,21 +1,25 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.conf import settings
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
 from .serializers import (
-    RegisterSerializer, LoginSerializer, UserSerializer,
-    ForgotPasswordSerializer, ResetPasswordSerializer, VerifyEmailSerializer,
+    ForgotPasswordSerializer,
+    LoginSerializer,
+    RegisterSerializer,
+    ResetPasswordSerializer,
+    UserSerializer,
+    VerifyEmailSerializer,
 )
 from .tokens import email_verification_token, password_reset_token
-from tasks.emails import send_verification_email, send_password_reset_email
+from tasks.emails import send_password_reset_email, send_verification_email
 
 
 class RegisterView(APIView):
@@ -26,16 +30,23 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        uid   = urlsafe_base64_encode(force_bytes(user.pk))
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = email_verification_token.make_token(user)
-        url   = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+        url = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
 
-        send_verification_email.delay(str(user.id), url)
+        email_sent = True
+        try:
+            send_verification_email.delay(str(user.id), url)
+        except Exception:
+            email_sent = False
 
-        return Response(
-            {"message": "Compte créé. Vérifiez votre email pour activer votre compte."},
-            status=status.HTTP_201_CREATED,
-        )
+        payload = {"message": "Compte créé. Vérifiez votre email pour activer votre compte."}
+        if not email_sent:
+            payload["warning"] = (
+                "Compte créé, mais l'email de vérification n'a pas pu être envoyé. "
+                "Vérifiez la configuration SMTP."
+            )
+        return Response(payload, status=status.HTTP_201_CREATED)
 
 
 class VerifyEmailView(APIView):
@@ -47,7 +58,7 @@ class VerifyEmailView(APIView):
 
         try:
             user_id = force_str(urlsafe_base64_decode(serializer.validated_data['uid']))
-            user    = CustomUser.objects.get(pk=user_id)
+            user = CustomUser.objects.get(pk=user_id)
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return Response({"error": "Lien invalide."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -91,9 +102,9 @@ class LoginView(APIView):
         refresh = RefreshToken.for_user(user)
 
         return Response({
-            "access":  str(refresh.access_token),
+            "access": str(refresh.access_token),
             "refresh": str(refresh),
-            "user":    UserSerializer(user).data,
+            "user": UserSerializer(user).data,
         })
 
 
@@ -116,13 +127,13 @@ class ForgotPasswordView(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            user  = CustomUser.objects.get(email=serializer.validated_data['email'])
-            uid   = urlsafe_base64_encode(force_bytes(user.pk))
+            user = CustomUser.objects.get(email=serializer.validated_data['email'])
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = password_reset_token.make_token(user)
-            url   = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+            url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
             send_password_reset_email.delay(str(user.id), url)
         except CustomUser.DoesNotExist:
-            pass  # Ne pas révéler si l'email existe ou non
+            pass
 
         return Response({"message": "Si cet email est enregistré, un lien de réinitialisation a été envoyé."})
 
@@ -136,7 +147,7 @@ class ResetPasswordView(APIView):
 
         try:
             user_id = force_str(urlsafe_base64_decode(serializer.validated_data['uid']))
-            user    = CustomUser.objects.get(pk=user_id)
+            user = CustomUser.objects.get(pk=user_id)
         except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
             return Response({"error": "Lien invalide."}, status=status.HTTP_400_BAD_REQUEST)
 
