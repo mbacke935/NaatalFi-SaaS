@@ -16,6 +16,7 @@ const PLAN_BADGE = {
 
 const TX_TYPE = {
   SALE:    { label: 'Vente',          cls: 'bg-green-900/40 text-green-400'  },
+  COMMISSION: { label: 'Commission', cls: 'bg-orange-900/40 text-orange-400'},
   PAYOUT:  { label: 'Retrait',        cls: 'bg-blue-900/40 text-blue-400'    },
   REFUND:  { label: 'Remboursement',  cls: 'bg-purple-900/40 text-purple-400'},
   FREEZE:  { label: 'Gel',            cls: 'bg-red-900/40 text-red-400'      },

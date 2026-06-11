@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 load_dotenv()
 
@@ -160,6 +161,13 @@ CELERY_TASK_SERIALIZER   = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE          = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'True' if DEBUG else 'False') == 'True'
+CELERY_BEAT_SCHEDULE     = {
+    'release-pending-wallet-balances-daily': {
+        'task': 'tasks.wallet.release_pending_balance_task',
+        'schedule': crontab(hour=2, minute=0),
+        'kwargs': {'days': 7},
+    },
+}
 
 # ── Cache Redis ──────────────────────────────────────────────────────
 CACHES = {

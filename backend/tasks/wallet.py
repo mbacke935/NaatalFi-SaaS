@@ -12,3 +12,9 @@ def credit_vendor_wallets_task(order_id):
         credit_wallet_from_order(order)
     except Order.DoesNotExist:
         pass
+
+
+@shared_task
+def release_pending_balance_task(days=7):
+    from apps.wallet.services import release_pending_balances
+    return release_pending_balances(days=days)

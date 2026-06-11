@@ -19,6 +19,8 @@ const EMPTY_FORM = {
   regions: [],
   price: '',
   estimated_days: '2',
+  min_weight: '',
+  max_weight: '',
 }
 
 function ZoneModal({ zone, onClose, onSave }) {
@@ -30,6 +32,8 @@ function ZoneModal({ zone, onClose, onSave }) {
           regions: zone.regions ?? [],
           price: zone.rates?.[0]?.price ?? '',
           estimated_days: String(zone.rates?.[0]?.estimated_days ?? 2),
+          min_weight: zone.rates?.[0]?.min_weight ?? '',
+          max_weight: zone.rates?.[0]?.max_weight ?? '',
         }
       : { ...EMPTY_FORM }
   )
@@ -48,6 +52,13 @@ function ZoneModal({ zone, onClose, onSave }) {
     const price = parseFloat(form.price)
     if (isNaN(price) || price < 0) return toast.error('Tarif invalide.')
     const days = parseInt(form.estimated_days)
+    const minWeight = form.min_weight === '' ? null : parseFloat(form.min_weight)
+    const maxWeight = form.max_weight === '' ? null : parseFloat(form.max_weight)
+    if (minWeight !== null && (isNaN(minWeight) || minWeight < 0)) return toast.error('Poids minimum invalide.')
+    if (maxWeight !== null && (isNaN(maxWeight) || maxWeight < 0)) return toast.error('Poids maximum invalide.')
+    if (minWeight !== null && maxWeight !== null && maxWeight < minWeight) {
+      return toast.error('Le poids maximum doit etre superieur au poids minimum.')
+    }
     if (isNaN(days) || days < 1) return toast.error('Délai invalide.')
 
     setSaving(true)
@@ -57,6 +68,8 @@ function ZoneModal({ zone, onClose, onSave }) {
         regions: form.regions,
         price,
         estimated_days: days,
+        min_weight: minWeight,
+        max_weight: maxWeight,
       }
       if (editing) {
         const { data } = await updateShippingZone(zone.id, payload)
@@ -140,6 +153,29 @@ function ZoneModal({ zone, onClose, onSave }) {
                 type="number" min="1" max="60" required
                 value={form.estimated_days}
                 onChange={(e) => setForm((f) => ({ ...f, estimated_days: e.target.value }))}
+                className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Poids min. (kg)</label>
+              <input
+                type="number" min="0" step="0.1"
+                value={form.min_weight}
+                onChange={(e) => setForm((f) => ({ ...f, min_weight: e.target.value }))}
+                placeholder="optionnel"
+                className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Poids max. (kg)</label>
+              <input
+                type="number" min="0" step="0.1"
+                value={form.max_weight}
+                onChange={(e) => setForm((f) => ({ ...f, max_weight: e.target.value }))}
+                placeholder="optionnel"
                 className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
@@ -276,6 +312,14 @@ export default function DeliveryPage() {
                         <span className="text-[#D4AF37] font-semibold">{fmt(rate.price)}</span>
                         <span className="text-gray-500">•</span>
                         <span className="text-gray-400">{rate.estimated_days} jour{rate.estimated_days !== 1 ? 's' : ''}</span>
+                        {(rate.min_weight || rate.max_weight) && (
+                          <>
+                            <span className="text-gray-500">-</span>
+                            <span className="text-gray-400">
+                              {rate.min_weight ?? 0} - {rate.max_weight ?? 'max'} kg
+                            </span>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>

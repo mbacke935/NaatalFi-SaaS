@@ -1,5 +1,6 @@
 from decimal import Decimal
 from django.db import models
+from django.db.models import Q
 
 
 class Wallet(models.Model):
@@ -25,6 +26,7 @@ class Wallet(models.Model):
 class Transaction(models.Model):
     class Type(models.TextChoices):
         SALE    = 'SALE',    'Vente'
+        COMMISSION = 'COMMISSION', 'Commission'
         PAYOUT  = 'PAYOUT',  'Retrait'
         REFUND  = 'REFUND',  'Remboursement'
         FREEZE  = 'FREEZE',  'Gel'
@@ -41,6 +43,13 @@ class Transaction(models.Model):
         ordering            = ['-created_at']
         verbose_name        = 'Transaction'
         verbose_name_plural = 'Transactions'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['reference'],
+                condition=~Q(reference=''),
+                name='unique_wallet_transaction_reference',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.type} {self.amount} — {self.wallet.vendor.name}"

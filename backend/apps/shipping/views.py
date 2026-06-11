@@ -48,6 +48,8 @@ class ShippingZoneListCreateView(APIView):
             zone=zone,
             price=d['price'],
             estimated_days=d['estimated_days'],
+            min_weight=d.get('min_weight'),
+            max_weight=d.get('max_weight'),
         )
         zone = ShippingZone.objects.prefetch_related('rates').get(pk=zone.pk)
         return Response(ShippingZoneSerializer(zone).data, status=status.HTTP_201_CREATED)
@@ -94,18 +96,25 @@ class ShippingZoneDetailView(APIView):
 
         rate = zone.rates.first()
         price_changed = 'price' in request.data
-        days_changed  = 'estimated_days' in request.data
-        if rate and (price_changed or days_changed):
+        days_changed = 'estimated_days' in request.data or 'delivery_days' in request.data
+        weight_changed = 'min_weight' in request.data or 'max_weight' in request.data
+        if rate and (price_changed or days_changed or weight_changed):
             if price_changed:
                 rate.price = request.data['price']
             if days_changed:
-                rate.estimated_days = request.data['estimated_days']
+                rate.estimated_days = request.data.get('estimated_days') or request.data.get('delivery_days')
+            if 'min_weight' in request.data:
+                rate.min_weight = request.data['min_weight']
+            if 'max_weight' in request.data:
+                rate.max_weight = request.data['max_weight']
             rate.save()
         elif not rate and price_changed:
             ShippingRate.objects.create(
                 zone=zone,
                 price=request.data['price'],
-                estimated_days=request.data.get('estimated_days', 2),
+                estimated_days=request.data.get('estimated_days') or request.data.get('delivery_days', 2),
+                min_weight=request.data.get('min_weight'),
+                max_weight=request.data.get('max_weight'),
             )
 
         zone = ShippingZone.objects.prefetch_related('rates').get(pk=zone.pk)
@@ -128,6 +137,7 @@ class EstimateShippingView(APIView):
         result = estimate_shipping_for_vendors(
             ser.validated_data['vendor_ids'],
             ser.validated_data['region'],
+            weight=ser.validated_data.get('weight'),
         )
         return Response(result)
 
