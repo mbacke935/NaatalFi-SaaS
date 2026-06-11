@@ -658,3 +658,43 @@ Phase 20 → Déploiement production
 | Phase 15 | Phase 8 (commandes livrées) |
 | Phase 17 | Phase 9 (paiements) + Phase 10 (wallet) |
 | Phase 20 | Phases 19 (tests validés) |
+
+---
+
+## Etat d'avancement actuel - 11 juin 2026
+
+### Phases 0 a 11
+
+Les phases 0 a 11 sont implementees : conception, auth, vendeurs/KYC, categories, produits, marketplace publique, espace client, panier, commandes multi-vendeurs, paiements PayTech, wallet vendeur et livraison.
+
+### Phase 12 - Dashboard vendeur
+
+Etat : en grande partie implemente.
+
+Routes disponibles : `/dashboard`, `/dashboard/products`, `/dashboard/orders`, `/dashboard/orders/:id`, `/dashboard/wallet`, `/dashboard/analytics`, `/dashboard/shop`, `/dashboard/delivery`, `/dashboard/notifications`, `/dashboard/profile`, `/dashboard/ads`, `/dashboard/disputes`.
+
+Limite connue : `ads` et `disputes` sont des surfaces UI preparees ; la logique complete depend des phases 16 et 17.
+
+### Phase 13 - Dashboard admin
+
+Etat : en grande partie implemente.
+
+Routes disponibles : `/admin`, `/admin/vendors`, `/admin/vendors/:id`, `/admin/users`, `/admin/products`, `/admin/orders`, `/admin/payments`, `/admin/wallets`, `/admin/categories`, `/admin/reviews`, `/admin/ads`, `/admin/disputes`, `/admin/analytics`.
+
+Controles reels disponibles : KYC vendeur, roles utilisateurs, activation/desactivation users, moderation produit, historique paiements, logs webhook, wallets et retraits.
+
+Limite connue : `reviews`, `ads` et `disputes` seront finalises avec les phases 15, 16 et 17.
+
+### Phase 19 - Tests
+
+Premiers tests backend ajoutes avec `config.test_settings`.
+
+Commande :
+```powershell
+cd backend
+venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
+```
+
+Couverture actuelle : wallet, shipping, users admin, products admin, payments admin.
+
+Resultat actuel : 9 tests OK.

@@ -1,4 +1,4 @@
-# Contrat API — NaatalFi Marketplace
+﻿# Contrat API â€” NaatalFi Marketplace
 
 Base URL : `https://api.naatalfi.com/api/v1`
 Format : JSON
@@ -11,26 +11,26 @@ Pagination publique : `?page_size=20&cursor=<next_cursor>`
 
 ### Authentification
 
-| Accès | Header requis |
+| AccÃ¨s | Header requis |
 | :--- | :--- |
 | Public | Aucun |
-| Utilisateur connecté | `Authorization: Bearer <access_token>` |
-| Vendeur approuvé | Bearer + rôle `VENDOR` + statut `APPROVED` |
-| Admin | Bearer + rôle `ADMIN` |
+| Utilisateur connectÃ© | `Authorization: Bearer <access_token>` |
+| Vendeur approuvÃ© | Bearer + rÃ´le `VENDOR` + statut `APPROVED` |
+| Admin | Bearer + rÃ´le `ADMIN` |
 
-### Codes de réponse
+### Codes de rÃ©ponse
 
 | Code | Signification |
 | :--- | :--- |
-| 200 | Succès |
-| 201 | Ressource créée |
-| 204 | Succès sans contenu |
-| 400 | Données invalides |
-| 401 | Non authentifié |
-| 403 | Accès refusé |
+| 200 | SuccÃ¨s |
+| 201 | Ressource crÃ©Ã©e |
+| 204 | SuccÃ¨s sans contenu |
+| 400 | DonnÃ©es invalides |
+| 401 | Non authentifiÃ© |
+| 403 | AccÃ¨s refusÃ© |
 | 404 | Ressource introuvable |
-| 409 | Conflit (ex: email déjà utilisé) |
-| 422 | Erreur de validation métier |
+| 409 | Conflit (ex: email dÃ©jÃ  utilisÃ©) |
+| 422 | Erreur de validation mÃ©tier |
 | 500 | Erreur serveur |
 
 ### Format d'erreur
@@ -45,10 +45,10 @@ Pagination publique : `?page_size=20&cursor=<next_cursor>`
 
 ---
 
-## 1. Authentification — `/auth`
+## 1. Authentification â€” `/auth`
 
 ### `POST /auth/register`
-Créer un compte. Envoie un email de vérification.
+CrÃ©er un compte. Envoie un email de vÃ©rification.
 
 **Body**
 ```json
@@ -61,33 +61,33 @@ Créer un compte. Envoie un email de vérification.
   "role": "CUSTOMER"
 }
 ```
-**Réponse 201**
+**RÃ©ponse 201**
 ```json
-{ "message": "Compte créé. Vérifiez votre email." }
+{ "message": "Compte crÃ©Ã©. VÃ©rifiez votre email." }
 ```
 
-Si l'email SMTP échoue mais que le compte est créé, la réponse reste `201` avec un warning :
+Si l'email SMTP Ã©choue mais que le compte est crÃ©Ã©, la rÃ©ponse reste `201` avec un warning :
 
 ```json
 {
-  "message": "Compte créé. Vérifiez votre email pour activer votre compte.",
-  "warning": "Compte créé, mais l'email de vérification n'a pas pu être envoyé. Vérifiez la configuration SMTP."
+  "message": "Compte crÃ©Ã©. VÃ©rifiez votre email pour activer votre compte.",
+  "warning": "Compte crÃ©Ã©, mais l'email de vÃ©rification n'a pas pu Ãªtre envoyÃ©. VÃ©rifiez la configuration SMTP."
 }
 ```
 
 ---
 
 ### `POST /auth/verify-email`
-Vérifier l'email via le lien reçu.
+VÃ©rifier l'email via le lien reÃ§u.
 
 **Body**
 ```json
 { "uid": "<uid>", "token": "<token>" }
 ```
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
-{ "message": "Email vérifié avec succès." }
+{ "message": "Email vÃ©rifiÃ© avec succÃ¨s." }
 ```
 
 ---
@@ -99,7 +99,7 @@ Connexion. Retourne les tokens JWT.
 ```json
 { "email": "user@example.com", "password": "motdepasse123" }
 ```
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
   "access": "<access_token>",
@@ -117,7 +117,7 @@ Renouveler l'access token.
 ```json
 { "refresh": "<refresh_token>" }
 ```
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 { "access": "<nouveau_access_token>" }
 ```
@@ -131,42 +131,42 @@ Invalider le refresh token (blacklist).
 ```json
 { "refresh": "<refresh_token>" }
 ```
-**Réponse 204**
+**RÃ©ponse 204**
 
 ---
 
 ### `POST /auth/forgot-password`
-Envoyer un email de réinitialisation.
+Envoyer un email de rÃ©initialisation.
 
 **Body**
 ```json
 { "email": "user@example.com" }
 ```
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
-{ "message": "Email de réinitialisation envoyé." }
+{ "message": "Email de rÃ©initialisation envoyÃ©." }
 ```
 
 ---
 
 ### `POST /auth/reset-password`
-Changer le mot de passe via le lien reçu.
+Changer le mot de passe via le lien reÃ§u.
 
 **Body**
 ```json
 { "uid": "<uid>", "token": "<token>", "password": "nouveaumotdepasse123" }
 ```
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
-{ "message": "Mot de passe modifié." }
+{ "message": "Mot de passe modifiÃ©." }
 ```
 
 ---
 
 ### `GET /auth/me`
-Profil de l'utilisateur connecté. **Auth requis.**
+Profil de l'utilisateur connectÃ©. **Auth requis.**
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
   "id": "uuid",
@@ -183,7 +183,7 @@ Profil de l'utilisateur connecté. **Auth requis.**
 ---
 
 ### `PATCH /auth/me`
-Mettre à jour le profil. **Auth requis.**
+Mettre Ã  jour le profil. **Auth requis.**
 
 **Body** (tous les champs optionnels)
 ```json
@@ -192,22 +192,22 @@ Mettre à jour le profil. **Auth requis.**
 
 ---
 
-## 2. Vendeurs — `/vendors`
+## 2. Vendeurs â€” `/vendors`
 
 ### `POST /vendors`
-Créer sa boutique. **Auth requis (CUSTOMER ou VENDOR).**
+CrÃ©er sa boutique. **Auth requis (CUSTOMER ou VENDOR).**
 
 **Body**
 ```json
 {
   "name": "Boutique Aminata",
-  "description": "Vêtements wax et tissus traditionnels.",
+  "description": "VÃªtements wax et tissus traditionnels.",
   "phone": "+221771234567",
   "address": "123 Rue de Dakar",
   "city": "Dakar"
 }
 ```
-**Réponse 201** → Objet Vendor avec `status: "PENDING"`
+**RÃ©ponse 201** â†’ Objet Vendor avec `status: "PENDING"`
 
 ---
 
@@ -249,12 +249,12 @@ Suspendre un vendeur. **Admin.**
 
 ---
 
-## 3. Catégories — `/categories`
+## 3. CatÃ©gories â€” `/categories`
 
 ### `GET /categories`
-Arbre complet des catégories. **Public.**
+Arbre complet des catÃ©gories. **Public.**
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 [
   {
@@ -268,18 +268,18 @@ Arbre complet des catégories. **Public.**
 
 ---
 
-### `POST /admin/categories` · `PATCH /admin/categories/:id` · `DELETE /admin/categories/:id`
-CRUD catégories. **Admin.**
+### `POST /admin/categories` Â· `PATCH /admin/categories/:id` Â· `DELETE /admin/categories/:id`
+CRUD catÃ©gories. **Admin.**
 
 ---
 
-## 4. Produits — `/products`
+## 4. Produits â€” `/products`
 
 ### `GET /marketplace/products`
-Catalogue public paginé. **Public.**
+Catalogue public paginÃ©. **Public.**
 Query params : `?category=mode&vendor=boutique-slug&min_price=1000&max_price=50000&sort=price_asc&page_size=20&cursor=<next_cursor>`
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
   "count": 42,
@@ -295,7 +295,7 @@ Query params : `?category=mode&vendor=boutique-slug&min_price=1000&max_price=500
 ### `GET /marketplace/products/:slug`
 Fiche produit publique. **Public.**
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
   "id": "uuid", "name": "Boubou wax", "slug": "boubou-wax",
@@ -312,7 +312,7 @@ Fiche produit publique. **Public.**
 ---
 
 ### `POST /vendors/me/products`
-Créer un produit. **Vendor.**
+CrÃ©er un produit. **Vendor.**
 
 **Body**
 ```json
@@ -346,13 +346,13 @@ Supprimer une image. **Vendor.**
 
 ---
 
-## 5. Recherche — `/marketplace/search`
+## 5. Recherche â€” `/marketplace/search`
 
 ### `GET /marketplace/search`
 Recherche full-text PostgreSQL. **Public.**
 Query params : `?q=boubou+wax&page_size=20&cursor=<next_cursor>`
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
   "count": 42,
@@ -365,21 +365,21 @@ Query params : `?q=boubou+wax&page_size=20&cursor=<next_cursor>`
 
 ---
 
-## 6. Espace client — `/account`
+## 6. Espace client â€” `/account`
 
 ### `GET /account/orders`
 Mes commandes. **Auth requis.**
 
 ### `GET /account/orders/:id`
-Détail d'une commande. **Auth requis.**
+DÃ©tail d'une commande. **Auth requis.**
 
-### `GET /account/addresses` · `POST /account/addresses` · `PATCH /account/addresses/:id` · `DELETE /account/addresses/:id`
+### `GET /account/addresses` Â· `POST /account/addresses` Â· `PATCH /account/addresses/:id` Â· `DELETE /account/addresses/:id`
 Gestion des adresses. **Auth requis.**
 
-### `GET /account/favorites` · `POST /account/favorites/:productId` · `DELETE /account/favorites/:productId`
+### `GET /account/favorites` Â· `POST /account/favorites/:productId` Â· `DELETE /account/favorites/:productId`
 Favoris. **Auth requis.**
 
-### `GET /account/profile` · `PATCH /account/profile`
+### `GET /account/profile` Â· `PATCH /account/profile`
 Profil client. **Auth requis.**
 
 ### `POST /account/profile/avatar`
@@ -389,7 +389,7 @@ Uploader l'avatar. **Auth requis.** `Content-Type: multipart/form-data`
 
 ---
 
-## 7. Panier — `/cart`
+## 7. Panier â€” `/cart`
 
 ### `POST /orders/validate`
 Valider le stock avant paiement. **Public.**
@@ -402,14 +402,14 @@ Valider le stock avant paiement. **Public.**
   ]
 }
 ```
-**Réponse 200** → OK ou liste des articles en rupture
+**RÃ©ponse 200** â†’ OK ou liste des articles en rupture
 
 ---
 
-## 8. Commandes — `/orders`
+## 8. Commandes â€” `/orders`
 
 ### `POST /orders`
-Créer une commande. **Auth requis.**
+CrÃ©er une commande. **Auth requis.**
 
 **Body**
 ```json
@@ -421,12 +421,12 @@ Créer une commande. **Auth requis.**
   "notes": "Appeler avant livraison"
 }
 ```
-**Réponse 201** → Objet Order avec `vendor_orders` inclus
+**RÃ©ponse 201** â†’ Objet Order avec `vendor_orders` inclus
 
 Effets secondaires :
-- décrémente le stock des variantes commandées
+- dÃ©crÃ©mente le stock des variantes commandÃ©es
 - envoie `send_order_confirmation_email` au client
-- envoie `send_vendor_new_order_email` à chaque vendeur concerné
+- envoie `send_vendor_new_order_email` Ã  chaque vendeur concernÃ©
 
 ---
 
@@ -436,18 +436,18 @@ Mes commandes. **Auth requis.**
 ---
 
 ### `GET /orders/me/:id`
-Détail commande. **Auth requis (client propriétaire).**
+DÃ©tail commande. **Auth requis (client propriÃ©taire).**
 
 ---
 
 ### `GET /vendors/me/orders`
-Commandes reçues. **Vendor.**
+Commandes reÃ§ues. **Vendor.**
 Query params : `?status=PENDING&page=1`
 
 ---
 
 ### `PATCH /vendors/me/orders/:id/status`
-Mettre à jour le statut. **Vendor.**
+Mettre Ã  jour le statut. **Vendor.**
 
 **Body**
 ```json
@@ -456,7 +456,7 @@ Mettre à jour le statut. **Vendor.**
 
 ---
 
-## 9. Paiements — `/payments`
+## 9. Paiements â€” `/payments`
 
 ### `POST /payments/initiate`
 Initier un paiement PayTech. **Auth requis.**
@@ -465,7 +465,7 @@ Initier un paiement PayTech. **Auth requis.**
 ```json
 { "order_id": 123, "provider": "PAYTECH" }
 ```
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
   "id": 1,
@@ -483,9 +483,9 @@ Initier un paiement PayTech. **Auth requis.**
 ---
 
 ### `POST /payments/webhook`
-Webhook PayTech (appel depuis les serveurs PayTech). **Sécurisé par signature HMAC.**
+Webhook PayTech (appel depuis les serveurs PayTech). **SÃ©curisÃ© par signature HMAC.**
 
-Header recommandé si `PAYTECH_WEBHOOK_SECRET` est configuré :
+Header recommandÃ© si `PAYTECH_WEBHOOK_SECRET` est configurÃ© :
 `X-PayTech-Signature: <hmac_sha256_raw_body>`
 
 Effets si le webhook confirme le paiement :
@@ -498,52 +498,67 @@ Effets si le webhook confirme le paiement :
 ### `GET /payments/:reference`
 Statut d'un paiement. **Auth requis.**
 
+### `GET /payments/admin/`
+Historique des paiements. **Admin.**
+
+Filtres optionnels : `status`, `provider`.
+
 ---
 
-## 10. Wallet — `/wallet`
+## 10. Wallet â€” `/wallet`
 
-### `GET /vendors/me/wallet`
-Solde et transactions. **Vendor.**
+### `GET /wallet/`
+Solde vendeur connecte. **Vendor.**
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
-  "pending_balance": 45000,
-  "available_balance": 120000,
-  "frozen_balance": 0,
-  "currency": "XOF",
-  "recent_transactions": [ ... ]
+  "pending_balance": "45000.00",
+  "available_balance": "120000.00",
+  "frozen_balance": "0.00",
+  "plan_name": "PRO",
+  "commission_rate": "7.00"
 }
 ```
 
 ---
 
-### `POST /vendors/me/wallet/payout`
+### `GET /wallet/transactions/`
+Transactions du wallet vendeur connecte. **Vendor.**
+
+### `GET /wallet/payouts/`
+Demandes de retrait du vendeur connecte. **Vendor.**
+
+### `POST /wallet/payouts/`
 Demande de retrait. **Vendor.**
 
 **Body**
 ```json
 {
-  "amount": 50000,
-  "method": "WAVE",
-  "account_details": { "phone": "+221771234567", "account_name": "Aminata Diallo" }
+  "amount": "50000.00",
+  "bank_name": "Wave",
+  "account_number": "+221771234567",
+  "account_name": "Aminata Diallo"
 }
 ```
 
 ---
 
-### `GET /admin/wallets`
+### `GET /wallet/admin/`
 Vue globale des wallets. **Admin.**
 
-### `PATCH /admin/payouts/:id/approve`
+### `GET /wallet/admin/payouts/`
+Liste des retraits. **Admin.**
+
+### `PATCH /wallet/admin/payouts/:id/approve/`
 Approuver un retrait. **Admin.**
 
-### `PATCH /admin/payouts/:id/reject`
+### `PATCH /wallet/admin/payouts/:id/reject/`
 Rejeter un retrait avec motif. **Admin.**
 
 ---
 
-## 11. Livraison — `/shipping`
+## 11. Livraison â€” `/shipping`
 
 ### `POST /shipping/estimate`
 Calculer les frais. **Public.**
@@ -551,25 +566,28 @@ Calculer les frais. **Public.**
 **Body**
 ```json
 {
-  "vendor_id": "uuid",
-  "destination_city": "Saint-Louis",
-  "weight_kg": 1.5
+  "vendor_ids": [1, 2],
+  "region": "Saint-Louis",
+  "weight": "1.50"
 }
 ```
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
-{ "price": 2500, "estimated_days": 2 }
+{
+  "1": { "price": "2500.00", "estimated_days": 2 },
+  "2": { "price": "0.00", "estimated_days": null }
+}
 ```
 
-### `GET /vendors/me/shipping` · `POST /vendors/me/shipping/zones` · `PATCH /vendors/me/shipping/zones/:id`
+### `GET /shipping/zones/` · `POST /shipping/zones/` · `PATCH /shipping/zones/:id/`
 Gestion zones et tarifs. **Vendor.**
 
 ---
 
-## 12. Avis — `/reviews`
+## 12. Avis â€” `/reviews`
 
 ### `POST /reviews`
-Soumettre un avis. **Auth requis (acheteur vérifié).**
+Soumettre un avis. **Auth requis (acheteur vÃ©rifiÃ©).**
 
 **Body**
 ```json
@@ -588,14 +606,14 @@ Avis d'un produit. **Public.**
 Avis d'un vendeur. **Public.**
 
 ### `DELETE /admin/reviews/:id`
-Modérer un avis. **Admin.**
+ModÃ©rer un avis. **Admin.**
 
 ---
 
-## 13. Publicités — `/ads`
+## 13. PublicitÃ©s â€” `/ads`
 
 ### `POST /vendors/me/ads`
-Créer une campagne. **Vendor.**
+CrÃ©er une campagne. **Vendor.**
 
 **Body**
 ```json
@@ -608,15 +626,15 @@ Créer une campagne. **Vendor.**
 }
 ```
 
-### `GET /vendors/me/ads` · `PATCH /vendors/me/ads/:id`
-Gérer mes campagnes. **Vendor.**
+### `GET /vendors/me/ads` Â· `PATCH /vendors/me/ads/:id`
+GÃ©rer mes campagnes. **Vendor.**
 
 ### `GET /admin/ads`
 Vue globale. **Admin.**
 
 ---
 
-## 14. Litiges — `/disputes`
+## 14. Litiges â€” `/disputes`
 
 ### `POST /disputes`
 Ouvrir un litige. **Auth requis (client).**
@@ -626,24 +644,24 @@ Ouvrir un litige. **Auth requis (client).**
 {
   "vendor_order_id": "uuid",
   "reason": "ITEM_NOT_RECEIVED",
-  "description": "Ma commande n'est pas arrivée après 10 jours."
+  "description": "Ma commande n'est pas arrivÃ©e aprÃ¨s 10 jours."
 }
 ```
 
 ### `GET /disputes/:id`
-Détail litige. **Auth requis (participant ou admin).**
+DÃ©tail litige. **Auth requis (participant ou admin).**
 
 ### `POST /admin/disputes/:id/resolve`
-Résoudre un litige. **Admin.**
+RÃ©soudre un litige. **Admin.**
 
 **Body**
 ```json
-{ "resolution": "RESOLVED_REFUND", "note": "Article non livré confirmé." }
+{ "resolution": "RESOLVED_REFUND", "note": "Article non livrÃ© confirmÃ©." }
 ```
 
 ---
 
-## 15. Notifications — `/notifications`
+## 15. Notifications â€” `/notifications`
 
 ### `GET /notifications`
 Mes notifications. **Auth requis.**
@@ -657,13 +675,13 @@ Tout marquer comme lu. **Auth requis.**
 
 ---
 
-## 16. Analytics — `/analytics`
+## 16. Analytics â€” `/analytics`
 
 ### `GET /admin/analytics/overview`
 KPIs globaux. **Admin.**
 Query params : `?period=30d`
 
-**Réponse 200**
+**RÃ©ponse 200**
 ```json
 {
   "gmv": 4500000,
@@ -681,3 +699,4 @@ Top vendeurs. **Admin.**
 ### `GET /vendors/me/analytics`
 Mes statistiques. **Vendor.**
 Query params : `?period=7d|30d|90d`
+

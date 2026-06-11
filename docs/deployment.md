@@ -271,3 +271,28 @@ jobs:
           pip install -r requirements.txt
           python manage.py test
 ```
+
+---
+
+## Validation actuelle
+
+Avant de redeployer apres les phases 12-13 :
+
+```powershell
+cd C:\NaatalFi-SaaS\backend
+venv\Scripts\python manage.py check
+venv\Scripts\python manage.py makemigrations --check --dry-run
+venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
+```
+
+```powershell
+cd C:\NaatalFi-SaaS\frontend
+npm run build
+```
+
+Etat au 11 juin 2026 :
+
+- backend check : OK ;
+- migrations dry-run : OK, `No changes detected` ;
+- tests backend : 9 tests OK ;
+- build frontend : OK avec warning Vite de taille de bundle.

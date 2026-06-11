@@ -107,6 +107,7 @@ Redirigent vers `/login` si l'utilisateur n'est pas authentifié.
 | `/dashboard/wallet` | `WalletPage` | `src/pages/dashboard/wallet/WalletPage.jsx` |
 | `/dashboard/analytics` | `AnalyticsPage` | `src/pages/dashboard/analytics/AnalyticsPage.jsx` |
 | `/dashboard/shop` | `ShopSettingsPage` | `src/pages/dashboard/shop/ShopSettingsPage.jsx` |
+| `/dashboard/delivery` | `DeliveryPage` | `src/pages/dashboard/delivery/DeliveryPage.jsx` |
 
 ### Services annexes
 
@@ -133,7 +134,9 @@ Accessibles uniquement avec `role === 'ADMIN'`.
 | `/admin/orders` | `AdminOrdersPage` | `src/pages/admin/orders/OrdersPage.jsx` |
 | `/admin/products` | `AdminProductsPage` | `src/pages/admin/products/ProductsPage.jsx` |
 | `/admin/payments` | `PaymentsPage` | `src/pages/admin/payments/PaymentsPage.jsx` |
+| `/admin/wallets` | `WalletsPage` | `src/pages/admin/wallets/WalletsPage.jsx` |
 | `/admin/categories` | `CategoriesPage` | `src/pages/admin/categories/CategoriesPage.jsx` |
+| `/admin/reviews` | `ReviewsPage` | `src/pages/admin/reviews/ReviewsPage.jsx` |
 | `/admin/analytics` | `AdminAnalyticsPage` | `src/pages/admin/analytics/AnalyticsPage.jsx` |
 | `/admin/disputes` | `AdminDisputesPage` | `src/pages/admin/disputes/DisputesPage.jsx` |
 | `/admin/ads` | `AdminAdsPage` | `src/pages/admin/ads/AdsPage.jsx` |
