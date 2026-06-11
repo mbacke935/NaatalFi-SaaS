@@ -45,6 +45,7 @@ import EditProductPage from '../pages/dashboard/products/EditProductPage'
 import OrdersPage from '../pages/dashboard/orders/OrdersPage'
 import OrderDetailPage from '../pages/dashboard/orders/OrderDetailPage'
 import WalletPage from '../pages/dashboard/wallet/WalletPage'
+import DeliveryPage from '../pages/dashboard/delivery/DeliveryPage'
 import AnalyticsPage from '../pages/dashboard/analytics/AnalyticsPage'
 import ShopSettingsPage from '../pages/dashboard/shop/ShopSettingsPage'
 import AdsPage from '../pages/dashboard/ads/AdsPage'
@@ -130,6 +131,7 @@ function AppRoutes() {
             <Route path="/dashboard/orders" element={<OrdersPage />} />
             <Route path="/dashboard/orders/:id" element={<OrderDetailPage />} />
             <Route path="/dashboard/wallet" element={<WalletPage />} />
+            <Route path="/dashboard/delivery" element={<DeliveryPage />} />
             <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
             <Route path="/dashboard/shop" element={<ShopSettingsPage />} />
             <Route path="/dashboard/ads" element={<AdsPage />} />

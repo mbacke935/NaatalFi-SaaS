@@ -99,6 +99,7 @@ class CartItemSerializer(serializers.Serializer):
 
 class CreateOrderSerializer(serializers.Serializer):
     delivery_address = serializers.CharField(min_length=5)
+    region           = serializers.CharField(required=False, allow_blank=True, default='')
     notes            = serializers.CharField(required=False, allow_blank=True, default='')
     items            = CartItemSerializer(many=True)
 

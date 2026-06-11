@@ -16,6 +16,7 @@ from .serializers import (
     CartValidateSerializer,
 )
 from apps.products.models import Product, ProductVariant
+from apps.shipping.services import get_shipping_rate
 from tasks.orders import send_order_confirmation_email, send_vendor_new_order_email
 
 
@@ -146,6 +147,7 @@ class CreateOrderView(APIView):
         for item in resolved:
             by_vendor[item['product'].vendor_id].append(item)
 
+        region = data.get('region', '')
         grand_total = Decimal('0.00')
         vendor_order_ids = []
         for vendor_id, vitems in by_vendor.items():
@@ -155,12 +157,14 @@ class CreateOrderView(APIView):
                 price    += item['variant'].price_delta if item['variant'] else Decimal('0.00')
                 subtotal += price * item['quantity']
 
+            shipping_cost, _ = get_shipping_rate(vendor_id, region)
+
             vendor_order = VendorOrder.objects.create(
                 order         = order,
                 vendor_id     = vendor_id,
                 status        = VendorOrder.Status.PENDING,
                 subtotal      = subtotal,
-                shipping_cost = Decimal('0.00'),
+                shipping_cost = shipping_cost,
             )
             vendor_order_ids.append(vendor_order.id)
 
@@ -186,7 +190,7 @@ class CreateOrderView(APIView):
                         stock=F('stock') - item['quantity']
                     )
 
-            grand_total += subtotal
+            grand_total += subtotal + shipping_cost
 
         order.total = grand_total
         order.save(update_fields=['total'])
