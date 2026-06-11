@@ -18,6 +18,11 @@ from apps.products.views import (
     ProductVariantListView,
     ProductVariantDetailView,
 )
+from apps.orders.views import (
+    VendorOrderListView,
+    VendorOrderDetailView,
+    VendorOrderStatusView,
+)
 
 urlpatterns = [
     # Vendeur — boutique
@@ -34,6 +39,11 @@ urlpatterns = [
     path('me/products/<int:pk>/images/<int:image_id>/cover/',   ProductImageSetCoverView.as_view(),  name='vendor-product-image-cover'),
     path('me/products/<int:pk>/variants/',                      ProductVariantListView.as_view(),    name='vendor-product-variant-list'),
     path('me/products/<int:pk>/variants/<int:variant_id>/',     ProductVariantDetailView.as_view(),  name='vendor-product-variant-detail'),
+
+    # Vendeur — commandes
+    path('me/orders/',                  VendorOrderListView.as_view(),   name='vendor-order-list'),
+    path('me/orders/<int:pk>/',         VendorOrderDetailView.as_view(), name='vendor-order-detail'),
+    path('me/orders/<int:pk>/status/',  VendorOrderStatusView.as_view(), name='vendor-order-status'),
 
     # Admin
     path('admin/',                   AdminVendorListView.as_view(),    name='admin-vendor-list'),
