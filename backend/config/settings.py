@@ -21,6 +21,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 ]
 
 THIRD_PARTY_APPS = [
@@ -35,6 +36,7 @@ LOCAL_APPS = [
     'apps.vendors',
     'apps.categories',
     'apps.products',
+    'apps.marketplace',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -144,6 +146,19 @@ CELERY_TASK_SERIALIZER   = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE          = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = DEBUG  # Exécution synchrone en développement
+
+# ── Cache Redis ──────────────────────────────────────────────────────
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0').replace('/0', '/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'IGNORE_EXCEPTIONS': True,  # Graceful degradation si Redis est indisponible
+        },
+        'TIMEOUT': 300,  # TTL par défaut : 5 min
+    }
+}
 
 # ── CORS ─────────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [

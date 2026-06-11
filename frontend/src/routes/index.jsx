@@ -6,6 +6,7 @@ import AdminGuard from './AdminGuard'
 
 // Layouts
 import AuthLayout from '../layouts/AuthLayout'
+import PublicLayout from '../layouts/PublicLayout'
 import DashboardLayout from '../layouts/DashboardLayout'
 import AdminLayout from '../layouts/AdminLayout'
 
@@ -13,6 +14,8 @@ import AdminLayout from '../layouts/AdminLayout'
 import HomePage from '../pages/home/HomePage'
 import MarketplacePage from '../pages/marketplace/MarketplacePage'
 import ProductDetailPage from '../pages/marketplace/ProductDetailPage'
+import SearchPage from '../pages/search/SearchPage'
+import VendorProfilePage from '../pages/vendors/VendorProfilePage'
 
 // ── Pages d'authentification ───────────────────────────────────────
 import LoginPage from '../pages/auth/login/LoginPage'
@@ -57,10 +60,14 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
 
-        {/* ── Public ──────────────────────────────────────────────── */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/marketplace" element={<MarketplacePage />} />
-        <Route path="/marketplace/:productId" element={<ProductDetailPage />} />
+        {/* ── Public (avec NavBar) ────────────────────────────────── */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/marketplace" element={<MarketplacePage />} />
+          <Route path="/marketplace/:slug" element={<ProductDetailPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/vendors/:slug" element={<VendorProfilePage />} />
+        </Route>
 
         {/* ── Authentification ────────────────────────────────────── */}
         <Route element={<AuthLayout />}>
