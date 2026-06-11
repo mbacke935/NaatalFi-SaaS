@@ -35,6 +35,10 @@
 | `SUPABASE_KEY` | Clé service Supabase | `eyJxxxxx` |
 | `PAYTECH_API_KEY` | Clé API PayTech | `xxxxxxxx` |
 | `PAYTECH_API_SECRET` | Secret PayTech | `xxxxxxxx` |
+| `PAYTECH_BASE_URL` | Endpoint PayTech request-payment | `https://paytech.sn/api/payment/request-payment` |
+| `PAYTECH_ENV` | Environnement PayTech | `prod` |
+| `PAYTECH_WEBHOOK_SECRET` | Secret HMAC webhook | `xxxxxxxx` |
+| `BACKEND_URL` | URL publique du backend pour webhook | `https://api.naatalfi.com` |
 | `EMAIL_HOST` | Serveur SMTP | `smtp.resend.com` |
 | `EMAIL_HOST_USER` | Login SMTP | `resend` |
 | `EMAIL_HOST_PASSWORD` | Mot de passe SMTP | `re_xxxxxxxx` |

@@ -313,10 +313,9 @@ Commande client (1 Order)
   - `GET /payments/:reference` — statut d'un paiement
 - Après confirmation webhook :
   1. Paiement marqué `PAID`
-  2. Commande activée
-  3. Stock décrémenté
-  4. Wallets vendeurs crédités (pending)
-  5. Emails envoyés
+  2. Commande parent marquée `PAID`
+  3. Email de confirmation paiement envoyé
+  4. Préparation du point d'extension wallet (crédit vendeur en Phase 10)
 
 **Livrables :**
 - ✅ Paiement réel fonctionnel (PayTech)

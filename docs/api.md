@@ -454,17 +454,35 @@ Initier un paiement PayTech. **Auth requis.**
 
 **Body**
 ```json
-{ "order_id": "uuid", "provider": "PAYTECH" }
+{ "order_id": 123, "provider": "PAYTECH" }
 ```
 **Réponse 200**
 ```json
-{ "payment_url": "https://paytech.sn/payment/...", "reference": "PAY_xxxx" }
+{
+  "id": 1,
+  "order_id": 123,
+  "provider": "PAYTECH",
+  "amount": "25000.00",
+  "currency": "XOF",
+  "status": "PENDING",
+  "reference": "NF-123-ABCDEF123456",
+  "provider_reference": "paytech-token",
+  "payment_url": "https://paytech.sn/payment/..."
+}
 ```
 
 ---
 
 ### `POST /payments/webhook`
 Webhook PayTech (appel depuis les serveurs PayTech). **Sécurisé par signature HMAC.**
+
+Header recommandé si `PAYTECH_WEBHOOK_SECRET` est configuré :
+`X-PayTech-Signature: <hmac_sha256_raw_body>`
+
+Effets si le webhook confirme le paiement :
+- `Payment.status = PAID`
+- `Order.status = PAID`
+- email `send_payment_confirmation_email`
 
 ---
 
