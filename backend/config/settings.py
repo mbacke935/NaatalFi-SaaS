@@ -157,7 +157,7 @@ CELERY_ACCEPT_CONTENT    = ['json']
 CELERY_TASK_SERIALIZER   = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE          = TIME_ZONE
-CELERY_TASK_ALWAYS_EAGER = DEBUG  # Exécution synchrone en développement
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'True' if DEBUG else 'False') == 'True'
 
 # ── Cache Redis ──────────────────────────────────────────────────────
 CACHES = {

@@ -31,6 +31,7 @@
 | `DB_PORT` | Port | `5432` |
 | `CELERY_BROKER_URL` | URL Redis Upstash | `rediss://default:xxx@xxx.upstash.io:6380` |
 | `CELERY_RESULT_BACKEND` | Même URL Redis | idem |
+| `CELERY_TASK_ALWAYS_EAGER` | Exécute les tâches Celery dans le web process si aucun worker n'est déployé | `True` temporairement, `False` avec worker |
 | `SUPABASE_URL` | URL projet Supabase | `https://xxx.supabase.co` |
 | `SUPABASE_KEY` | Clé service Supabase | `eyJxxxxx` |
 | `PAYTECH_API_KEY` | Clé API PayTech | `xxxxxxxx` |
