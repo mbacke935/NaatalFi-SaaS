@@ -13,4 +13,6 @@ PASSWORD_HASHERS = [
 ]
 
 CELERY_TASK_ALWAYS_EAGER = True
+CELERY_RESULT_BACKEND = 'cache+memory://'
+CELERY_TASK_IGNORE_RESULT = True
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

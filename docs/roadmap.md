@@ -783,7 +783,7 @@ cd backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews, ads, disputes, analytics.
+Couverture actuelle : wallet, shipping, users admin/login, vendors, categories, products admin, marketplace, account, orders, payments admin/webhook, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : 27 tests OK.
+Resultat actuel : 44 tests OK.
 

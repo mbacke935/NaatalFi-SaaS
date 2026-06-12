@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { login } from '../../../services/auth'
 import useAuthStore from '../../../store/authStore'
 
 function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const loginStore = useAuthStore((s) => s.login)
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
@@ -20,8 +21,12 @@ function LoginPage() {
       const { data } = await login(form.email, form.password)
       loginStore(data.user, data.access, data.refresh)
       toast.success(`Bienvenue, ${data.user.first_name} !`)
-      if (data.user.role === 'ADMIN') navigate('/admin')
-      else navigate('/dashboard')
+      const from = location.state?.from
+      const redirectTo = from?.pathname
+        ? `${from.pathname}${from.search || ''}${from.hash || ''}`
+        : null
+      const fallback = data.user.role === 'ADMIN' ? '/admin' : '/dashboard'
+      navigate(redirectTo && redirectTo !== '/login' ? redirectTo : fallback, { replace: true })
     } catch (err) {
       const msg =
         err.response?.data?.error ||

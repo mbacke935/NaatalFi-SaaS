@@ -1,0 +1,62 @@
+from django.urls import reverse
+from unittest.mock import patch
+
+from rest_framework.test import APITestCase
+
+from apps.users.models import CustomUser
+from apps.vendors.models import Vendor
+
+
+class VendorApiTests(APITestCase):
+    def setUp(self):
+        self.admin = CustomUser.objects.create_user(
+            email='admin-vendors@example.com',
+            password='pass',
+            first_name='Admin',
+            last_name='Vendor',
+            role=CustomUser.Role.ADMIN,
+            is_verified=True,
+        )
+        self.vendor_user = CustomUser.objects.create_user(
+            email='vendor-create@example.com',
+            password='pass',
+            first_name='Vendor',
+            last_name='Create',
+            role=CustomUser.Role.VENDOR,
+            is_verified=True,
+        )
+        self.customer = CustomUser.objects.create_user(
+            email='customer-vendors@example.com',
+            password='pass',
+            first_name='Customer',
+            last_name='Vendor',
+            is_verified=True,
+        )
+
+    def test_customer_cannot_create_vendor_shop(self):
+        self.client.force_authenticate(self.customer)
+        response = self.client.post(reverse('vendor-create'), {'name': 'Denied Shop'}, format='json')
+        self.assertEqual(response.status_code, 403)
+
+    def test_vendor_can_create_only_one_shop(self):
+        self.client.force_authenticate(self.vendor_user)
+        first = self.client.post(reverse('vendor-create'), {'name': 'Unique Shop'}, format='json')
+        second = self.client.post(reverse('vendor-create'), {'name': 'Second Shop'}, format='json')
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(second.status_code, 400)
+
+    def test_admin_can_approve_and_suspend_vendor(self):
+        vendor = Vendor.objects.create(user=self.vendor_user, name='Pending Shop')
+        self.client.force_authenticate(self.admin)
+
+        with patch('apps.vendors.views.send_vendor_approval_email.delay', return_value=None):
+            approve = self.client.patch(reverse('admin-vendor-approve', args=[vendor.id]))
+        vendor.refresh_from_db()
+        self.assertEqual(approve.status_code, 200)
+        self.assertEqual(vendor.status, Vendor.Status.APPROVED)
+
+        with patch('apps.vendors.views.send_vendor_rejection_email.delay', return_value=None):
+            suspend = self.client.patch(reverse('admin-vendor-suspend', args=[vendor.id]), {'reason': 'test'}, format='json')
+        vendor.refresh_from_db()
+        self.assertEqual(suspend.status_code, 200)
+        self.assertEqual(vendor.status, Vendor.Status.SUSPENDED)

@@ -94,7 +94,12 @@ Couverture actuelle ajoutee :
 - `apps.wallet.tests` : credit wallet, commission, idempotence, release pending -> available ;
 - `apps.shipping.tests` : estimation livraison avec poids min/max ;
 - `apps.users.tests` : admin update role/actif et protection auto-desactivation ;
+- `apps.vendors.tests` : creation boutique, unicite boutique, approbation/suspension admin ;
+- `apps.categories.tests` : listing public actif, protection admin, creation et reorder ;
 - `apps.products.tests` : route admin produits et moderation statut ;
+- `apps.marketplace.tests` : produits publies uniquement, recherche, detail vendeur approuve ;
+- `apps.account.tests` : adresses par utilisateur, adresse par defaut unique, favoris idempotents ;
+- `apps.orders.tests` : validation stock, permissions commandes, flux checkout -> webhook -> wallet ;
 - `apps.payments.tests` : liste admin paiements avec statut webhook.
 - `apps.notifications.tests` : isolation utilisateur, mark read, read-all.
 - `apps.reviews.tests` : avis achat livre, anti-doublon, recalcul scores, suppression admin.
@@ -102,7 +107,7 @@ Couverture actuelle ajoutee :
 - `apps.disputes.tests` : ouverture litige, gel wallet, resolution refund/no-refund.
 - `apps.analytics.tests` : overview admin, top vendeurs, analytics vendeur.
 
-Resultat actuel : **27 tests OK**.
+Resultat actuel : **44 tests OK**.
 
 ---
 
@@ -148,5 +153,5 @@ VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
 3. Tester les parcours admin : users, produits, paiements, wallets.
 4. Appliquer les migrations `disputes.0001_initial` et `wallet.0004_transaction_unfreeze` en local et sur Render.
 5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async, release wallet automatique et cron analytics.
-6. Demarrer Phase 19 : durcir la couverture de tests avant nouvelles grosses features.
+6. Continuer Phase 19 avec des tests frontend Playwright/Vitest si necessaire avant nouvelles grosses features.
 

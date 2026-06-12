@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiCheck, FiTruck } from 'react-icons/fi'
 import { createOrder } from '../../services/orders'
@@ -13,6 +13,7 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
 
 function CheckoutPage() {
   useMeta({ title: 'Finaliser la commande' })
+  const location = useLocation()
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const items           = useCartStore((s) => s.items)
@@ -65,7 +66,11 @@ function CheckoutPage() {
       <div className="max-w-xl mx-auto px-4 sm:px-6 py-20 text-center">
         <h1 className="text-xl font-bold text-white mb-3">Connexion requise</h1>
         <p className="text-gray-400 text-sm mb-6">Vous devez etre connecté pour passer une commande.</p>
-        <Link to="/login" className="bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-6 py-3 rounded-xl transition inline-block">
+        <Link
+          to="/login"
+          state={{ from: location }}
+          className="bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-6 py-3 rounded-xl transition inline-block"
+        >
           Se connecter
         </Link>
       </div>
