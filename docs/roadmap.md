@@ -699,7 +699,7 @@ Backend disponible :
 Frontend disponible :
 - `/dashboard/notifications` consomme l'API reelle, marque lu/lu global et rafraichit toutes les 30 secondes.
 
-Limites connues : `calculate_trust_score` integre les avis depuis la phase 15 et sera enrichi avec les litiges/delais en phase 17 ; `expire_ad_campaigns` deviendra effectif avec le modele `AdCampaign` en phase 16.
+Limites connues : `calculate_trust_score` integre les avis depuis la phase 15 ; la ponderation fine par delais reste un enrichissement analytics.
 
 ### Phase 15 - Avis + trust score
 
@@ -739,6 +739,24 @@ Frontend disponible :
 - creation/suivi/pause des campagnes dans `/dashboard/ads` ;
 - suivi global dans `/admin/ads`.
 
+### Phase 17 - Litiges
+
+Etat : implemente.
+
+Backend disponible :
+- app `disputes` avec modele `Dispute` ;
+- `POST /disputes/`, `GET /disputes/`, `GET /disputes/:id/` ;
+- `GET /vendors/me/disputes/` pour le vendeur ;
+- `GET /disputes/admin/` et `POST /disputes/admin/:id/resolve/` pour l'admin ;
+- gel du wallet vendeur (`available_balance -> frozen_balance`) a l'ouverture ;
+- resolution `REFUND` : consomme le solde gele et marque la sous-commande `REFUNDED` ;
+- resolution `NO_REFUND` : libere le solde gele vers le solde disponible avec transaction `UNFREEZE`.
+
+Frontend disponible :
+- ouverture de litige depuis le detail d'une commande expediee/livree ;
+- suivi vendeur dans `/dashboard/disputes` ;
+- arbitrage admin dans `/admin/disputes`.
+
 ### Phase 19 - Tests
 
 Premiers tests backend ajoutes avec `config.test_settings`.
@@ -749,7 +767,7 @@ cd backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews, ads.
+Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews, ads, disputes.
 
-Resultat actuel : 21 tests OK.
+Resultat actuel : 24 tests OK.
 

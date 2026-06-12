@@ -24,6 +24,7 @@ from apps.orders.views import (
     VendorOrderStatusView,
 )
 from apps.ads.views import VendorAdCampaignDetailView, VendorAdCampaignListView
+from apps.disputes.views import VendorDisputeListView
 
 urlpatterns = [
     # Vendeur — boutique
@@ -49,6 +50,9 @@ urlpatterns = [
     # Vendeur â€” publicites
     path('me/ads/',             VendorAdCampaignListView.as_view(),   name='vendor-ads'),
     path('me/ads/<int:pk>/',    VendorAdCampaignDetailView.as_view(), name='vendor-ad-detail'),
+
+    # Vendeur â€” litiges
+    path('me/disputes/',        VendorDisputeListView.as_view(),      name='vendor-disputes'),
 
     # Admin
     path('admin/',                   AdminVendorListView.as_view(),    name='admin-vendor-list'),

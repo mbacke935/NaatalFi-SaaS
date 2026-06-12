@@ -10,3 +10,5 @@ export const getAdminPayments = (params) => api.get('/payments/admin/', { params
 export const getAdminReviews  = (params) => api.get('/reviews/admin/', { params })
 export const deleteAdminReview = (id) => api.delete(`/reviews/admin/${id}/`)
 export const getAdminAds      = (params) => api.get('/ads/admin/', { params })
+export const getAdminDisputes = (params) => api.get('/disputes/admin/', { params })
+export const resolveAdminDispute = (id, data) => api.post(`/disputes/admin/${id}/resolve/`, data)

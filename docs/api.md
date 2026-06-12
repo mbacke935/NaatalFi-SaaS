@@ -667,22 +667,44 @@ Ouvrir un litige. **Auth requis (client).**
 **Body**
 ```json
 {
-  "vendor_order_id": "uuid",
+  "vendor_order_id": 42,
   "reason": "ITEM_NOT_RECEIVED",
   "description": "Ma commande n'est pas arrivÃ©e aprÃ¨s 10 jours."
 }
 ```
 
+Conditions :
+- la sous-commande doit appartenir au client connecte ;
+- le statut doit etre `SHIPPED` ou `DELIVERED` ;
+- un seul litige ouvert par sous-commande.
+
+Effets :
+- cree un `Dispute` en statut `OPEN` ;
+- gele jusqu'au montant de la sous-commande depuis `Wallet.available_balance` vers `Wallet.frozen_balance` ;
+- cree une transaction wallet `FREEZE`.
+
 ### `GET /disputes/:id`
 DÃ©tail litige. **Auth requis (participant ou admin).**
+
+### `GET /disputes`
+Mes litiges client. **Auth requis.**
+
+### `GET /vendors/me/disputes`
+Litiges de ma boutique. **Vendor.**
+
+### `GET /disputes/admin`
+Liste des litiges. **Admin.**
 
 ### `POST /admin/disputes/:id/resolve`
 RÃ©soudre un litige. **Admin.**
 
 **Body**
 ```json
-{ "resolution": "RESOLVED_REFUND", "note": "Article non livrÃ© confirmÃ©." }
+{ "resolution": "REFUND", "note": "Article non livrÃ© confirmÃ©." }
 ```
+
+`resolution=REFUND` consomme le solde gele et marque la sous-commande `REFUNDED`.
+`resolution=NO_REFUND` libere le solde gele vers `available_balance` avec transaction `UNFREEZE`.
 
 ---
 

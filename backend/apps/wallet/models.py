@@ -31,6 +31,7 @@ class Transaction(models.Model):
         REFUND  = 'REFUND',  'Remboursement'
         FREEZE  = 'FREEZE',  'Gel'
         AD_SPEND = 'AD_SPEND', 'Publicite'
+        UNFREEZE = 'UNFREEZE', 'Degel litige'
         RELEASE = 'RELEASE', 'Dégel'
 
     wallet      = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')

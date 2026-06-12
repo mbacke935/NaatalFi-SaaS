@@ -5,6 +5,7 @@ import { FiArrowLeft, FiX, FiPackage, FiStar } from 'react-icons/fi'
 import { getAccountOrder } from '../../services/account'
 import { cancelOrder }     from '../../services/orders'
 import { createReview }    from '../../services/reviews'
+import { createDispute }   from '../../services/disputes'
 import { useMeta }         from '../../hooks/useMeta'
 
 const VENDOR_STATUS = {
@@ -53,6 +54,8 @@ function AccountOrderDetailPage() {
   const [cancelling, setCancelling] = useState(false)
   const [reviewForms, setReviewForms] = useState({})
   const [reviewed, setReviewed] = useState({})
+  const [disputeForms, setDisputeForms] = useState({})
+  const [disputed, setDisputed] = useState({})
 
   useEffect(() => {
     setLoading(true)
@@ -102,6 +105,28 @@ function AccountOrderDetailPage() {
       toast.success('Avis publie.')
     } catch (err) {
       toast.error(err.response?.data?.product_id?.[0] || err.response?.data?.vendor_order_id?.[0] || 'Impossible de publier cet avis.')
+    }
+  }
+
+  const updateDisputeForm = (vendorOrderId, patch) => {
+    setDisputeForms((forms) => ({
+      ...forms,
+      [vendorOrderId]: { reason: 'ITEM_NOT_RECEIVED', description: '', ...(forms[vendorOrderId] || {}), ...patch },
+    }))
+  }
+
+  const handleDispute = async (vendorOrder) => {
+    const form = disputeForms[vendorOrder.id] || { reason: 'ITEM_NOT_RECEIVED', description: '' }
+    try {
+      await createDispute({
+        vendor_order_id: vendorOrder.id,
+        reason: form.reason,
+        description: form.description,
+      })
+      setDisputed((state) => ({ ...state, [vendorOrder.id]: true }))
+      toast.success('Litige ouvert.')
+    } catch (err) {
+      toast.error(err.response?.data?.vendor_order_id?.[0] || err.response?.data?.error || 'Impossible d ouvrir ce litige.')
     }
   }
 
@@ -164,6 +189,36 @@ function AccountOrderDetailPage() {
             {cfg.step >= 0 && (
               <div className="px-4 border-b border-[#2a2a3a]">
                 <ProgressBar status={vo.status} />
+              </div>
+            )}
+
+            {['SHIPPED', 'DELIVERED'].includes(vo.status) && !disputed[vo.id] && (
+              <div className="px-4 py-3 border-b border-[#2a2a3a] bg-[#0B0B0F]">
+                <div className="grid md:grid-cols-4 gap-2">
+                  <select
+                    value={disputeForms[vo.id]?.reason || 'ITEM_NOT_RECEIVED'}
+                    onChange={(event) => updateDisputeForm(vo.id, { reason: event.target.value })}
+                    className="bg-[#16161E] border border-[#2a2a3a] rounded-lg px-3 py-2 text-xs text-white"
+                  >
+                    <option value="ITEM_NOT_RECEIVED">Non recu</option>
+                    <option value="DAMAGED">Article abime</option>
+                    <option value="WRONG_ITEM">Mauvais article</option>
+                    <option value="OTHER">Autre</option>
+                  </select>
+                  <input
+                    value={disputeForms[vo.id]?.description || ''}
+                    onChange={(event) => updateDisputeForm(vo.id, { description: event.target.value })}
+                    placeholder="Details du litige"
+                    className="md:col-span-2 bg-[#16161E] border border-[#2a2a3a] rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleDispute(vo)}
+                    className="px-3 py-2 rounded-lg border border-red-500/40 text-red-400 text-xs hover:bg-red-500/10"
+                  >
+                    Ouvrir un litige
+                  </button>
+                </div>
               </div>
             )}
 
