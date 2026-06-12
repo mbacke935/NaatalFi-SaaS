@@ -16,6 +16,7 @@ function Stars({ value }) {
 function ReviewsPage() {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const loadReviews = () => {
     setLoading(true)
@@ -30,11 +31,11 @@ function ReviewsPage() {
   }, [])
 
   const handleDelete = async (review) => {
-    if (!window.confirm('Supprimer cet avis ?')) return
     try {
       await deleteAdminReview(review.id)
       setReviews((items) => items.filter((item) => item.id !== review.id))
-      toast.success('Avis supprime.')
+      setConfirmDelete(null)
+      toast.success('Avis supprimé.')
     } catch {
       toast.error('Suppression impossible.')
     }
@@ -72,7 +73,7 @@ function ReviewsPage() {
               </div>
               <button
                 type="button"
-                onClick={() => handleDelete(review)}
+                onClick={() => setConfirmDelete(review)}
                 className="p-2 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
                 aria-label="Supprimer"
               >
@@ -80,6 +81,19 @@ function ReviewsPage() {
               </button>
             </article>
           ))}
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-semibold mb-2">Supprimer cet avis ?</h3>
+            <p className="text-gray-400 text-sm mb-5">L'avis de <span className="text-white">{confirmDelete.author_name}</span> sur <span className="text-white">{confirmDelete.product_name}</span> sera définitivement supprimé.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition">Annuler</button>
+              <button onClick={() => handleDelete(confirmDelete)} className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition">Supprimer</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -24,6 +24,7 @@ function ProductsPage() {
   const [products, setProducts] = useState([])
   const [loading, setLoading]   = useState(true)
   const [tab, setTab]           = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const load = (statusFilter) =>
     getMyProducts(statusFilter ? { status: statusFilter } : {})
@@ -34,10 +35,10 @@ function ProductsPage() {
   useEffect(() => { load(tab) }, [tab])
 
   const handleDelete = async (p) => {
-    if (!window.confirm(`Supprimer "${p.name}" ?`)) return
     try {
       await deleteProduct(p.id)
       toast.success('Produit supprimé.')
+      setConfirmDelete(null)
       load(tab)
     } catch (err) {
       toast.error(err.response?.data?.error || 'Impossible de supprimer.')
@@ -174,7 +175,7 @@ function ProductsPage() {
                           <FiEdit2 size={14} />
                         </button>
                         <button
-                          onClick={() => handleDelete(p)}
+                          onClick={() => setConfirmDelete(p)}
                           className="text-gray-400 hover:text-red-400"
                         >
                           <FiTrash2 size={14} />
@@ -186,6 +187,26 @@ function ProductsPage() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Confirmation suppression produit */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-white font-semibold mb-2">Supprimer ce produit ?</h3>
+            <p className="text-gray-400 text-sm mb-5">
+              "<span className="text-white">{confirmDelete.name}</span>" sera définitivement supprimé.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition">
+                Annuler
+              </button>
+              <button onClick={() => handleDelete(confirmDelete)} className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition">
+                Supprimer
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

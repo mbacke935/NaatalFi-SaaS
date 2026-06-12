@@ -214,6 +214,7 @@ function CategoriesPage() {
   const [categories, setCategories] = useState([])
   const [loading, setLoading]       = useState(true)
   const [modal, setModal]           = useState({ open: false, initial: null })
+  const [confirmDelete, setConfirmDelete] = useState(null)
   const [draggingId, setDraggingId] = useState(null)
   const [dragOverId, setDragOverId] = useState(null)
   const dragContext                  = useRef({})
@@ -255,10 +256,10 @@ function CategoriesPage() {
 
   // ── Delete ──
   const handleDelete = async (category) => {
-    if (!window.confirm(`Supprimer "${category.name}" ?`)) return
     try {
       await adminDeleteCategory(category.id)
       toast.success('Catégorie supprimée.')
+      setConfirmDelete(null)
       load()
     } catch (err) {
       toast.error(err.response?.data?.error || 'Impossible de supprimer.')
@@ -345,7 +346,7 @@ function CategoriesPage() {
               key={cat.id}
               category={cat}
               onEdit={(c) => setModal({ open: true, initial: c })}
-              onDelete={handleDelete}
+              onDelete={(c) => setConfirmDelete(c)}
               onDragStart={handleDragStart}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
@@ -362,6 +363,21 @@ function CategoriesPage() {
         parents={categories}
         initial={modal.initial}
       />
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-semibold mb-2">Supprimer la catégorie ?</h3>
+            <p className="text-gray-400 text-sm mb-5">
+              "<span className="text-white">{confirmDelete.name}</span>" et toutes ses sous-catégories seront supprimées.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition">Annuler</button>
+              <button onClick={() => handleDelete(confirmDelete)} className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

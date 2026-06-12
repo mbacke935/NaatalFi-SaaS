@@ -48,8 +48,8 @@ function DashboardPage() {
 
   const recentOrders = orders.slice(0, 5)
   const lowStockProducts = products
-    .filter((p) => p.status === 'OUT_OF_STOCK')
-    .slice(0, 4)
+    .filter((p) => p.status === 'OUT_OF_STOCK' || (p.stock_quantity != null && p.stock_quantity > 0 && p.stock_quantity < 5))
+    .slice(0, 5)
 
   if (loading) {
     return (
@@ -139,14 +139,18 @@ function DashboardPage() {
           </div>
 
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
-            <h2 className="font-semibold text-white mb-3">Stock a surveiller</h2>
+            <h2 className="font-semibold text-white mb-3">Stock à surveiller</h2>
             {lowStockProducts.length === 0 ? (
-              <p className="text-sm text-gray-500">Aucun produit en rupture.</p>
+              <p className="text-sm text-gray-500">Tous vos stocks sont OK.</p>
             ) : (
               <div className="space-y-2">
                 {lowStockProducts.map((p) => (
-                  <Link key={p.id} to={`/dashboard/products/${p.id}/edit`} className="block text-sm text-gray-300 hover:text-white truncate">
-                    {p.name}
+                  <Link key={p.id} to={`/dashboard/products/${p.id}/edit`} className="flex items-center justify-between gap-2 hover:bg-white/5 rounded-lg px-1 py-0.5 transition">
+                    <span className="text-sm text-gray-300 hover:text-white truncate">{p.name}</span>
+                    {p.status === 'OUT_OF_STOCK'
+                      ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-900/40 text-red-400 flex-shrink-0">Rupture</span>
+                      : <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-yellow-900/40 text-yellow-400 flex-shrink-0">{p.stock_quantity} restant{p.stock_quantity !== 1 ? 's' : ''}</span>
+                    }
                   </Link>
                 ))}
               </div>

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiStar, FiShoppingCart, FiPackage, FiCheck, FiMinus, FiPlus } from 'react-icons/fi'
+import { FiStar, FiShoppingCart, FiPackage, FiCheck, FiMinus, FiPlus, FiHeart } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { getMarketplaceProduct, getProductReviews } from '../../services/marketplace'
+import { addFavorite, removeFavorite, getFavorites } from '../../services/account'
 import { useMeta } from '../../hooks/useMeta'
 import useCartStore from '../../store/cartStore'
+import useAuthStore from '../../store/authStore'
 
 function ProductDetailPage() {
   const { slug }               = useParams()
@@ -17,6 +19,9 @@ function ProductDetailPage() {
   const [reviews, setReviews] = useState([])
   const addItem = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favLoading, setFavLoading] = useState(false)
 
   useMeta({
     title:       product?.name,
@@ -29,14 +34,23 @@ function ProductDetailPage() {
     setActiveImage(0)
     setSelectedVariants({})
     setQuantity(1)
+    setIsFavorited(false)
     getMarketplaceProduct(slug)
-      .then(({ data }) => setProduct(data))
+      .then(({ data }) => {
+        setProduct(data)
+        if (isAuthenticated) {
+          getFavorites().then(({ data: favs }) => {
+            const list = Array.isArray(favs) ? favs : (favs?.results ?? [])
+            setIsFavorited(list.some((f) => f.product?.id === data.id))
+          }).catch(() => {})
+        }
+      })
       .catch((err) => { if (err.response?.status === 404) setNotFound(true) })
       .finally(() => setLoading(false))
     getProductReviews(slug)
       .then(({ data }) => setReviews(Array.isArray(data) ? data : []))
       .catch(() => setReviews([]))
-  }, [slug])
+  }, [slug, isAuthenticated])
 
   if (loading) {
     return (
@@ -81,6 +95,26 @@ function ProductDetailPage() {
   // Tous les types de variantes ont une sélection
   const allTypesSelected = Object.keys(variantGroups).every((name) => selectedVariants[name])
   const canAddToCart     = Object.keys(variantGroups).length === 0 || allTypesSelected
+
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated) { toast.error('Connectez-vous pour gérer vos favoris.'); return }
+    setFavLoading(true)
+    try {
+      if (isFavorited) {
+        await removeFavorite(product.id)
+        setIsFavorited(false)
+        toast.success('Retiré des favoris.')
+      } else {
+        await addFavorite(product.id)
+        setIsFavorited(true)
+        toast.success('Ajouté aux favoris !')
+      }
+    } catch {
+      toast.error('Impossible de modifier les favoris.')
+    } finally {
+      setFavLoading(false)
+    }
+  }
 
   const handleAddToCart = () => {
     const primaryVariant = selectedVariantObjects[0] ?? null
@@ -227,20 +261,34 @@ function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Add to cart */}
-          <button
-            onClick={handleAddToCart}
-            disabled={!canAddToCart}
-            className={`w-full flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl text-sm mb-6 transition ${
-              canAddToCart
-                ? added
-                  ? 'bg-green-600 text-white'
-                  : 'bg-[#D4AF37] hover:bg-[#c49e30] text-black'
-                : 'bg-[#D4AF37]/20 text-[#D4AF37]/50 border border-[#D4AF37]/20 cursor-not-allowed'
-            }`}
-          >
-            {added ? <><FiCheck size={18} /> Ajouté au panier</> : <><FiShoppingCart size={18} /> Ajouter au panier</>}
-          </button>
+          {/* Add to cart + Favorites */}
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={handleAddToCart}
+              disabled={!canAddToCart}
+              className={`flex-1 flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl text-sm transition ${
+                canAddToCart
+                  ? added
+                    ? 'bg-green-600 text-white'
+                    : 'bg-[#D4AF37] hover:bg-[#c49e30] text-black'
+                  : 'bg-[#D4AF37]/20 text-[#D4AF37]/50 border border-[#D4AF37]/20 cursor-not-allowed'
+              }`}
+            >
+              {added ? <><FiCheck size={18} /> Ajouté au panier</> : <><FiShoppingCart size={18} /> Ajouter au panier</>}
+            </button>
+            <button
+              onClick={handleToggleFavorite}
+              disabled={favLoading}
+              aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              className={`w-14 flex items-center justify-center rounded-xl border transition ${
+                isFavorited
+                  ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
+                  : 'border-[#2a2a3a] text-gray-400 hover:text-red-400 hover:border-red-500/40 hover:bg-red-500/10'
+              }`}
+            >
+              <FiHeart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
+            </button>
+          </div>
 
           {/* Vendor card */}
           <Link to={`/vendors/${product.vendor_slug || ''}`}

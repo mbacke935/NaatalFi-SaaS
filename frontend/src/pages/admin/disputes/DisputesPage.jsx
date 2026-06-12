@@ -13,6 +13,8 @@ const statusLabels = {
 function AdminDisputesPage() {
   const [disputes, setDisputes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [resolveDialog, setResolveDialog] = useState(null) // { dispute, resolution }
+  const [adminNote, setAdminNote] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -26,14 +28,19 @@ function AdminDisputesPage() {
     load()
   }, [])
 
-  const resolve = async (dispute, resolution) => {
-    const note = window.prompt('Note admin', '') || ''
+  const openResolveDialog = (dispute, resolution) => {
+    setResolveDialog({ dispute, resolution })
+    setAdminNote('')
+  }
+
+  const resolve = async () => {
     try {
-      await resolveAdminDispute(dispute.id, { resolution, note })
-      toast.success('Litige resolu.')
+      await resolveAdminDispute(resolveDialog.dispute.id, { resolution: resolveDialog.resolution, note: adminNote })
+      toast.success('Litige résolu.')
+      setResolveDialog(null)
       load()
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Resolution impossible.')
+      toast.error(err.response?.data?.error || 'Résolution impossible.')
     }
   }
 
@@ -72,7 +79,7 @@ function AdminDisputesPage() {
               <div className="flex flex-wrap gap-2 mt-4">
                 <button
                   type="button"
-                  onClick={() => resolve(dispute, 'REFUND')}
+                  onClick={() => openResolveDialog(dispute, 'REFUND')}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm"
                 >
                   <FiRefreshCcw size={14} />
@@ -80,11 +87,11 @@ function AdminDisputesPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => resolve(dispute, 'NO_REFUND')}
+                  onClick={() => openResolveDialog(dispute, 'NO_REFUND')}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-300 text-sm"
                 >
                   <FiCheckCircle size={14} />
-                  Liberer vendeur
+                  Libérer vendeur
                 </button>
               </div>
             )}
@@ -92,6 +99,37 @@ function AdminDisputesPage() {
           </article>
         ))}
       </div>
+
+      {resolveDialog && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-semibold mb-1">
+              {resolveDialog.resolution === 'REFUND' ? 'Rembourser l\'acheteur' : 'Libérer le vendeur'}
+            </h3>
+            <p className="text-gray-400 text-sm mb-4">Litige #{resolveDialog.dispute.id} — {resolveDialog.dispute.vendor_name}</p>
+            <textarea
+              value={adminNote}
+              onChange={(e) => setAdminNote(e.target.value)}
+              placeholder="Note admin (optionnel)"
+              rows={3}
+              className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition resize-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setResolveDialog(null)} className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition">Annuler</button>
+              <button
+                onClick={resolve}
+                className={`flex-1 px-4 py-2 font-semibold rounded-lg text-sm transition ${
+                  resolveDialog.resolution === 'REFUND'
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

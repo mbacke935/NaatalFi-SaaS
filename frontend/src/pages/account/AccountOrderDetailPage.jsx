@@ -52,6 +52,7 @@ function AccountOrderDetailPage() {
   const [loading,    setLoading]    = useState(true)
   const [notFound,   setNotFound]   = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [reviewForms, setReviewForms] = useState({})
   const [reviewed, setReviewed] = useState({})
   const [disputeForms, setDisputeForms] = useState({})
@@ -66,8 +67,8 @@ function AccountOrderDetailPage() {
   }, [id])
 
   const handleCancel = async () => {
-    if (!window.confirm('Annuler toute la commande ?')) return
     setCancelling(true)
+    setShowCancelConfirm(false)
     try {
       await cancelOrder(id)
       setOrder((o) => ({
@@ -295,15 +296,39 @@ function AccountOrderDetailPage() {
       </div>
 
       {/* Bouton annulation */}
-      {canCancel && (
+      {canCancel && !showCancelConfirm && (
         <button
-          onClick={handleCancel}
+          onClick={() => setShowCancelConfirm(true)}
           disabled={cancelling}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border border-red-500/40 text-red-400 hover:bg-red-500/10 transition disabled:opacity-50"
         >
           <FiX size={14} />
-          {cancelling ? 'Annulation...' : 'Annuler la commande'}
+          Annuler la commande
         </button>
+      )}
+
+      {canCancel && showCancelConfirm && (
+        <div className="bg-red-900/15 border border-red-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <p className="text-sm text-red-300 flex-1">
+            Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.
+          </p>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setShowCancelConfirm(false)}
+              className="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white border border-[#2a2a3a] hover:border-gray-500 transition"
+            >
+              Garder
+            </button>
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-red-600 hover:bg-red-700 text-white transition disabled:opacity-50"
+            >
+              <FiX size={14} />
+              {cancelling ? 'Annulation...' : 'Confirmer'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { FiArrowLeft, FiCheck, FiTruck } from 'react-icons/fi'
+import { FiArrowLeft, FiCheck, FiMapPin, FiTruck } from 'react-icons/fi'
 import { createOrder } from '../../services/orders'
 import { initiatePayment } from '../../services/payments'
 import { estimateShipping, SENEGAL_REGIONS } from '../../services/shipping'
+import { getAddresses } from '../../services/account'
 import useCartStore from '../../store/cartStore'
 import useAuthStore from '../../store/authStore'
 import { useMeta } from '../../hooks/useMeta'
@@ -25,7 +26,8 @@ function CheckoutPage() {
   const [region,    setRegion]    = useState('')
   const [notes,     setNotes]     = useState('')
   const [loading,   setLoading]   = useState(false)
-  const [shippingEstimate, setShippingEstimate] = useState({}) // {vendorId: {price, estimated_days}}
+  const [savedAddresses, setSavedAddresses] = useState([])
+  const [shippingEstimate, setShippingEstimate] = useState({})
   const [estimating, setEstimating] = useState(false)
 
   const groups = byVendor()
@@ -36,6 +38,17 @@ function CheckoutPage() {
     0
   )
   const grandTotal = cartTotal + shippingTotal
+
+  useEffect(() => {
+    getAddresses().then(({ data }) => setSavedAddresses(Array.isArray(data) ? data : (data?.results ?? []))).catch(() => {})
+  }, [])
+
+  const applyAddress = (addr) => {
+    const parts = [addr.street, addr.city].filter(Boolean)
+    if (addr.full_name) parts.unshift(addr.full_name)
+    setAddress(parts.join(', '))
+    if (addr.region) setRegion(addr.region)
+  }
 
   const fetchEstimate = useCallback(async (reg) => {
     if (!reg || items.length === 0) {
@@ -133,6 +146,30 @@ function CheckoutPage() {
           {/* Adresse */}
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
             <h2 className="text-white font-semibold mb-4">Adresse de livraison</h2>
+
+            {savedAddresses.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
+                  <FiMapPin size={11} /> Adresses sauvegardées
+                </p>
+                <div className="flex flex-col gap-2">
+                  {savedAddresses.slice(0, 3).map((addr) => (
+                    <button
+                      key={addr.id}
+                      type="button"
+                      onClick={() => applyAddress(addr)}
+                      className="text-left px-3 py-2.5 rounded-lg border border-[#2a2a3a] hover:border-[#D4AF37]/60 text-sm text-gray-300 hover:text-white transition bg-[#0B0B0F]"
+                    >
+                      <span className="font-medium">{addr.label}</span>
+                      {addr.is_default && <span className="ml-2 text-xs text-[#D4AF37]">Par défaut</span>}
+                      <span className="block text-xs text-gray-500 mt-0.5 line-clamp-1">{addr.street}, {addr.city}{addr.region ? ` — ${addr.region}` : ''}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="border-t border-[#2a2a3a] mt-4 mb-3" />
+              </div>
+            )}
+
             <div className="space-y-3">
               <select
                 value={region}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { FiPlus, FiMapPin, FiEdit2, FiTrash2, FiCheck, FiX } from 'react-icons/fi'
+import { FiPlus, FiMapPin, FiEdit2, FiTrash2, FiCheck, FiX, FiAlertTriangle } from 'react-icons/fi'
 import { getAddresses, createAddress, updateAddress, deleteAddress } from '../../services/account'
 import { useMeta } from '../../hooks/useMeta'
 
@@ -82,6 +82,7 @@ function AccountAddressesPage() {
   const [loading,   setLoading]   = useState(true)
   const [showForm,  setShowForm]  = useState(false)
   const [editing,   setEditing]   = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const load = () => {
     setLoading(true)
@@ -108,10 +109,14 @@ function AccountAddressesPage() {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer cette adresse ?')) return
-    await deleteAddress(id)
-    toast.success('Adresse supprimée.')
-    load()
+    try {
+      await deleteAddress(id)
+      toast.success('Adresse supprimée.')
+      setConfirmDelete(null)
+      load()
+    } catch {
+      toast.error('Impossible de supprimer cette adresse.')
+    }
   }
 
   return (
@@ -132,6 +137,22 @@ function AccountAddressesPage() {
         <div className="bg-[#16161E] border border-[#D4AF37]/30 rounded-xl p-5 mb-5">
           <h2 className="text-sm font-semibold text-white mb-4">Nouvelle adresse</h2>
           <AddressForm initial={EMPTY} onSave={handleCreate} onCancel={() => setShowForm(false)} />
+        </div>
+      )}
+
+      {/* Confirmation suppression */}
+      {confirmDelete && (
+        <div className="bg-red-900/15 border border-red-500/30 rounded-xl p-4 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <FiAlertTriangle size={16} className="text-red-400 flex-shrink-0 mt-0.5 sm:mt-0" />
+          <p className="text-sm text-red-300 flex-1">Supprimer cette adresse ? Cette action est irréversible.</p>
+          <div className="flex gap-2 flex-shrink-0">
+            <button onClick={() => setConfirmDelete(null)} className="px-3 py-1.5 text-sm border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg transition">
+              Annuler
+            </button>
+            <button onClick={() => handleDelete(confirmDelete)} className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
+              Supprimer
+            </button>
+          </div>
         </div>
       )}
 
@@ -178,7 +199,7 @@ function AccountAddressesPage() {
                     <button onClick={() => setEditing(addr)} className="p-1.5 text-gray-500 hover:text-white transition">
                       <FiEdit2 size={14} />
                     </button>
-                    <button onClick={() => handleDelete(addr.id)} className="p-1.5 text-gray-500 hover:text-red-400 transition">
+                    <button onClick={() => setConfirmDelete(addr.id)} className="p-1.5 text-gray-500 hover:text-red-400 transition">
                       <FiTrash2 size={14} />
                     </button>
                   </div>

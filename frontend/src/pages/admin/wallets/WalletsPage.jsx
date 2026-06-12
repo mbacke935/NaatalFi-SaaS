@@ -16,6 +16,9 @@ function WalletsPage() {
   const [payouts, setPayouts] = useState([])
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
+  const [confirmApprove, setConfirmApprove] = useState(null)
+  const [rejectDialog, setRejectDialog] = useState(null)
+  const [rejectNote, setRejectNote] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -29,12 +32,12 @@ function WalletsPage() {
 
   useEffect(() => { load() }, [])
 
-  const approve = async (id) => {
-    if (!window.confirm('Approuver ce retrait ?')) return
+  const approve = async (payout) => {
+    setConfirmApprove(null)
     setActing(true)
     try {
-      await adminApprovePayout(id)
-      toast.success('Retrait approuve.')
+      await adminApprovePayout(payout.id)
+      toast.success('Retrait approuvé.')
       load()
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erreur.')
@@ -43,13 +46,14 @@ function WalletsPage() {
     }
   }
 
-  const reject = async (id) => {
-    const note = window.prompt('Motif du rejet')
-    if (!note) return
+  const reject = async () => {
+    if (!rejectNote.trim()) { toast.error('Le motif est obligatoire.'); return }
     setActing(true)
     try {
-      await adminRejectPayout(id, note)
-      toast.success('Retrait rejete.')
+      await adminRejectPayout(rejectDialog.id, rejectNote.trim())
+      toast.success('Retrait rejeté.')
+      setRejectDialog(null)
+      setRejectNote('')
       load()
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erreur.')
@@ -116,10 +120,10 @@ function WalletsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
-                      <button disabled={acting} onClick={() => approve(payout.id)} className="p-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-50">
+                      <button disabled={acting} onClick={() => setConfirmApprove(payout)} className="p-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 disabled:opacity-50">
                         <FiCheck size={14} />
                       </button>
-                      <button disabled={acting} onClick={() => reject(payout.id)} className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 disabled:opacity-50">
+                      <button disabled={acting} onClick={() => { setRejectDialog(payout); setRejectNote('') }} className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 disabled:opacity-50">
                         <FiX size={14} />
                       </button>
                     </div>
@@ -156,6 +160,41 @@ function WalletsPage() {
           </tbody>
         </table>
       </div>
+      {/* Dialog approbation retrait */}
+      {confirmApprove && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-semibold mb-2">Approuver ce retrait ?</h3>
+            <p className="text-gray-400 text-sm mb-1">Vendeur : <span className="text-white">{confirmApprove.vendor_name}</span></p>
+            <p className="text-[#D4AF37] font-bold text-lg mb-5">{fmt(confirmApprove.amount)}</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmApprove(null)} className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition">Annuler</button>
+              <button onClick={() => approve(confirmApprove)} disabled={acting} className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg text-sm transition disabled:opacity-50">Approuver</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dialog rejet retrait */}
+      {rejectDialog && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-semibold mb-2">Rejeter ce retrait</h3>
+            <p className="text-gray-400 text-sm mb-4">Vendeur : <span className="text-white">{rejectDialog.vendor_name}</span> · {fmt(rejectDialog.amount)}</p>
+            <textarea
+              value={rejectNote}
+              onChange={(e) => setRejectNote(e.target.value)}
+              placeholder="Motif du rejet (obligatoire)"
+              rows={3}
+              className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition resize-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setRejectDialog(null)} className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition">Annuler</button>
+              <button onClick={reject} disabled={acting || !rejectNote.trim()} className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition disabled:opacity-50">Rejeter</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

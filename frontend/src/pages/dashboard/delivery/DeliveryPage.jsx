@@ -196,7 +196,8 @@ function ZoneModal({ zone, onClose, onSave }) {
 export default function DeliveryPage() {
   const [zones,   setZones]   = useState([])
   const [loading, setLoading] = useState(true)
-  const [modal,   setModal]   = useState(null) // null | 'new' | zone object
+  const [modal,   setModal]   = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const load = () => {
     setLoading(true)
@@ -216,11 +217,11 @@ export default function DeliveryPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer cette zone de livraison ?')) return
+  const handleDelete = async (zone) => {
     try {
-      await deleteShippingZone(id)
-      setZones((prev) => prev.filter((z) => z.id !== id))
+      await deleteShippingZone(zone.id)
+      setZones((prev) => prev.filter((z) => z.id !== zone.id))
+      setConfirmDelete(null)
       toast.success('Zone supprimée.')
     } catch {
       toast.error('Erreur lors de la suppression.')
@@ -341,7 +342,7 @@ export default function DeliveryPage() {
                       <FiEdit2 size={16} />
                     </button>
                     <button
-                      onClick={() => handleDelete(zone.id)}
+                      onClick={() => setConfirmDelete(zone)}
                       className="text-gray-400 hover:text-red-400 transition p-1"
                     >
                       <FiTrash2 size={16} />
@@ -360,6 +361,21 @@ export default function DeliveryPage() {
           onClose={() => setModal(null)}
           onSave={handleSave}
         />
+      )}
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-semibold mb-2">Supprimer la zone de livraison ?</h3>
+            <p className="text-gray-400 text-sm mb-5">
+              "<span className="text-white">{confirmDelete.name}</span>" sera définitivement supprimée.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(null)} className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition">Annuler</button>
+              <button onClick={() => handleDelete(confirmDelete)} className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition">Supprimer</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiSearch, FiShoppingCart, FiUser, FiMenu, FiX } from 'react-icons/fi'
 import useAuthStore from '../../store/authStore'
@@ -11,11 +11,24 @@ function PublicNav() {
   const cartCount         = countItems()
   const [q, setQ]         = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const debounceRef       = useRef(null)
 
   const handleSearch = (e) => {
     e.preventDefault()
     if (q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`)
   }
+
+  const handleSearchInput = (val) => {
+    setQ(val)
+    clearTimeout(debounceRef.current)
+    if (val.trim().length >= 2) {
+      debounceRef.current = setTimeout(() => {
+        navigate(`/search?q=${encodeURIComponent(val.trim())}`, { replace: true })
+      }, 400)
+    }
+  }
+
+  useEffect(() => () => clearTimeout(debounceRef.current), [])
 
   return (
     <nav className="sticky top-0 z-50 bg-[#0B0B0F]/95 backdrop-blur border-b border-[#2a2a3a]">
@@ -33,7 +46,7 @@ function PublicNav() {
             <input
               type="text"
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => handleSearchInput(e.target.value)}
               placeholder="Rechercher un produit, une boutique..."
               className="w-full bg-[#16161E] border border-[#2a2a3a] rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition"
             />
@@ -114,7 +127,7 @@ function PublicNav() {
             <input
               type="text"
               value={q}
-              onChange={(e) => setQ(e.target.value)}
+              onChange={(e) => handleSearchInput(e.target.value)}
               placeholder="Rechercher..."
               className="w-full bg-[#16161E] border border-[#2a2a3a] rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-gray-600 focus:outline-none"
             />
