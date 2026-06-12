@@ -1,6 +1,7 @@
 from decimal import Decimal
 from rest_framework import serializers
 from .models import Wallet, Transaction, PayoutRequest
+from .services import PLATFORM_COMMISSION_RATE
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -46,7 +47,8 @@ class WalletSerializer(serializers.ModelSerializer):
         return obj.vendor.plan.name if obj.vendor.plan else 'FREE'
 
     def get_commission_rate(self, obj):
-        return str(obj.vendor.plan.commission_rate) if obj.vendor.plan else '10.00'
+        # MVP: taux flat 8% indépendant du plan
+        return str(PLATFORM_COMMISSION_RATE)
 
 
 class AdminWalletSerializer(serializers.ModelSerializer):
@@ -67,7 +69,8 @@ class AdminWalletSerializer(serializers.ModelSerializer):
         return obj.vendor.plan.name if obj.vendor.plan else 'FREE'
 
     def get_commission_rate(self, obj):
-        return str(obj.vendor.plan.commission_rate) if obj.vendor.plan else '10.00'
+        # MVP: taux flat 8% indépendant du plan
+        return str(PLATFORM_COMMISSION_RATE)
 
 
 class AdminPayoutRequestSerializer(serializers.ModelSerializer):
