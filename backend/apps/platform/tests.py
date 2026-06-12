@@ -28,12 +28,21 @@ class PlatformSettingsApiTests(APITestCase):
             contact_email='contact@naatalfi.com',
             phone_number='+221771234567',
             instagram_url='https://instagram.com/naatalfi',
+            popular_categories=[
+                {
+                    'title': 'Artisanat',
+                    'image': 'https://images.example.com/artisanat.jpg',
+                    'query': 'artisanat',
+                    'href': '/marketplace?category=artisanat',
+                },
+            ],
         )
 
         response = self.client.get(reverse('platform-public-settings'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['contact_email'], 'contact@naatalfi.com')
         self.assertEqual(response.data['instagram_url'], 'https://instagram.com/naatalfi')
+        self.assertEqual(response.data['popular_categories'][0]['title'], 'Artisanat')
 
     def test_only_admin_can_update_platform_settings(self):
         self.client.force_authenticate(self.customer)
@@ -51,9 +60,18 @@ class PlatformSettingsApiTests(APITestCase):
             'tiktok_url': 'https://www.tiktok.com/@naatalfi',
             'linkedin_url': 'https://linkedin.com/company/naatalfi',
             'hero_image_url': 'https://images.example.com/hero.jpg',
+            'popular_categories': [
+                {
+                    'title': 'Mode',
+                    'image': 'https://images.example.com/mode.jpg',
+                    'query': 'mode',
+                    'href': '/marketplace?category=mode',
+                },
+            ],
         }, format='json')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['contact_email'], 'support@naatalfi.com')
         self.assertEqual(response.data['hero_image_url'], 'https://images.example.com/hero.jpg')
+        self.assertEqual(response.data['popular_categories'][0]['title'], 'Mode')
         self.assertEqual(PlatformSettings.objects.count(), 1)

@@ -7,7 +7,7 @@ import { useMeta } from '../../hooks/useMeta'
 
 const fallbackHeroImage = 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=1800&q=85'
 
-const categoryPosters = [
+const defaultCategoryPosters = [
   {
     title: 'Mode & vetements',
     query: 'mode vetements',
@@ -101,19 +101,29 @@ function HomePage() {
   }, [])
 
   const posters = useMemo(() => {
-    return categoryPosters.map((poster) => {
+    const configured = Array.isArray(platformSettings?.popular_categories)
+      ? platformSettings.popular_categories.filter((item) => item?.title && item?.image)
+      : []
+    const source = configured.length > 0 ? configured : defaultCategoryPosters
+
+    return source.map((poster) => {
+      if (poster.href) {
+        return poster
+      }
+
       const match = categories.find((cat) => {
         const haystack = `${normalize(cat.name)} ${normalize(cat.slug)}`
-        return poster.keywords.some((keyword) => haystack.includes(normalize(keyword)))
+        const keywords = poster.keywords || [poster.title, poster.query]
+        return keywords.some((keyword) => haystack.includes(normalize(keyword)))
       })
       return {
         ...poster,
         href: match?.slug
           ? `/marketplace?category=${match.slug}`
-          : `/search?q=${encodeURIComponent(poster.query)}`,
+          : `/search?q=${encodeURIComponent(poster.query || poster.title)}`,
       }
     })
-  }, [categories])
+  }, [categories, platformSettings])
 
   const heroImage = platformSettings?.hero_image_url || fallbackHeroImage
 
@@ -183,12 +193,12 @@ function HomePage() {
           </Link>
         </div>
 
-        <div className="home-category-track flex gap-4 lg:grid lg:grid-cols-3">
+        <div className="home-category-track flex gap-4">
           {[...posters, ...posters].map((cat, index) => (
             <Link
               key={`${cat.title}-${index}`}
               to={cat.href}
-              className="group relative min-h-[220px] w-[78vw] max-w-[340px] sm:w-[320px] lg:w-auto lg:max-w-none shrink-0 rounded-lg overflow-hidden border border-[#2a2a3a] hover:border-[#D4AF37]/60 transition will-change-transform"
+              className="group relative min-h-[220px] w-[78vw] max-w-[340px] sm:w-[320px] lg:w-[360px] xl:w-[390px] shrink-0 rounded-lg overflow-hidden border border-[#2a2a3a] hover:border-[#D4AF37]/60 transition will-change-transform"
               style={{ animationDelay: `${(index % posters.length) * 80}ms` }}
             >
               <img

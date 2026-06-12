@@ -789,7 +789,7 @@ Query params : `?period=7d|30d|90d`
 ## 17. Plateforme â€” `/platform`
 
 ### `GET /platform/public/`
-Informations publiques affichees dans le footer et image hero de l'accueil. **Public.**
+Informations publiques affichees dans le footer, image hero et categories populaires de l'accueil. **Public.**
 
 **Reponse 200**
 ```json
@@ -800,7 +800,15 @@ Informations publiques affichees dans le footer et image hero de l'accueil. **Pu
   "instagram_url": "https://instagram.com/naatalfi",
   "tiktok_url": "https://www.tiktok.com/@naatalfi",
   "linkedin_url": "https://linkedin.com/company/naatalfi",
-  "hero_image_url": "https://cdn.example.com/hero.jpg"
+  "hero_image_url": "https://cdn.example.com/hero.jpg",
+  "popular_categories": [
+    {
+      "title": "Mode & vetements",
+      "image": "https://cdn.example.com/mode.jpg",
+      "query": "mode vetements",
+      "href": "/marketplace?category=mode"
+    }
+  ]
 }
 ```
 

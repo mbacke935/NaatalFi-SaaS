@@ -44,7 +44,7 @@ Resultat actuel : **61 tests OK**.
 | `ads` | `apps/ads/tests.py` | — | Creation campagne, debit wallet, solde insuffisant, produits sponsorises |
 | `disputes` | `apps/disputes/tests.py` | — | Ouverture litige, gel wallet, resolution refund/no-refund |
 | `analytics` | `apps/analytics/tests.py` | — | Overview admin, top vendeurs, analytics vendeur |
-| `platform` | `apps/platform/tests.py` | 2 | Lecture publique footer/hero, modification admin des infos plateforme |
+| `platform` | `apps/platform/tests.py` | 2 | Lecture publique footer/hero/categories populaires, modification admin des infos plateforme |
 
 ---
 

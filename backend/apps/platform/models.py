@@ -10,6 +10,7 @@ class PlatformSettings(models.Model):
     tiktok_url = models.URLField(max_length=500, blank=True)
     linkedin_url = models.URLField(max_length=500, blank=True)
     hero_image_url = models.URLField(max_length=1000, blank=True)
+    popular_categories = models.JSONField(default=list, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

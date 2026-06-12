@@ -19,18 +19,6 @@
   animation-play-state: paused;
 }
 
-@media (min-width: 1024px) {
-  .home-category-track {
-    width: auto;
-    animation: none;
-    transform: none;
-  }
-
-  .home-category-track > :nth-child(n + 7) {
-    display: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .home-category-track {
     animation: none;

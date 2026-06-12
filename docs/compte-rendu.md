@@ -25,7 +25,7 @@ NaatalFi est une marketplace multi-vendeurs senegalaise. Le socle technique est 
 ### Fonctionnalites actives au lancement
 
 Auth, catalogue, recherche, panier, commandes multi-vendeurs, paiement PayTech, historique/suivi commandes, gestion boutique/produits/stock/commandes/livraison/wallet vendeur, admin KYC/vendeurs/produits/commandes/wallets/retraits/categories/analytics.
-Le footer public et l'image hero de l'accueil sont configurables par l'admin : email, telephone, Facebook, Instagram, TikTok, LinkedIn et URL de l'image hero.
+Le footer public, l'image hero et les categories populaires de l'accueil sont configurables par l'admin : email, telephone, Facebook, Instagram, TikTok, LinkedIn, URL de l'image hero et affiches de categories.
 
 ### Fonctionnalites differees (code conserve en commentaire)
 
@@ -76,7 +76,7 @@ Le footer public et l'image hero de l'accueil sont configurables par l'admin : e
 | `ads` | Complet (defere MVP) | Campagnes sponsorisees, debit wallet, injection marketplace, expiration Celery |
 | `disputes` | Complet (defere MVP) | Ouverture litige, gel wallet, resolution admin remboursement/liberation |
 | `analytics` | Complet | GMV, commissions, top vendeurs/produits, serie quotidienne, endpoints admin + vendeur |
-| `platform` | Complet | Informations publiques de plateforme, API publique footer/hero, edition admin |
+| `platform` | Complet | Informations publiques de plateforme, API publique footer/hero/categories populaires, edition admin |
 
 ### Commission — flux complet
 
