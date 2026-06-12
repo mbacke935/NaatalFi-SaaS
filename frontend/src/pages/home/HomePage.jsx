@@ -1,15 +1,56 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { FiSearch, FiArrowRight, FiShield, FiTruck } from 'react-icons/fi'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { FiArrowRight } from 'react-icons/fi'
 import { getFeaturedProducts, getMarketplaceCategories } from '../../services/marketplace'
+import { getPublicPlatformSettings } from '../../services/platform'
 import { useMeta } from '../../hooks/useMeta'
 
-// ── Product card ──────────────────────────────────────────────────────
+const fallbackHeroImage = 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=1800&q=85'
+
+const categoryPosters = [
+  {
+    title: 'Mode & vetements',
+    query: 'mode vetements',
+    image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80',
+    keywords: ['mode', 'vetement', 'vêtement', 'fashion', 'habit'],
+  },
+  {
+    title: 'Beaute',
+    query: 'beaute',
+    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=900&q=80',
+    keywords: ['beaute', 'beauté', 'cosmetique', 'cosmétique', 'soin'],
+  },
+  {
+    title: 'Accessoires',
+    query: 'accessoires',
+    image: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=900&q=80',
+    keywords: ['accessoire', 'bijou', 'sac'],
+  },
+  {
+    title: 'Maison & deco',
+    query: 'maison deco',
+    image: 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=900&q=80',
+    keywords: ['maison', 'deco', 'déco', 'decoration', 'décoration'],
+  },
+  {
+    title: 'Artisanat',
+    query: 'artisanat',
+    image: 'https://images.unsplash.com/photo-1590845947698-8924d7409b56?auto=format&fit=crop&w=900&q=80',
+    keywords: ['artisanat', 'artisan', 'fait main', 'handmade'],
+  },
+  {
+    title: 'Electronique',
+    query: 'electronique',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80',
+    keywords: ['electronique', 'électronique', 'tech', 'telephone', 'téléphone'],
+  },
+]
+
 function ProductCard({ product }) {
   return (
     <Link
       to={`/marketplace/${product.slug}`}
-      className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
+      className="group bg-[#16161E] border border-[#2a2a3a] rounded-lg overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
       <div className="aspect-square bg-[#2a2a3a] overflow-hidden">
         {product.cover_image ? (
@@ -19,7 +60,7 @@ function ProductCard({ product }) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">📦</div>
+          <div className="w-full h-full flex items-center justify-center text-gray-700 text-sm">Image</div>
         )}
       </div>
       <div className="p-3">
@@ -36,108 +77,138 @@ function ProductCard({ product }) {
   )
 }
 
+function normalize(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
 function HomePage() {
   useMeta({
-    title: 'NaatalFi — Marketplace sénégalaise',
-    description: 'Découvrez les meilleures boutiques et produits du Sénégal sur NaatalFi.',
+    title: 'NaatalFi - Marketplace senegalaise',
+    description: 'Achetez local et decouvrez les boutiques senegalaises sur NaatalFi.',
   })
 
-  const navigate               = useNavigate()
-  const [q, setQ]              = useState('')
-  const [featured, setFeatured]= useState([])
+  const [featured, setFeatured] = useState([])
   const [categories, setCategories] = useState([])
+  const [platformSettings, setPlatformSettings] = useState(null)
 
   useEffect(() => {
     getFeaturedProducts().then(({ data }) => setFeatured(data)).catch(() => {})
     getMarketplaceCategories().then(({ data }) => setCategories(data)).catch(() => {})
+    getPublicPlatformSettings().then(({ data }) => setPlatformSettings(data)).catch(() => {})
   }, [])
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (q.trim()) navigate(`/search?q=${encodeURIComponent(q.trim())}`)
-  }
+  const posters = useMemo(() => {
+    return categoryPosters.map((poster) => {
+      const match = categories.find((cat) => {
+        const haystack = `${normalize(cat.name)} ${normalize(cat.slug)}`
+        return poster.keywords.some((keyword) => haystack.includes(normalize(keyword)))
+      })
+      return {
+        ...poster,
+        href: match?.slug
+          ? `/marketplace?category=${match.slug}`
+          : `/search?q=${encodeURIComponent(poster.query)}`,
+      }
+    })
+  }, [categories])
+
+  const heroImage = platformSettings?.hero_image_url || fallbackHeroImage
 
   return (
     <div>
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#D4AF37]/10 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 text-center">
-          <p className="text-[#D4AF37] text-sm font-semibold tracking-widest uppercase mb-4">
-            Marketplace sénégalaise
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-            Découvrez les meilleures<br />
-            <span className="text-[#D4AF37]">boutiques du Sénégal</span>
-          </h1>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto mb-10">
-            Achetez directement auprès de vendeurs locaux vérifiés — mode, artisanat, électronique, alimentation et bien plus.
-          </p>
+      <section className="relative min-h-[560px] sm:min-h-[640px] lg:min-h-[680px] overflow-hidden">
+        <img
+          src={heroImage}
+          alt="Selection de produits locaux"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/65" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0B0B0F] to-transparent" />
 
-          <form onSubmit={handleSearch} className="max-w-lg mx-auto flex gap-2">
-            <div className="relative flex-1">
-              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-              <input
-                type="text"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Rechercher un produit ou une boutique..."
-                className="w-full bg-[#16161E] border border-[#2a2a3a] rounded-xl pl-11 pr-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition text-sm"
-              />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 min-h-[560px] sm:min-h-[640px] lg:min-h-[680px] flex items-center">
+          <div className="max-w-3xl py-16 sm:py-20">
+            <p className="text-[#D4AF37] text-sm font-semibold tracking-widest uppercase mb-4">
+              Marketplace senegalaise
+            </p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 max-w-[12ch] sm:max-w-none">
+              Achetez local. Vendez partout au Senegal.
+            </h1>
+            <p className="text-gray-200 text-lg sm:text-xl max-w-2xl leading-relaxed mb-9">
+              NaatalFi connecte les boutiques senegalaises aux clients, avec paiement securise,
+              suivi des commandes et livraison organisee.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                to="/marketplace"
+                className="inline-flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-6 py-3 rounded-lg transition"
+              >
+                Explorer la marketplace <FiArrowRight size={16} />
+              </Link>
+              <Link
+                to="/register?role=VENDOR"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold px-6 py-3 rounded-lg transition"
+              >
+                Devenir vendeur
+              </Link>
             </div>
-            <button
-              type="submit"
-              className="bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-6 py-3.5 rounded-xl transition text-sm whitespace-nowrap"
-            >
-              Rechercher
-            </button>
-          </form>
-
-          {/* Trust stats */}
-          <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-gray-500">
-            <span className="flex items-center gap-2">
-              <FiTruck size={15} className="text-[#D4AF37]" />
-              Livraison dans tout le Sénégal
-            </span>
-            <span className="hidden sm:block text-[#2a2a3a]">|</span>
-            <span className="flex items-center gap-2">
-              <FiShield size={15} className="text-[#D4AF37]" />
-              Paiement 100% sécurisé
-            </span>
           </div>
         </div>
       </section>
 
-      {/* ── Catégories ── */}
-      {categories.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">Catégories</h2>
-            <Link to="/marketplace" className="text-sm text-[#D4AF37] hover:underline flex items-center gap-1">
-              Tout voir <FiArrowRight size={14} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-            {categories.slice(0, 6).map((cat) => (
-              <Link
-                key={cat.id}
-                to={`/marketplace?category=${cat.slug}`}
-                className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4 text-center hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
-              >
-                {cat.image ? (
-                  <img src={cat.image} alt={cat.name} className="w-10 h-10 rounded-lg object-cover mx-auto mb-2" />
-                ) : (
-                  <div className="w-10 h-10 rounded-lg bg-[#2a2a3a] mx-auto mb-2" />
-                )}
-                <p className="text-white text-xs font-medium line-clamp-2 leading-snug">{cat.name}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
+        <div className="bg-[#16161E] border border-[#D4AF37]/30 rounded-lg px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <p className="text-white text-sm sm:text-base font-medium">
+            Lancement NaatalFi : inscription vendeur gratuite, produits illimites, commission fixe de 8%.
+          </p>
+          <Link
+            to="/register?role=VENDOR"
+            className="inline-flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-4 py-2.5 rounded-lg transition text-sm whitespace-nowrap"
+          >
+            Creer ma boutique <FiArrowRight size={15} />
+          </Link>
+        </div>
+      </section>
 
-      {/* ── Produits vedettes ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14 overflow-hidden">
+        <div className="flex items-end justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white">Categories populaires</h2>
+            <p className="text-sm text-gray-500 mt-1">Des affiches pour trouver rapidement ce que vous cherchez.</p>
+          </div>
+          <Link to="/marketplace" className="hidden sm:inline-flex text-sm text-[#D4AF37] hover:underline items-center gap-1">
+            Tout voir <FiArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div className="home-category-track flex gap-4 lg:grid lg:grid-cols-3">
+          {[...posters, ...posters].map((cat, index) => (
+            <Link
+              key={`${cat.title}-${index}`}
+              to={cat.href}
+              className="group relative min-h-[220px] w-[78vw] max-w-[340px] sm:w-[320px] lg:w-auto lg:max-w-none shrink-0 rounded-lg overflow-hidden border border-[#2a2a3a] hover:border-[#D4AF37]/60 transition will-change-transform"
+              style={{ animationDelay: `${(index % posters.length) * 80}ms` }}
+            >
+              <img
+                src={cat.image}
+                alt={cat.title}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-5">
+                <h3 className="text-white text-xl font-bold">{cat.title}</h3>
+                <p className="text-gray-300 text-sm mt-1 inline-flex items-center gap-1">
+                  Decouvrir <FiArrowRight size={14} />
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">Produits vedettes</h2>
           <Link to="/marketplace" className="text-sm text-[#D4AF37] hover:underline flex items-center gap-1">
@@ -146,35 +217,17 @@ function HomePage() {
         </div>
 
         {featured.length === 0 ? (
-          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-12 text-center">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-lg p-12 text-center">
             <p className="text-gray-500">Aucun produit disponible pour l'instant.</p>
-            <Link to="/register" className="text-[#D4AF37] hover:underline text-sm mt-3 block">
-              Devenir vendeur →
+            <Link to="/register?role=VENDOR" className="text-[#D4AF37] hover:underline text-sm mt-3 block">
+              Devenir vendeur
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {featured.map((p) => <ProductCard key={p.id} product={p} />)}
+            {featured.map((product) => <ProductCard key={product.id} product={product} />)}
           </div>
         )}
-      </section>
-
-      {/* ── CTA Vendeur ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
-        <div className="bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-2xl p-8 sm:p-12 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-            Vous vendez des produits ?
-          </h2>
-          <p className="text-gray-400 max-w-md mx-auto mb-8">
-            Rejoignez NaatalFi et vendez à des milliers de clients à travers le Sénégal. Inscription gratuite.
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-8 py-3.5 rounded-xl transition"
-          >
-            Créer ma boutique <FiArrowRight size={16} />
-          </Link>
-        </div>
       </section>
     </div>
   )

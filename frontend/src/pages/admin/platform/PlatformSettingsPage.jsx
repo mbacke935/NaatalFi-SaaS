@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok } from 'react-icons/fa'
-import { FiGlobe, FiMail, FiPhone, FiSave } from 'react-icons/fi'
+import { FiGlobe, FiImage, FiMail, FiPhone, FiSave } from 'react-icons/fi'
 import { getAdminPlatformSettings, updateAdminPlatformSettings } from '../../../services/platform'
 
 const inputCls = 'w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition'
@@ -25,6 +25,7 @@ function PlatformSettingsPage() {
     instagram_url: '',
     tiktok_url: '',
     linkedin_url: '',
+    hero_image_url: '',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -39,6 +40,7 @@ function PlatformSettingsPage() {
           instagram_url: data.instagram_url || '',
           tiktok_url: data.tiktok_url || '',
           linkedin_url: data.linkedin_url || '',
+          hero_image_url: data.hero_image_url || '',
         })
       })
       .catch(() => toast.error('Impossible de charger les informations plateforme.'))
@@ -97,6 +99,16 @@ function PlatformSettingsPage() {
           <Field icon={FaLinkedinIn} label="LinkedIn">
             <input name="linkedin_url" value={form.linkedin_url} onChange={handleChange} placeholder="https://linkedin.com/company/..." className={inputCls} />
           </Field>
+          <div className="md:col-span-2">
+            <Field icon={FiImage} label="Image du hero de la page d'accueil">
+              <input name="hero_image_url" value={form.hero_image_url} onChange={handleChange} placeholder="https://..." className={inputCls} />
+            </Field>
+            {form.hero_image_url && (
+              <div className="mt-3 aspect-[16/6] rounded-lg overflow-hidden border border-[#2a2a3a] bg-[#0B0B0F]">
+                <img src={form.hero_image_url} alt="Apercu hero" className="w-full h-full object-cover" />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center justify-between gap-4 pt-2 border-t border-[#2a2a3a]">
@@ -113,4 +125,3 @@ function PlatformSettingsPage() {
 }
 
 export default PlatformSettingsPage
-

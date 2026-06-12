@@ -1,1 +1,38 @@
 @import "tailwindcss";
+
+@keyframes home-category-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.5rem));
+  }
+}
+
+.home-category-track {
+  width: max-content;
+  animation: home-category-scroll 30s linear infinite;
+}
+
+.home-category-track:hover {
+  animation-play-state: paused;
+}
+
+@media (min-width: 1024px) {
+  .home-category-track {
+    width: auto;
+    animation: none;
+    transform: none;
+  }
+
+  .home-category-track > :nth-child(n + 7) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-category-track {
+    animation: none;
+  }
+}

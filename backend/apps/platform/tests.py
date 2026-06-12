@@ -50,9 +50,10 @@ class PlatformSettingsApiTests(APITestCase):
             'instagram_url': 'https://instagram.com/naatalfi',
             'tiktok_url': 'https://www.tiktok.com/@naatalfi',
             'linkedin_url': 'https://linkedin.com/company/naatalfi',
+            'hero_image_url': 'https://images.example.com/hero.jpg',
         }, format='json')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['contact_email'], 'support@naatalfi.com')
+        self.assertEqual(response.data['hero_image_url'], 'https://images.example.com/hero.jpg')
         self.assertEqual(PlatformSettings.objects.count(), 1)
-

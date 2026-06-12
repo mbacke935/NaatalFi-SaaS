@@ -13,8 +13,8 @@ class PlatformSettingsSerializer(serializers.ModelSerializer):
             'instagram_url',
             'tiktok_url',
             'linkedin_url',
+            'hero_image_url',
             'created_at',
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
-
