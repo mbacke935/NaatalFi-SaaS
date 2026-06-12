@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 
 from .models import EmailLog
@@ -19,12 +19,18 @@ def queue_email(*, subject, message, recipient, from_email=None, scheduled_at=No
 
 def process_pending_emails(limit=25):
     now = timezone.now()
+    sending_timeout_minutes = getattr(settings, 'EMAIL_SENDING_TIMEOUT_MINUTES', 10)
+    stale_sending_before = now - timezone.timedelta(minutes=sending_timeout_minutes)
     sent = 0
     failed = 0
 
     candidates = (
         EmailLog.objects
-        .filter(status__in=[EmailLog.Status.PENDING, EmailLog.Status.FAILED], scheduled_at__lte=now)
+        .filter(
+            Q(status__in=[EmailLog.Status.PENDING, EmailLog.Status.FAILED])
+            | Q(status=EmailLog.Status.SENDING, updated_at__lte=stale_sending_before),
+            scheduled_at__lte=now,
+        )
         .filter(attempts__lt=F('max_attempts'))
         .order_by('scheduled_at', 'id')[:limit]
     )
@@ -32,7 +38,15 @@ def process_pending_emails(limit=25):
     for email in candidates:
         with transaction.atomic():
             locked = EmailLog.objects.select_for_update().get(pk=email.pk)
-            if locked.status == EmailLog.Status.SENT or locked.attempts >= locked.max_attempts:
+            is_stale_sending = (
+                locked.status == EmailLog.Status.SENDING
+                and locked.updated_at <= stale_sending_before
+            )
+            if (
+                locked.status == EmailLog.Status.SENT
+                or locked.attempts >= locked.max_attempts
+                or (locked.status == EmailLog.Status.SENDING and not is_stale_sending)
+            ):
                 continue
             locked.status = EmailLog.Status.SENDING
             locked.attempts += 1
