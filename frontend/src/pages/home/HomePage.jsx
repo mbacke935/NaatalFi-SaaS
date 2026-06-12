@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiSearch, FiArrowRight, FiShield, FiTruck, FiUsers } from 'react-icons/fi'
+import { FiSearch, FiArrowRight, FiShield, FiTruck } from 'react-icons/fi'
 import { getFeaturedProducts, getMarketplaceCategories } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
 
@@ -95,11 +95,6 @@ function HomePage() {
 
           {/* Trust stats */}
           <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-gray-500">
-            <span className="flex items-center gap-2">
-              <FiUsers size={15} className="text-[#D4AF37]" />
-              500+ vendeurs vérifiés
-            </span>
-            <span className="hidden sm:block text-[#2a2a3a]">|</span>
             <span className="flex items-center gap-2">
               <FiTruck size={15} className="text-[#D4AF37]" />
               Livraison dans tout le Sénégal
