@@ -102,7 +102,8 @@ class OrderPaymentWalletFlowTests(APITestCase):
         self.assertEqual(payment.status, Payment.Status.PAID)
 
         wallet = Wallet.objects.get(vendor=self.vendor)
-        self.assertEqual(wallet.pending_balance, Decimal('18000.00'))
+        # 20000 * 8% commission = 1600 → net = 18400 (MVP: 8% flat)
+        self.assertEqual(wallet.pending_balance, Decimal('18400.00'))
         self.assertEqual(Transaction.objects.filter(type=Transaction.Type.SALE).count(), 1)
         self.assertEqual(Transaction.objects.filter(type=Transaction.Type.COMMISSION).count(), 1)
 
@@ -118,7 +119,8 @@ class OrderPaymentWalletFlowTests(APITestCase):
                 }, format='json')
 
         wallet.refresh_from_db()
-        self.assertEqual(wallet.pending_balance, Decimal('18000.00'))
+        # Idempotence : deuxième webhook, le solde reste inchangé à 18400
+        self.assertEqual(wallet.pending_balance, Decimal('18400.00'))
         self.assertEqual(Transaction.objects.filter(type=Transaction.Type.SALE).count(), 1)
 
     def test_cart_validation_rejects_insufficient_stock(self):
