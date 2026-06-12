@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FiArrowRight } from 'react-icons/fi'
-import { getFeaturedProducts, getMarketplaceCategories } from '../../services/marketplace'
+import { FiArrowRight, FiShoppingBag } from 'react-icons/fi'
+import { getFeaturedProducts, getMarketplaceCategories, getMarketplaceVendors } from '../../services/marketplace'
 import { getPublicPlatformSettings } from '../../services/platform'
 import { useMeta } from '../../hooks/useMeta'
 
@@ -77,6 +77,27 @@ function ProductCard({ product }) {
   )
 }
 
+function VendorCard({ vendor }) {
+  return (
+    <Link
+      to={`/vendors/${vendor.slug}`}
+      className="group bg-[#16161E] border border-[#2a2a3a] rounded-lg p-4 flex items-center gap-3 hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
+    >
+      <div className="w-12 h-12 rounded-lg bg-[#2a2a3a] flex-shrink-0 overflow-hidden flex items-center justify-center">
+        {vendor.logo
+          ? <img src={vendor.logo} alt={vendor.name} className="w-full h-full object-cover" />
+          : <FiShoppingBag className="text-gray-600" size={18} />}
+      </div>
+      <div className="min-w-0">
+        <p className="text-white text-sm font-medium truncate group-hover:text-[#D4AF37] transition">{vendor.name}</p>
+        <p className="text-gray-500 text-xs mt-0.5">
+          {vendor.product_count ?? 0} produit{(vendor.product_count ?? 0) !== 1 ? 's' : ''}
+        </p>
+      </div>
+    </Link>
+  )
+}
+
 function normalize(value) {
   return String(value || '')
     .toLowerCase()
@@ -91,11 +112,21 @@ function HomePage() {
   })
 
   const [featured, setFeatured] = useState([])
+  const [loadingFeatured, setLoadingFeatured] = useState(true)
+  const [vendors, setVendors] = useState([])
+  const [loadingVendors, setLoadingVendors] = useState(true)
   const [categories, setCategories] = useState([])
   const [platformSettings, setPlatformSettings] = useState(null)
 
   useEffect(() => {
-    getFeaturedProducts().then(({ data }) => setFeatured(data)).catch(() => {})
+    getFeaturedProducts()
+      .then(({ data }) => setFeatured(Array.isArray(data) ? data : (data?.results ?? [])))
+      .catch(() => {})
+      .finally(() => setLoadingFeatured(false))
+    getMarketplaceVendors()
+      .then(({ data }) => setVendors(Array.isArray(data) ? data : (data?.results ?? [])))
+      .catch(() => {})
+      .finally(() => setLoadingVendors(false))
     getMarketplaceCategories().then(({ data }) => setCategories(data)).catch(() => {})
     getPublicPlatformSettings().then(({ data }) => setPlatformSettings(data)).catch(() => {})
   }, [])
@@ -226,7 +257,19 @@ function HomePage() {
           </Link>
         </div>
 
-        {featured.length === 0 ? (
+        {loadingFeatured ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-[#16161E] border border-[#2a2a3a] rounded-lg overflow-hidden animate-pulse">
+                <div className="aspect-square bg-[#2a2a3a]" />
+                <div className="p-3 space-y-2">
+                  <div className="h-3 bg-[#2a2a3a] rounded w-3/4" />
+                  <div className="h-4 bg-[#2a2a3a] rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : featured.length === 0 ? (
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-lg p-12 text-center">
             <p className="text-gray-500">Aucun produit disponible pour l'instant.</p>
             <Link to="/register?role=VENDOR" className="text-[#D4AF37] hover:underline text-sm mt-3 block">
@@ -239,6 +282,30 @@ function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Boutiques à découvrir */}
+      {(loadingVendors || vendors.length > 0) && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+          <div className="flex items-center justify-between gap-3 mb-6">
+            <h2 className="text-xl font-bold text-white">Boutiques à découvrir</h2>
+            <Link to="/marketplace" className="text-sm text-[#D4AF37] hover:underline flex items-center gap-1">
+              Voir tout <FiArrowRight size={14} />
+            </Link>
+          </div>
+
+          {loadingVendors ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-[76px] bg-[#16161E] border border-[#2a2a3a] rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {vendors.slice(0, 8).map((vendor) => <VendorCard key={vendor.id} vendor={vendor} />)}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   )
 }
