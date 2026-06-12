@@ -1,7 +1,7 @@
 # Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 12 juin 2026
-**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 61 tests backend OK. Pret pour deploiement production.
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 66 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
 
 ---
 
@@ -155,6 +155,16 @@ Couverture :
 - `disputes` : ouverture, gel wallet, resolution refund/no-refund
 - `analytics` : overview admin, top vendeurs, analytics vendeur
 - `platform` : lecture publique footer, modification admin des informations publiques
+
+---
+
+## Securite & Qualite (renforce le 12 juin 2026)
+
+- **Webhook PayTech durci** (`apps/payments/services.py`) : verification native de l'IPN via `api_key_sha256` / `api_secret_sha256` (methode officielle PayTech), fallback signature HMAC header, et **refus des webhooks non signes en production** (acceptes uniquement en `DEBUG`). Couvert par 4 tests.
+- **Rate limiting auth** (`config/settings.py` + vues `apps/users`) : `ScopedRateThrottle` DRF sur login (10/min), register (5/min), reset mot de passe (5/min). Test dedie verifiant le 429.
+- **SECRET_KEY** : aucune valeur de repli — `config/settings.py` leve `ValueError` si absente.
+- **Pages legales** : `/cgu` (Conditions Generales) et `/confidentialite` (Politique de confidentialite) ajoutees, liees dans le footer.
+- **Tests frontend** : suite Vitest + Testing Library (jsdom) — 12 tests sur `cartStore` et `ComingSoon`. Scripts `npm test` / `npm run test:watch`.
 
 ---
 

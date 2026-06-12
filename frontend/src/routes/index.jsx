@@ -20,6 +20,8 @@ const ProductDetailPage   = lazy(() => import('../pages/marketplace/ProductDetai
 const SearchPage          = lazy(() => import('../pages/search/SearchPage'))
 const VendorProfilePage   = lazy(() => import('../pages/vendors/VendorProfilePage'))
 const CartPage            = lazy(() => import('../pages/cart/CartPage'))
+const TermsPage           = lazy(() => import('../pages/legal/TermsPage'))
+const PrivacyPage         = lazy(() => import('../pages/legal/PrivacyPage'))
 
 // ── Checkout ──────────────────────────────────────────────────────
 const CheckoutPage        = lazy(() => import('../pages/checkout/CheckoutPage'))
@@ -102,6 +104,8 @@ function AppRoutes() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/vendors/:slug" element={<VendorProfilePage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/cgu" element={<TermsPage />} />
+            <Route path="/confidentialite" element={<PrivacyPage />} />
           </Route>
 
           {/* ── Checkout + commandes acheteur (auth requise) ─────────── */}

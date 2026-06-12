@@ -215,6 +215,16 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    # Rate limiting : seuls les endpoints portant un `throttle_scope`
+    # (auth sensible : login, register, mot de passe) sont limités.
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'login': '10/min',
+        'register': '5/min',
+        'password_reset': '5/min',
+    },
 }
 
 # ── JWT ──────────────────────────────────────────────────────────────

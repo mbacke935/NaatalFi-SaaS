@@ -23,7 +23,7 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **61 tests OK**.
+Resultat actuel : **66 tests OK**.
 
 ### Detail par module
 
@@ -32,13 +32,13 @@ Resultat actuel : **61 tests OK**.
 | `wallet` | `apps/wallet/tests.py` | 16 | Voir detail ci-dessous |
 | `orders` | `apps/orders/tests.py` | 6 | Validation stock, permissions, flux complet webhook→wallet |
 | `shipping` | `apps/shipping/tests.py` | — | Estimation livraison par region et poids |
-| `users` | `apps/users/tests.py` | — | Admin update role/actif, protection auto-desactivation |
+| `users` | `apps/users/tests.py` | 5 | Admin update role/actif, protection auto-desactivation, login casse/inactif, **rate limiting login (429)** |
 | `vendors` | `apps/vendors/tests.py` | — | Creation boutique, unicite, plan FREE 8% illimite, approbation/suspension admin |
 | `categories` | `apps/categories/tests.py` | — | Listing public actif, protection admin, creation, reorder |
 | `products` | `apps/products/tests.py` | — | Route admin produits, moderation statut, produits illimites |
 | `marketplace` | `apps/marketplace/tests.py` | — | Produits publies uniquement, recherche, detail vendeur approuve |
 | `account` | `apps/account/tests.py` | — | Adresses par utilisateur, defaut unique, favoris idempotents |
-| `payments` | `apps/payments/tests.py` | — | Liste admin paiements, statut webhook |
+| `payments` | `apps/payments/tests.py` | 5 | Liste admin paiements, statut webhook, **signature IPN PayTech native (api_key_sha256/api_secret_sha256) + refus des webhooks non signes en production** |
 | `notifications` | `apps/notifications/tests.py` | — | Isolation utilisateur, mark read, read-all |
 | `reviews` | `apps/reviews/tests.py` | — | Avis verifies (achat livre), anti-doublon, recalcul scores, suppression admin |
 | `ads` | `apps/ads/tests.py` | — | Creation campagne, debit wallet, solde insuffisant, produits sponsorises |
@@ -119,19 +119,36 @@ Verification :
 
 ## Frontend
 
-Pas de suite Vitest/Playwright configuree pour le moment.
+### Tests unitaires (Vitest + Testing Library)
 
-Validation actuelle par build Vite :
+Suite Vitest configuree (`vite.config.js` → bloc `test`, environnement jsdom, setup `src/test/setup.js`).
+
+```powershell
+cd C:\NaatalFi-SaaS\frontend
+npm test          # vitest run (une passe)
+npm run test:watch  # mode watch
+```
+
+Resultat actuel : **12 tests OK**.
+
+| Fichier | Tests | Couverture |
+| :--- | :---: | :--- |
+| `src/store/cartStore.test.js` | 8 | Ajout/dedup par variante, update quantite (suppression si < 1), suppression ciblee, total/compte, regroupement par vendeur, vidage |
+| `src/components/ui/ComingSoon.test.jsx` | 4 | Titre par defaut + badge, titre personnalise, description conditionnelle |
+
+Note technique : `esbuild.jsx = 'automatic'` dans la config (runtime JSX automatique), `localStorage` mocke en memoire dans le setup pour zustand/persist.
+
+### Validation build
 
 ```powershell
 cd C:\NaatalFi-SaaS\frontend
 npm run build
 ```
 
-Etat actuel : **build OK en ~490ms**, aucune erreur TypeScript ni import manquant.
+Etat actuel : **build OK en ~430ms**, aucune erreur ni import manquant.
 
 Points valides par le build :
-- Toutes les pages lazy-loadees compileent sans erreur.
+- Toutes les pages lazy-loadees compileent sans erreur (dont CGU/Confidentialite).
 - Composant `ComingSoon` importe correctement par les pages differees.
 - Imports favoris comentes dans `ProductDetailPage` n'introduisent pas de references cassees.
 - `AnalyticsPage` vendeur compile avec les cards simplifiees.

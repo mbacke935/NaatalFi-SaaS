@@ -92,7 +92,11 @@ function PublicFooter() {
 
         <div className="border-t border-[#2a2a3a] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
           <p>© {year} NaatalFi. Tous droits reserves.</p>
-          <p>Fait au Senegal</p>
+          <div className="flex items-center gap-4">
+            <Link to="/cgu" className="hover:text-white transition">CGU</Link>
+            <Link to="/confidentialite" className="hover:text-white transition">Confidentialité</Link>
+            <span>Fait au Senegal</span>
+          </div>
         </div>
       </div>
     </footer>
