@@ -10,6 +10,11 @@ body,
   min-width: 0;
 }
 
+html,
+body {
+  background: #0B0B0F;
+}
+
 img,
 video,
 canvas,

@@ -4,9 +4,9 @@ import PublicFooter from '../components/layout/PublicFooter'
 
 function PublicLayout() {
   return (
-    <div className="min-h-screen bg-[#0B0B0F] flex flex-col">
+    <div className="min-h-dvh bg-[#0B0B0F] flex flex-col">
       <PublicNav />
-      <main className="flex-1 min-w-0">
+      <main className="min-w-0 lg:flex-1">
         <Outlet />
       </main>
       <PublicFooter />
