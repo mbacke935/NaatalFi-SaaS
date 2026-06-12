@@ -11,7 +11,7 @@
 | Base de donnÃ©es | Supabase | Free â†’ Pro si besoin |
 | Stockage fichiers | Supabase Storage | Inclus dans Supabase |
 | Cache + Celery | Upstash Redis | Pay-as-you-go |
-| Emails | AWS SES | API HTTPS, tres bas cout apres verification domaine |
+| Emails | Brevo | API HTTPS, free tier plus confortable pour le MVP |
 
 ---
 
@@ -56,11 +56,9 @@ Les emails sont enregistres en base avec le statut `PENDING`, puis traites par l
 | `PAYTECH_ENV` | Environnement PayTech | `prod` |
 | `PAYTECH_WEBHOOK_SECRET` | Secret HMAC webhook (fallback uniquement ; la verification principale utilise api_key_sha256/api_secret_sha256 de PayTech) | `xxxxxxxx` |
 | `BACKEND_URL` | URL publique du backend pour webhook | `https://api.naatalfi.com` |
-| `EMAIL_PROVIDER` | Fournisseur email actif | `aws_ses` |
-| `AWS_SES_REGION` | Region AWS SES | `eu-west-1` ou `us-east-1` |
-| `AWS_SES_ACCESS_KEY_ID` | Access key IAM autorisee a envoyer via SES | `AKIA...` |
-| `AWS_SES_SECRET_ACCESS_KEY` | Secret key IAM autorisee a envoyer via SES | `xxxxxxxx` |
-| `DEFAULT_FROM_EMAIL` | Expediteur verifie dans SES | `NaatalFi <no-reply@naatalfi.com>` |
+| `EMAIL_PROVIDER` | Fournisseur email actif | `brevo` |
+| `BREVO_API_KEY` | Cle API Brevo transactionnelle | `xkeysib-...` |
+| `DEFAULT_FROM_EMAIL` | Expediteur verifie dans Brevo | `NaatalFi <no-reply@naatalfi.com>` |
 | `EMAIL_TIMEOUT` | Timeout des appels email | `10` |
 | `EMAIL_HOST` | Fallback SMTP uniquement si aucun provider API n'est configure | `smtp.example.com` |
 | `EMAIL_HOST_USER` | Fallback SMTP | `user` |
@@ -89,8 +87,7 @@ FRONTEND_URL=https://naatalfi.vercel.app
 CORS_ALLOWED_ORIGINS=https://naatalfi.vercel.app
 CELERY_TASK_ALWAYS_EAGER=True
 CRON_SECRET=long-secret-random
-EMAIL_PROVIDER=aws_ses
-AWS_SES_REGION=eu-west-1
+EMAIL_PROVIDER=brevo
 DEFAULT_FROM_EMAIL=NaatalFi <no-reply@naatalfi.com>
 ```
 
@@ -168,24 +165,22 @@ CRON_SECRET=la-meme-valeur-que-render
 
 Ce cron traite les emails `EmailLog` en attente, libere les soldes wallet eligibles, expire les campagnes sponsorisees et lance les agregations analytics legeres.
 
-### Emails transactionnels avec AWS SES
+### Emails transactionnels avec Brevo
 
-Le backend utilise `EMAIL_PROVIDER=aws_ses` pour envoyer les emails via l'API HTTPS AWS SES (`sesv2`) pendant le traitement cron. Cela evite les timeouts SMTP observes sur Render.
+Le backend utilise `EMAIL_PROVIDER=brevo` pour envoyer les emails via l'API HTTPS Brevo (`POST https://api.brevo.com/v3/smtp/email`) pendant le traitement cron. Cela evite les timeouts SMTP observes sur Render.
 
-Prerequis AWS :
+Prerequis Brevo :
 
-- verifier l'adresse ou le domaine expediteur dans AWS SES ;
+- creer une cle API dans Brevo > SMTP & API > API Keys ;
+- verifier l'expediteur ou le domaine d'envoi ;
 - configurer SPF/DKIM/DMARC quand le domaine est achete ;
-- demander la sortie du sandbox SES pour envoyer a des destinataires non verifies ;
-- creer un utilisateur IAM limite a `ses:SendEmail` et utiliser ses cles dans Render.
+- utiliser une adresse `DEFAULT_FROM_EMAIL` autorisee par Brevo.
 
 Variables Render minimales :
 
 ```env
-EMAIL_PROVIDER=aws_ses
-AWS_SES_REGION=eu-west-1
-AWS_SES_ACCESS_KEY_ID=AKIA...
-AWS_SES_SECRET_ACCESS_KEY=...
+EMAIL_PROVIDER=brevo
+BREVO_API_KEY=xkeysib-...
 DEFAULT_FROM_EMAIL=NaatalFi <no-reply@naatalfi.com>
 EMAIL_TIMEOUT=10
 ```

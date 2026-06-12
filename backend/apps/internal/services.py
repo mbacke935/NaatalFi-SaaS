@@ -12,6 +12,8 @@ def get_email_provider():
     provider = getattr(settings, 'EMAIL_PROVIDER', '').strip().lower()
     if provider:
         return provider
+    if getattr(settings, 'BREVO_API_KEY', ''):
+        return 'brevo'
     if getattr(settings, 'AWS_SES_ACCESS_KEY_ID', '') and getattr(settings, 'AWS_SES_SECRET_ACCESS_KEY', ''):
         return 'aws_ses'
     if getattr(settings, 'RESEND_API_KEY', ''):
@@ -81,6 +83,38 @@ def send_email_with_resend(email):
         raise RuntimeError(f'Resend API {response.status_code}: {response.text[:1000]}')
 
 
+def parse_sender(from_email):
+    value = (from_email or settings.DEFAULT_FROM_EMAIL).strip()
+    if '<' in value and '>' in value:
+        name = value.split('<', 1)[0].strip().strip('"')
+        address = value.split('<', 1)[1].split('>', 1)[0].strip()
+        return {'name': name, 'email': address}
+    return {'email': value}
+
+
+def send_email_with_brevo(email):
+    brevo_api_key = getattr(settings, 'BREVO_API_KEY', '')
+    if not brevo_api_key:
+        raise RuntimeError('BREVO_API_KEY is not configured')
+
+    response = requests.post(
+        getattr(settings, 'BREVO_API_URL', 'https://api.brevo.com/v3/smtp/email'),
+        headers={
+            'api-key': brevo_api_key,
+            'Content-Type': 'application/json',
+        },
+        json={
+            'sender': parse_sender(email.from_email or settings.DEFAULT_FROM_EMAIL),
+            'to': [{'email': email.to_email}],
+            'subject': email.subject,
+            'textContent': email.message,
+        },
+        timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
+    )
+    if response.status_code >= 400:
+        raise RuntimeError(f'Brevo API {response.status_code}: {response.text[:1000]}')
+
+
 def send_email_with_smtp(email):
     send_mail(
         subject=email.subject,
@@ -95,6 +129,9 @@ def send_logged_email(email):
     provider = get_email_provider()
     if provider == 'aws_ses':
         send_email_with_aws_ses(email)
+        return
+    if provider == 'brevo':
+        send_email_with_brevo(email)
         return
     if provider == 'resend':
         send_email_with_resend(email)

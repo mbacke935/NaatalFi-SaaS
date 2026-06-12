@@ -13,6 +13,7 @@ from apps.internal.services import process_pending_emails, queue_email
     CRON_SECRET='test-secret',
     EMAIL_PROVIDER='',
     RESEND_API_KEY='',
+    BREVO_API_KEY='',
     AWS_SES_ACCESS_KEY_ID='',
     AWS_SES_SECRET_ACCESS_KEY='',
 )
@@ -117,6 +118,46 @@ class InternalCronTests(APITestCase):
         self.assertEqual(result['failed'], 1)
         self.assertEqual(email.status, EmailLog.Status.FAILED)
         self.assertIn('SES sandbox recipient not verified', email.last_error)
+
+    @override_settings(EMAIL_PROVIDER='brevo', BREVO_API_KEY='xkeysib-test-key')
+    @patch('apps.internal.services.requests.post')
+    def test_process_pending_emails_uses_brevo_api_when_configured(self, mock_post):
+        mock_post.return_value = Mock(status_code=201, text='{"messageId":"message-id"}')
+        queue_email(
+            subject='Brevo',
+            message='Bonjour',
+            recipient='client@example.com',
+        )
+
+        result = process_pending_emails()
+
+        email = EmailLog.objects.get()
+        self.assertEqual(result['sent'], 1)
+        self.assertEqual(email.status, EmailLog.Status.SENT)
+        self.assertEqual(len(mail.outbox), 0)
+        mock_post.assert_called_once()
+        self.assertEqual(mock_post.call_args.kwargs['headers']['api-key'], 'xkeysib-test-key')
+        payload = mock_post.call_args.kwargs['json']
+        self.assertEqual(payload['sender'], {'name': 'NaatalFi', 'email': 'noreply@naatalfi.com'})
+        self.assertEqual(payload['to'], [{'email': 'client@example.com'}])
+        self.assertEqual(payload['textContent'], 'Bonjour')
+
+    @override_settings(EMAIL_PROVIDER='brevo', BREVO_API_KEY='xkeysib-test-key')
+    @patch('apps.internal.services.requests.post')
+    def test_process_pending_emails_marks_failed_on_brevo_api_error(self, mock_post):
+        mock_post.return_value = Mock(status_code=401, text='invalid api key')
+        queue_email(
+            subject='Brevo error',
+            message='Bonjour',
+            recipient='client@example.com',
+        )
+
+        result = process_pending_emails()
+
+        email = EmailLog.objects.get()
+        self.assertEqual(result['failed'], 1)
+        self.assertEqual(email.status, EmailLog.Status.FAILED)
+        self.assertIn('Brevo API 401', email.last_error)
 
     @override_settings(RESEND_API_KEY='re_test_key')
     @patch('apps.internal.services.requests.post')

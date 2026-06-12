@@ -1,7 +1,7 @@
 # Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 12 juin 2026
-**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 77 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 79 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
 
 ---
 
@@ -54,14 +54,14 @@ Le footer public, l'image hero et les categories populaires de l'accueil sont co
 | Worker Celery | Non deploye ; remplace par EmailLog + cron GitHub Actions |
 | Base de donnees | Supabase PostgreSQL |
 | Stockage fichiers | Supabase Storage |
-| Emails transactionnels | AWS SES via API HTTPS + EmailLog |
+| Emails transactionnels | Brevo via API HTTPS + EmailLog |
 
 ### Taches planifiees sans worker payant
 
 - Les emails transactionnels sont enregistres dans `EmailLog` avec le statut `PENDING`.
 - L'endpoint securise `POST /api/v1/internal/cron/run/` traite les emails pending et les taches periodiques.
 - GitHub Actions appelle cet endpoint toutes les 10 minutes via `.github/workflows/cron.yml`.
-- L'envoi email utilise `EMAIL_PROVIDER=aws_ses` et l'API HTTPS AWS SES (`sesv2`) pour eviter les timeouts SMTP.
+- L'envoi email utilise `EMAIL_PROVIDER=brevo` et l'API HTTPS Brevo pour eviter les timeouts SMTP.
 - Redis reste utilise pour le cache, pas comme queue obligatoire.
 - Le webhook PayTech credite le wallet vendeur directement apres validation du paiement, sans passer par Celery.
 
@@ -139,7 +139,7 @@ Visible dans /admin/analytics → card "Commissions"
 
 ## Tests Backend
 
-77 tests, tous verts.
+79 tests, tous verts.
 
 ```powershell
 cd C:\NaatalFi-SaaS\backend
@@ -164,7 +164,7 @@ Couverture :
 - `disputes` : ouverture, gel wallet, resolution refund/no-refund
 - `analytics` : overview admin, top vendeurs, analytics vendeur
 - `platform` : lecture publique footer, modification admin des informations publiques
-- `internal` : cron securise, EmailLog, reprise des emails `SENDING`, envoi AWS SES/Resend/fallback SMTP
+- `internal` : cron securise, EmailLog, reprise des emails `SENDING`, envoi Brevo/AWS SES/Resend/fallback SMTP
 
 ---
 
@@ -204,8 +204,8 @@ CORS_ALLOWED_ORIGINS=https://naatalfi.vercel.app
 CELERY_TASK_ALWAYS_EAGER=True
 CRON_SECRET=long-secret-random
 PAYTECH_ENV=prod
-EMAIL_PROVIDER=aws_ses
-AWS_SES_REGION=eu-west-1
+EMAIL_PROVIDER=brevo
+BREVO_API_KEY=xkeysib-...
 DEFAULT_FROM_EMAIL=NaatalFi <no-reply@naatalfi.com>
 ```
 
