@@ -72,8 +72,8 @@ function VendorOrdersPage() {
           <p className="text-gray-500 text-sm">Aucune commande pour l'instant.</p>
         </div>
       ) : (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-[#2a2a3a] text-xs text-gray-500 uppercase tracking-wide">
                 <th className="text-left px-4 py-3">Commande</th>

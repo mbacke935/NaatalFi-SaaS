@@ -38,7 +38,7 @@ function AccountOrdersPage() {
           ))}
         </div>
       ) : orders.length === 0 ? (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-16 text-center">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-8 sm:p-16 text-center">
           <FiShoppingBag size={36} className="text-gray-600 mx-auto mb-3" />
           <p className="text-gray-500 mb-4">Vous n'avez pas encore de commandes.</p>
           <Link to="/marketplace" className="text-[#D4AF37] hover:underline text-sm">

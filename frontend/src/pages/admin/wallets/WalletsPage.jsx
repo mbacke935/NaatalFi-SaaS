@@ -209,7 +209,8 @@ function WalletsPage() {
         {payouts.length === 0 ? (
           <p className="p-6 text-sm text-gray-500">Aucune demande en attente.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-[#2a2a3a] text-gray-500 text-xs uppercase tracking-wide">
                 <th className="text-left px-4 py-3">Vendeur</th>
@@ -245,6 +246,7 @@ function WalletsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -252,7 +254,8 @@ function WalletsPage() {
         <div className="px-5 py-4 border-b border-[#2a2a3a]">
           <h2 className="font-semibold text-white">Soldes vendeurs</h2>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[500px]">
           <thead>
             <tr className="border-b border-[#2a2a3a] text-gray-500 text-xs uppercase tracking-wide">
               <th className="text-left px-4 py-3">Vendeur</th>
@@ -272,6 +275,7 @@ function WalletsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       {/* Dialog approbation retrait */}
       {confirmApprove && (

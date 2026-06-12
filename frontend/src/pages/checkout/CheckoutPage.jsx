@@ -141,7 +141,7 @@ function CheckoutPage() {
 
       <h1 className="text-2xl font-bold text-white mb-6">Finaliser la commande</h1>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
         <form onSubmit={handleSubmit} className="flex-1 space-y-5">
           {/* Adresse */}
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
@@ -224,7 +224,7 @@ function CheckoutPage() {
         </form>
 
         {/* Récapitulatif */}
-        <div className="lg:w-72 flex-shrink-0">
+        <div className="w-full lg:w-72 flex-shrink-0">
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5 sticky top-24">
             <h2 className="text-white font-bold mb-4">Récapitulatif</h2>
             <div className="space-y-4 mb-4">

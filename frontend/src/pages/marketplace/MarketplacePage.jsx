@@ -198,7 +198,7 @@ function MarketplacePage() {
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
-            <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#16161E] p-5 overflow-y-auto">
+            <div className="absolute left-0 top-0 bottom-0 w-64 sm:w-72 bg-[#16161E] p-5 overflow-y-auto">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-white font-bold">Filtres</h2>
                 <button type="button" onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-white"><FiX size={20} /></button>
@@ -210,7 +210,7 @@ function MarketplacePage() {
 
         <div className="flex-1 min-w-0">
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden animate-pulse">
                   <div className="aspect-square bg-[#2a2a3a]" />
@@ -232,7 +232,7 @@ function MarketplacePage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
                 {result.results.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
               {result.has_next && (

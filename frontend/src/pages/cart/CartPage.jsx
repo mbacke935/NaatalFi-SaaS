@@ -113,7 +113,7 @@ function CartPage() {
                 return (
                   <div
                     key={`${item.product_id}-${item.variant_id ?? 'x'}`}
-                    className={`flex flex-wrap sm:flex-nowrap items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0 ${hasStockError ? 'bg-red-900/10' : ''}`}
+                    className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0 ${hasStockError ? 'bg-red-900/10' : ''}`}
                   >
                     {/* Image */}
                     <Link to={`/marketplace/${item.product_slug}`} className="flex-shrink-0">
@@ -148,7 +148,7 @@ function CartPage() {
                     </div>
 
                     {/* Quantity */}
-                    <div className="flex items-center gap-2 flex-shrink-0 ml-20 sm:ml-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity - 1)}
                         className="w-7 h-7 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white hover:border-gray-500 transition flex items-center justify-center"

@@ -87,7 +87,8 @@ function UsersPage() {
         </div>
       ) : (
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[750px]">
             <thead>
               <tr className="border-b border-[#2a2a3a] text-gray-500 text-xs uppercase tracking-wide">
                 <th className="text-left px-4 py-3">Email</th>
@@ -144,6 +145,7 @@ function UsersPage() {
               ))}
             </tbody>
           </table>
+          </div>
           <div className="px-4 py-2.5 border-t border-[#2a2a3a] text-xs text-gray-600">
             {users.length} utilisateur{users.length !== 1 ? 's' : ''}
           </div>

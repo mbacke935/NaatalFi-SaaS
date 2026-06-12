@@ -257,8 +257,8 @@ export default function WalletPage() {
 
       {/* Table Transactions */}
       {tab === 'transactions' && (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-x-auto">
+          <table className="w-full text-sm min-w-[580px]">
             <thead>
               <tr className="border-b border-[#2a2a3a]">
                 <th className="text-left py-3 px-4 text-xs text-gray-500 uppercase tracking-wide font-medium">Date</th>
@@ -305,8 +305,8 @@ export default function WalletPage() {
 
       {/* Table Demandes de retrait */}
       {tab === 'payouts' && (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-x-auto">
+          <table className="w-full text-sm min-w-[500px]">
             <thead>
               <tr className="border-b border-[#2a2a3a]">
                 <th className="text-left py-3 px-4 text-xs text-gray-500 uppercase tracking-wide font-medium">Date</th>

@@ -57,8 +57,8 @@ function VendorsPage() {
       ) : vendors.length === 0 ? (
         <p className="text-gray-400 text-sm">Aucun vendeur trouvé.</p>
       ) : (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-x-auto">
+          <table className="w-full text-sm min-w-[680px]">
             <thead>
               <tr className="border-b border-[#2a2a3a] text-gray-500 text-xs uppercase tracking-wide">
                 <th className="text-left px-4 py-3">Boutique</th>

@@ -113,7 +113,7 @@ function DashboardPage() {
               <Link
                 key={order.id}
                 to={`/dashboard/orders/${order.id}`}
-                className="flex items-center justify-between gap-4 px-5 py-4 border-b border-[#2a2a3a] last:border-0 hover:bg-white/5 transition"
+                className="flex items-center justify-between gap-4 flex-wrap px-5 py-4 border-b border-[#2a2a3a] last:border-0 hover:bg-white/5 transition"
               >
                 <div>
                   <p className="text-sm text-white font-medium">Commande #{order.id}</p>

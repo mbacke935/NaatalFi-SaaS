@@ -118,8 +118,8 @@ function ProductsPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b border-[#2a2a3a] text-xs text-gray-500 uppercase tracking-wide">
                 <th className="text-left px-4 py-3 w-12" />
@@ -160,7 +160,7 @@ function ProductsPage() {
                     <td className="px-4 py-3 text-center text-gray-400">{p.image_count}</td>
                     <td className="px-4 py-3 text-center text-gray-400">{p.variant_count}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2 justify-end opacity-0 group-hover:opacity-100 transition">
+                      <div className="flex items-center gap-2 justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                         <button
                           onClick={() => handleToggleStatus(p)}
                           className="text-gray-400 hover:text-green-400"
