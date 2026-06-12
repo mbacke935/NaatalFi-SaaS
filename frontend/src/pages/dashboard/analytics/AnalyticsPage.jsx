@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiBarChart2, FiBox, FiShoppingBag, FiTrendingUp } from 'react-icons/fi'
-import { getVendorOrders } from '../../../services/orders'
+import { FiAlertCircle, FiBarChart2, FiBox, FiShoppingBag, FiTrendingUp } from 'react-icons/fi'
+import { getVendorAnalytics } from '../../../services/analytics'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
 
@@ -11,78 +11,32 @@ const fmtShort = (n) => {
   return Math.round(n).toString()
 }
 
-function startOfDay(date) {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  return d
-}
-
 function AnalyticsPage() {
-  const [orders, setOrders] = useState([])
+  const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [days, setDays] = useState(30)
+  const [period, setPeriod] = useState('30d')
 
   useEffect(() => {
-    getVendorOrders({})
-      .then(({ data }) => setOrders(data))
-      .catch(() => setOrders([]))
+    setLoading(true)
+    getVendorAnalytics({ period })
+      .then(({ data }) => setAnalytics(data))
+      .catch(() => setAnalytics(null))
       .finally(() => setLoading(false))
-  }, [])
+  }, [period])
 
-  const analytics = useMemo(() => {
-    const cutoff = startOfDay(new Date())
-    cutoff.setDate(cutoff.getDate() - days + 1)
-    const validStatuses = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED']
-    const filtered = orders.filter((o) => new Date(o.created_at) >= cutoff)
-    const paid = filtered.filter((o) => validStatuses.includes(o.status))
-    const revenue = paid.reduce((sum, o) => sum + Number(o.subtotal ?? 0) + Number(o.shipping_cost ?? 0), 0)
-    const itemsSold = paid.reduce((sum, o) => sum + (o.items ?? []).reduce((s, item) => s + item.quantity, 0), 0)
-
-    const daily = Array.from({ length: days }).map((_, index) => {
-      const date = startOfDay(new Date())
-      date.setDate(date.getDate() - (days - index - 1))
-      const key = date.toISOString().slice(0, 10)
-      const dayOrders = paid.filter((o) => startOfDay(o.created_at).toISOString().slice(0, 10) === key)
-      return {
-        key,
-        label: date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
-        revenue: dayOrders.reduce((sum, o) => sum + Number(o.subtotal ?? 0) + Number(o.shipping_cost ?? 0), 0),
-        count: dayOrders.length,
-      }
-    })
-
-    const topProducts = {}
-    paid.forEach((order) => {
-      ;(order.items ?? []).forEach((item) => {
-        if (!topProducts[item.product_name]) {
-          topProducts[item.product_name] = { name: item.product_name, quantity: 0, revenue: 0 }
-        }
-        topProducts[item.product_name].quantity += item.quantity
-        topProducts[item.product_name].revenue += Number(item.subtotal ?? 0)
-      })
-    })
-
-    return {
-      revenue,
-      orders: paid.length,
-      itemsSold,
-      averageBasket: paid.length ? revenue / paid.length : 0,
-      daily,
-      topProducts: Object.values(topProducts).sort((a, b) => b.revenue - a.revenue).slice(0, 5),
-    }
-  }, [orders, days])
-
-  const maxRevenue = Math.max(...analytics.daily.map((d) => d.revenue), 1)
+  const daily = useMemo(() => analytics?.daily ?? [], [analytics])
+  const maxRevenue = Math.max(...daily.map((day) => Number(day.revenue ?? 0)), 1)
 
   if (loading) {
     return <div className="h-64 bg-[#16161E] border border-[#2a2a3a] rounded-xl animate-pulse" />
   }
 
   const cards = [
-    { label: 'Revenus', value: fmt(analytics.revenue), icon: FiTrendingUp },
-    { label: 'Commandes', value: analytics.orders, icon: FiShoppingBag },
-    { label: 'Articles vendus', value: analytics.itemsSold, icon: FiBox },
-    { label: 'Panier moyen', value: fmt(analytics.averageBasket), icon: FiBarChart2 },
+    { label: 'Revenus', value: fmt(analytics?.revenue), icon: FiTrendingUp },
+    { label: 'Commandes', value: analytics?.orders_count ?? 0, icon: FiShoppingBag },
+    { label: 'Articles vendus', value: analytics?.items_sold ?? 0, icon: FiBox },
+    { label: 'Panier moyen', value: fmt(analytics?.average_basket), icon: FiBarChart2 },
+    { label: 'Taux litiges', value: `${Math.round(Number(analytics?.dispute_rate ?? 0) * 1000) / 10}%`, icon: FiAlertCircle },
   ]
 
   return (
@@ -93,19 +47,23 @@ function AnalyticsPage() {
           <p className="text-sm text-gray-500 mt-1">Ventes, revenus et produits les plus performants.</p>
         </div>
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-1 flex">
-          {[7, 30, 90].map((value) => (
+          {[
+            ['7d', '7j'],
+            ['30d', '30j'],
+            ['90d', '90j'],
+          ].map(([value, label]) => (
             <button
               key={value}
-              onClick={() => setDays(value)}
-              className={`px-3 py-1.5 rounded-lg text-sm transition ${days === value ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:text-white'}`}
+              onClick={() => setPeriod(value)}
+              className={`px-3 py-1.5 rounded-lg text-sm transition ${period === value ? 'bg-[#D4AF37] text-black font-semibold' : 'text-gray-400 hover:text-white'}`}
             >
-              {value}j
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map((card) => {
           const Icon = card.icon
           return (
@@ -124,18 +82,14 @@ function AnalyticsPage() {
         <div className="lg:col-span-2 bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
           <h2 className="font-semibold text-white mb-5">Revenus par jour</h2>
 
-          {/* Chart: Y-axis + bars */}
           <div className="flex gap-3">
-            {/* Y-axis labels */}
             <div className="w-10 flex flex-col justify-between items-end text-right pb-5 pt-0.5 flex-shrink-0">
               <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue)}</span>
               <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue * 0.5)}</span>
               <span className="text-[10px] text-gray-500 leading-none">0</span>
             </div>
 
-            {/* Bars area with grid lines */}
             <div className="flex-1 relative">
-              {/* Horizontal grid lines */}
               <div className="absolute inset-x-0 pointer-events-none" style={{ top: 0, bottom: '1.25rem' }}>
                 <div className="absolute top-0 inset-x-0 border-t border-[#2a2a3a]" />
                 <div className="absolute inset-x-0 border-t border-[#2a2a3a]" style={{ top: '50%' }} />
@@ -143,18 +97,22 @@ function AnalyticsPage() {
               </div>
 
               <div className="h-64 flex items-end gap-0.5">
-                {analytics.daily.map((day) => (
-                  <div key={day.key} className="flex-1 min-w-0 h-full flex flex-col justify-end gap-1.5">
-                    <div className="relative flex-1 flex items-end">
-                      <div
-                        className="w-full rounded-t bg-[#D4AF37]/80 hover:bg-[#D4AF37] transition"
-                        style={{ height: `${Math.max((day.revenue / maxRevenue) * 100, day.revenue ? 5 : 1)}%` }}
-                        title={`${day.label}: ${fmt(day.revenue)}`}
-                      />
+                {daily.map((day) => {
+                  const revenue = Number(day.revenue ?? 0)
+                  const label = new Date(day.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+                  return (
+                    <div key={day.date} className="flex-1 min-w-0 h-full flex flex-col justify-end gap-1.5">
+                      <div className="relative flex-1 flex items-end">
+                        <div
+                          className="w-full rounded-t bg-[#D4AF37]/80 hover:bg-[#D4AF37] transition"
+                          style={{ height: `${Math.max((revenue / maxRevenue) * 100, revenue ? 5 : 1)}%` }}
+                          title={`${label}: ${fmt(revenue)}`}
+                        />
+                      </div>
+                      <span className="text-[10px] text-gray-600 text-center truncate">{label}</span>
                     </div>
-                    <span className="text-[10px] text-gray-600 text-center truncate">{day.label}</span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -162,12 +120,12 @@ function AnalyticsPage() {
 
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
           <h2 className="font-semibold text-white mb-4">Top produits</h2>
-          {analytics.topProducts.length === 0 ? (
-            <p className="text-sm text-gray-500">Pas encore de ventes sur cette période.</p>
+          {(analytics?.top_products ?? []).length === 0 ? (
+            <p className="text-sm text-gray-500">Pas encore de ventes sur cette periode.</p>
           ) : (
             <div className="space-y-4">
-              {analytics.topProducts.map((product, index) => (
-                <div key={product.name}>
+              {analytics.top_products.slice(0, 5).map((product, index) => (
+                <div key={`${product.product_id}-${product.name}`}>
                   <div className="flex justify-between gap-3 text-sm mb-1">
                     <span className="text-gray-300 truncate">{index + 1}. {product.name}</span>
                     <span className="text-white font-semibold whitespace-nowrap">{fmt(product.revenue)}</span>

@@ -4,18 +4,13 @@ from django.utils import timezone
 
 @shared_task
 def aggregate_daily_analytics():
-    from apps.orders.models import Order, VendorOrder
-    from apps.payments.models import Payment
+    from apps.analytics.services import admin_overview, admin_top_vendors
 
     today = timezone.localdate()
     return {
         'date': today.isoformat(),
-        'orders': Order.objects.filter(created_at__date=today).count(),
-        'vendor_orders': VendorOrder.objects.filter(created_at__date=today).count(),
-        'paid_payments': Payment.objects.filter(
-            status=Payment.Status.PAID,
-            paid_at__date=today,
-        ).count(),
+        'overview': admin_overview('1d'),
+        'top_vendors': admin_top_vendors('1d', limit=10),
     }
 
 

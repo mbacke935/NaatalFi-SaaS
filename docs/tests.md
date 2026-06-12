@@ -36,8 +36,9 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 | `reviews` | `apps/reviews/tests.py` | avis verifies, anti-doublon, recalcul notes, suppression admin |
 | `ads` | `apps/ads/tests.py` | creation campagne, debit wallet, solde insuffisant, produits sponsorises |
 | `disputes` | `apps/disputes/tests.py` | ouverture litige, gel wallet, resolution refund/no-refund |
+| `analytics` | `apps/analytics/tests.py` | overview admin, top vendeurs, analytics vendeur |
 
-Etat actuel : **24 tests OK**.
+Etat actuel : **27 tests OK**.
 
 ## Frontend
 

@@ -543,9 +543,9 @@ Client ouvre litige
   - Taux de conversion
   - Taux de litiges
 - Endpoints :
-  - `GET /admin/analytics/overview`
-  - `GET /admin/analytics/vendors`
-  - `GET /vendors/me/analytics`
+  - `GET /analytics/admin/overview/`
+  - `GET /analytics/admin/vendors/`
+  - `GET /analytics/vendors/me/`
 
 ### Frontend
 - Graphiques : Recharts ou Chart.js
@@ -757,6 +757,22 @@ Frontend disponible :
 - suivi vendeur dans `/dashboard/disputes` ;
 - arbitrage admin dans `/admin/disputes`.
 
+### Phase 18 - Analytics
+
+Etat : implemente.
+
+Backend disponible :
+- app `analytics` sans stockage supplementaire, basee sur les donnees reelles commandes, wallet et litiges ;
+- `GET /analytics/admin/overview/` pour GMV, commissions, commandes, panier moyen, conversion, taux litiges et serie quotidienne ;
+- `GET /analytics/admin/vendors/` pour le classement vendeurs par revenu ;
+- `GET /analytics/vendors/me/` pour revenus vendeur, commandes, articles vendus, panier moyen, taux litiges, serie quotidienne et top produits ;
+- tache Celery `aggregate_daily_analytics` alignee sur le service analytics.
+
+Frontend disponible :
+- `/dashboard/analytics` consomme l'API vendeur avec filtres 7j, 30j, 90j ;
+- `/admin/analytics` consomme les API admin avec filtres 7j, 30j, 90j ;
+- graphiques barres internes, cartes KPIs et classements reels.
+
 ### Phase 19 - Tests
 
 Premiers tests backend ajoutes avec `config.test_settings`.
@@ -767,7 +783,7 @@ cd backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews, ads, disputes.
+Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : 24 tests OK.
+Resultat actuel : 27 tests OK.
 

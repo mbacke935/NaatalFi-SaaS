@@ -739,9 +739,9 @@ Tout marquer comme lu. **Auth requis.**
 
 ## 16. Analytics â€” `/analytics`
 
-### `GET /admin/analytics/overview`
+### `GET /analytics/admin/overview/`
 KPIs globaux. **Admin.**
-Query params : `?period=30d`
+Query params : `?period=7d|30d|90d`
 
 **RÃ©ponse 200**
 ```json
@@ -749,16 +749,58 @@ Query params : `?period=30d`
   "gmv": 4500000,
   "commissions": 337500,
   "orders_count": 312,
+  "created_orders_count": 328,
   "average_basket": 14423,
-  "active_vendors": 47,
-  "dispute_rate": 0.032
+  "conversion_rate": 0.9512,
+  "dispute_rate": 0.032,
+  "daily": [
+    { "date": "2026-06-12", "revenue": "150000.00", "orders": 8 }
+  ]
 }
 ```
 
-### `GET /admin/analytics/vendors`
+### `GET /analytics/admin/vendors/`
 Top vendeurs. **Admin.**
+Query params : `?period=7d|30d|90d`
 
-### `GET /vendors/me/analytics`
+**Reponse 200**
+```json
+[
+  {
+    "vendor_id": 12,
+    "name": "Teranga Shop",
+    "slug": "teranga-shop",
+    "orders": 18,
+    "revenue": "540000.00"
+  }
+]
+```
+
+### `GET /analytics/vendors/me/`
 Mes statistiques. **Vendor.**
 Query params : `?period=7d|30d|90d`
+
+**Reponse 200**
+```json
+{
+  "revenue": "110000.00",
+  "orders_count": 12,
+  "items_sold": 31,
+  "average_basket": "9166.67",
+  "dispute_rate": 0.0833,
+  "daily": [
+    { "date": "2026-06-12", "revenue": "25000.00", "orders": 2 }
+  ],
+  "top_products": [
+    {
+      "product_id": 4,
+      "name": "Sac cuir",
+      "slug": "sac-cuir",
+      "quantity": 7,
+      "revenue": "35000.00",
+      "views": 0
+    }
+  ]
+}
+```
 

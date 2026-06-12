@@ -1,7 +1,7 @@
 ﻿# Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 11 juin 2026  
-**Etat :** phases 0 a 17 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
+**Etat :** phases 0 a 18 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
 
 ---
 
@@ -26,8 +26,7 @@ La marketplace NaatalFi dispose maintenant d'un socle fonctionnel couvrant :
 - Phase 15 : avis verifies, moderation admin et trust score produit/vendeur.
 - Phase 16 : campagnes publicitaires sponsorisees financees par wallet.
 - Phase 17 : litiges acheteur/vendeur, gel wallet et resolution admin.
-
-Le module `analytics` reste partiellement derive des donnees existantes ; l'agregation business complete depend de la phase 18.
+- Phase 18 : analytics business reels, filtres periode, top vendeurs/produits et aggregation Celery.
 
 ---
 
@@ -64,6 +63,7 @@ Le worker Celery Render est volontairement reporte pour eviter un cout supplemen
 | `reviews` | Phase 15 | Avis verifies sur commandes livrees, notes produit, trust score vendeur, moderation admin |
 | `ads` | Phase 16 | Campagnes sponsorisees, debit wallet, injection marketplace, impressions/clics, vue admin |
 | `disputes` | Phase 17 | Ouverture litige, gel wallet, resolution remboursement/liberation, vues vendeur/admin |
+| `analytics` | Phase 18 | GMV, commissions, panier moyen, top vendeurs/produits, taux litiges, endpoints admin/vendeur |
 
 ---
 
@@ -100,8 +100,9 @@ Couverture actuelle ajoutee :
 - `apps.reviews.tests` : avis achat livre, anti-doublon, recalcul scores, suppression admin.
 - `apps.ads.tests` : creation campagne, debit wallet, solde insuffisant, produits sponsorises.
 - `apps.disputes.tests` : ouverture litige, gel wallet, resolution refund/no-refund.
+- `apps.analytics.tests` : overview admin, top vendeurs, analytics vendeur.
 
-Resultat actuel : **24 tests OK**.
+Resultat actuel : **27 tests OK**.
 
 ---
 
@@ -146,6 +147,6 @@ VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
 2. Relancer `python manage.py migrate` sur Render apres deploy.
 3. Tester les parcours admin : users, produits, paiements, wallets.
 4. Appliquer les migrations `disputes.0001_initial` et `wallet.0004_transaction_unfreeze` en local et sur Render.
-5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async, release wallet automatique et cron Phase 14.
-6. Demarrer Phase 18 : analytics business.
+5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async, release wallet automatique et cron analytics.
+6. Demarrer Phase 19 : durcir la couverture de tests avant nouvelles grosses features.
 

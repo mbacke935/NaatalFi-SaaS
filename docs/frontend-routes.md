@@ -146,6 +146,7 @@ Accessibles uniquement avec `role === 'ADMIN'`.
 
 Les pages `/dashboard/ads` et `/admin/ads` consomment l'API reelle des campagnes sponsorisees.
 Les pages `/dashboard/disputes` et `/admin/disputes` consomment l'API reelle des litiges.
+Les pages `/dashboard/analytics` et `/admin/analytics` consomment l'API reelle `/analytics`.
 
 ---
 
