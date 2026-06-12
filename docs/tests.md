@@ -23,7 +23,7 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **69 tests OK**.
+Resultat actuel : **71 tests OK**.
 
 ### Detail par module
 

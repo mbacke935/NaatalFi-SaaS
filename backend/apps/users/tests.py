@@ -49,6 +49,18 @@ class AdminUserApiTests(APITestCase):
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.is_active)
 
+    def test_admin_can_delete_user(self):
+        response = self.client.delete(f'/api/v1/auth/admin/users/{self.user.id}/')
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(CustomUser.objects.filter(pk=self.user.pk).exists())
+
+    def test_admin_cannot_delete_self(self):
+        response = self.client.delete(f'/api/v1/auth/admin/users/{self.admin.id}/')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(CustomUser.objects.filter(pk=self.admin.pk).exists())
+
 
 class LoginApiTests(APITestCase):
     def setUp(self):

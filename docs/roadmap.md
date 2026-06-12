@@ -415,7 +415,7 @@ AprÃ¨s dÃ©lai (ex: 7 jours)
 | `/admin` | KPIs globaux : GMV, commissions, vendeurs actifs |
 | `/admin/vendors` | Liste, approbation KYC, suspension |
 | `/admin/vendors/:id` | DÃ©tail vendeur, historique, wallet |
-| `/admin/users` | Gestion utilisateurs, changement de rÃ´le |
+| `/admin/users` | Gestion utilisateurs, changement de rÃ´le, activation/desactivation, suppression |
 | `/admin/products` | ModÃ©ration catalogue, signalements |
 | `/admin/orders` | Toutes les commandes, filtres avancÃ©s |
 | `/admin/payments` | Historique paiements, webhook logs |
@@ -703,6 +703,6 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 
 Couverture : wallet, shipping, users, vendors, categories, products, marketplace, account, orders, payments, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : **69 tests OK**.
+Resultat actuel : **71 tests OK**.
 
 Dont 16 tests wallet specifiques a la commission 8% (idempotence, multi-vendeur, vendeur sans plan, revenue admin comptable, coordonnees versement plateforme) et le flux complet webhook PayTech → credit wallet (20 000 FCFA → commission 1 600 → net vendeur 18 400).

@@ -1,7 +1,7 @@
 # Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 12 juin 2026
-**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 69 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 71 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
 
 ---
 
@@ -69,7 +69,7 @@ Le footer public, l'image hero et les categories populaires de l'accueil sont co
 
 | App | Etat | Detail |
 | :--- | :--- | :--- |
-| `users` | Complet | Auth JWT, verification email, reset password, liste admin, update role/actif |
+| `users` | Complet | Auth JWT, verification email, reset password, liste admin, update role/actif, suppression admin |
 | `vendors` | Complet | Boutique, KYC admin, detail enrichi wallet/stats, approbation/suspension |
 | `categories` | Complet | Arbre hierarchique, CRUD admin, image, reorder |
 | `products` | Complet | CRUD vendeur, galerie, variantes, stock, moderation admin |
@@ -137,7 +137,7 @@ Visible dans /admin/analytics → card "Commissions"
 
 ## Tests Backend
 
-69 tests, tous verts.
+71 tests, tous verts.
 
 ```powershell
 cd C:\NaatalFi-SaaS\backend

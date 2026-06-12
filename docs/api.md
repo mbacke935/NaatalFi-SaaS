@@ -190,6 +190,20 @@ Mettre Ã  jour le profil. **Auth requis.**
 { "first_name": "Aminata", "phone": "+221779999999" }
 ```
 
+### `GET /auth/admin/users/`
+Lister les utilisateurs. **Admin.**
+Query params : `?role=ADMIN|VENDOR|CUSTOMER`
+
+### `PATCH /auth/admin/users/:id/`
+Modifier un utilisateur. **Admin.**
+Champs supportes : `role`, `is_active`, `is_verified`.
+
+### `DELETE /auth/admin/users/:id/`
+Supprimer definitivement un utilisateur. **Admin.**
+Protection : un admin ne peut pas supprimer son propre compte.
+
+**Reponse 204**
+
 ---
 
 ## 2. Vendeurs â€” `/vendors`

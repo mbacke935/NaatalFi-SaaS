@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { FiCheck, FiX, FiUsers } from 'react-icons/fi'
+import { FiCheck, FiTrash2, FiX, FiUsers } from 'react-icons/fi'
 import toast from 'react-hot-toast'
-import { getAdminUsers, updateAdminUser } from '../../../services/admin'
+import { deleteAdminUser, getAdminUsers, updateAdminUser } from '../../../services/admin'
 
 const ROLE_COLORS = {
   ADMIN:    'bg-red-900/40 text-red-400',
@@ -24,6 +24,8 @@ function UsersPage() {
   const [users, setUsers]   = useState([])
   const [loading, setLoading] = useState(true)
   const [role, setRole]     = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
+  const [acting, setActing] = useState(false)
 
   const load = (r = role) => {
     setLoading(true)
@@ -47,6 +49,21 @@ function UsersPage() {
       load()
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erreur.')
+    }
+  }
+
+  const removeUser = async () => {
+    if (!confirmDelete) return
+    setActing(true)
+    try {
+      await deleteAdminUser(confirmDelete.id)
+      toast.success('Utilisateur supprime.')
+      setConfirmDelete(null)
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Suppression impossible.')
+    } finally {
+      setActing(false)
     }
   }
 
@@ -130,16 +147,26 @@ function UsersPage() {
                     {new Date(u.date_joined).toLocaleDateString('fr-SN')}
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => patchUser(u.id, { is_active: !u.is_active })}
-                      className={`text-xs px-2 py-1 rounded border transition ${
-                        u.is_active
-                          ? 'border-red-500/40 text-red-400 hover:bg-red-500/10'
-                          : 'border-green-500/40 text-green-400 hover:bg-green-500/10'
-                      }`}
-                    >
-                      {u.is_active ? 'Desactiver' : 'Activer'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => patchUser(u.id, { is_active: !u.is_active })}
+                        className={`text-xs px-2 py-1 rounded border transition ${
+                          u.is_active
+                            ? 'border-red-500/40 text-red-400 hover:bg-red-500/10'
+                            : 'border-green-500/40 text-green-400 hover:bg-green-500/10'
+                        }`}
+                      >
+                        {u.is_active ? 'Desactiver' : 'Activer'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(u)}
+                        className="p-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition"
+                        title="Supprimer"
+                        aria-label="Supprimer utilisateur"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -148,6 +175,34 @@ function UsersPage() {
           </div>
           <div className="px-4 py-2.5 border-t border-[#2a2a3a] text-xs text-gray-600">
             {users.length} utilisateur{users.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+      )}
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
+          <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white font-semibold mb-2">Supprimer cet utilisateur ?</h3>
+            <p className="text-gray-400 text-sm mb-1">
+              Cette action supprimera definitivement :
+            </p>
+            <p className="text-white text-sm font-medium break-all mb-5">{confirmDelete.email}</p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                disabled={acting}
+                className="flex-1 px-4 py-2 border border-[#2a2a3a] text-gray-400 hover:text-white rounded-lg text-sm transition disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={removeUser}
+                disabled={acting}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg text-sm transition disabled:opacity-50"
+              >
+                {acting ? 'Suppression...' : 'Supprimer'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -233,3 +233,15 @@ class AdminUserDetailView(APIView):
             update_fields.append('updated_at')
             user.save(update_fields=update_fields)
         return Response(AdminUserSerializer(user).data)
+
+    def delete(self, request, pk):
+        try:
+            user = CustomUser.objects.get(pk=pk)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'Utilisateur introuvable.'}, status=404)
+
+        if user.pk == request.user.pk:
+            return Response({'error': 'Impossible de supprimer votre propre compte.'}, status=400)
+
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
