@@ -37,7 +37,7 @@ class RegisterView(APIView):
 
         email_sent = True
         try:
-            send_verification_email.delay(str(user.id), url)
+            send_verification_email(str(user.id), url)
         except Exception:
             email_sent = False
 
@@ -142,7 +142,7 @@ class ForgotPasswordView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = password_reset_token.make_token(user)
             url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
-            send_password_reset_email.delay(str(user.id), url)
+            send_password_reset_email(str(user.id), url)
         except CustomUser.DoesNotExist:
             pass
 

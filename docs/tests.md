@@ -11,7 +11,7 @@ backend/config/test_settings.py
 Ce fichier force :
 
 - SQLite en memoire (pas de connexion Supabase necessaire) ;
-- Celery en mode eager (taches executees directement) ;
+- Celery en mode eager dans les tests, mais les emails MVP passent par `EmailLog` + traitement cron ;
 - backend email local (`django.core.mail.backends.locmem`) ;
 - hash de mot de passe rapide (`MD5PasswordHasher`).
 
@@ -23,7 +23,7 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **66 tests OK**.
+Resultat actuel : **69 tests OK**.
 
 ### Detail par module
 

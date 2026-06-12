@@ -51,6 +51,7 @@ LOCAL_APPS = [
     'apps.disputes',
     'apps.analytics',
     'apps.platform',
+    'apps.internal',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -147,6 +148,7 @@ PAYTECH_BASE_URL       = os.getenv('PAYTECH_BASE_URL', 'https://paytech.sn/api/p
 PAYTECH_ENV            = os.getenv('PAYTECH_ENV', 'test' if DEBUG else 'prod')
 PAYTECH_WEBHOOK_SECRET = os.getenv('PAYTECH_WEBHOOK_SECRET', '')
 BACKEND_URL            = os.getenv('BACKEND_URL', 'http://127.0.0.1:8000')
+CRON_SECRET            = os.getenv('CRON_SECRET', '')
 
 # ── Email ────────────────────────────────────────────────────────────
 if DEBUG:

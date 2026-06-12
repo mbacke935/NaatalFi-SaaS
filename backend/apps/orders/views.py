@@ -199,11 +199,11 @@ class CreateOrderView(APIView):
         order.save(update_fields=['total'])
 
         transaction.on_commit(
-            lambda order_id=order.id: send_order_confirmation_email.delay(order_id)
+            lambda order_id=order.id: send_order_confirmation_email(order_id)
         )
         for vendor_order_id in vendor_order_ids:
             transaction.on_commit(
-                lambda vo_id=vendor_order_id: send_vendor_new_order_email.delay(vo_id)
+                lambda vo_id=vendor_order_id: send_vendor_new_order_email(vo_id)
             )
 
         # Recharger avec toutes les relations pour la réponse

@@ -1,7 +1,7 @@
 # Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 12 juin 2026
-**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 66 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 69 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
 
 ---
 
@@ -51,9 +51,17 @@ Le footer public, l'image hero et les categories populaires de l'accueil sont co
 | Backend Render | `https://naatalfi-backend.onrender.com` |
 | Frontend Vercel | `https://naatalfi.vercel.app` |
 | Webhook PayTech | `https://naatalfi-backend.onrender.com/api/v1/payments/webhook/` |
-| Worker Celery | Non deploye (CELERY_TASK_ALWAYS_EAGER=True en prod) |
+| Worker Celery | Non deploye ; remplace par EmailLog + cron GitHub Actions |
 | Base de donnees | Supabase PostgreSQL |
 | Stockage fichiers | Supabase Storage |
+
+### Taches planifiees sans worker payant
+
+- Les emails transactionnels sont enregistres dans `EmailLog` avec le statut `PENDING`.
+- L'endpoint securise `POST /api/v1/internal/cron/run/` traite les emails pending et les taches periodiques.
+- GitHub Actions appelle cet endpoint toutes les 10 minutes via `.github/workflows/cron.yml`.
+- Redis reste utilise pour le cache, pas comme queue obligatoire.
+- Le webhook PayTech credite le wallet vendeur directement apres validation du paiement, sans passer par Celery.
 
 ---
 
@@ -129,7 +137,7 @@ Visible dans /admin/analytics → card "Commissions"
 
 ## Tests Backend
 
-61 tests, tous verts.
+69 tests, tous verts.
 
 ```powershell
 cd C:\NaatalFi-SaaS\backend
@@ -172,8 +180,8 @@ Couverture :
 - `PLATFORM_COMMISSION_RATE = Decimal('8.00')` dans `apps/wallet/services.py` — source de verite unique pour le taux.
 - `WalletSerializer.get_commission_rate()` et `AdminWalletSerializer.get_commission_rate()` retournent `PLATFORM_COMMISSION_RATE`, jamais le taux du plan.
 - `config/test_settings.py` force SQLite en memoire, Celery eager, email local, hash rapide.
-- `CELERY_TASK_ALWAYS_EAGER=True` en production sur Render (pas de worker separe).
-- Celery Beat declare : `release_pending_balance_task` (quotidien), `aggregate_daily_analytics` (quotidien), `expire_ad_campaigns` (quotidien).
+- Worker Celery non requis pour le MVP : emails via `EmailLog`, taches periodiques via endpoint cron securise.
+- GitHub Actions appelle `/api/v1/internal/cron/run/` avec `X-CRON-SECRET`.
 - PayTech utilise `BACKEND_URL` pour construire automatiquement `ipn_url`.
 - Routes critiques ordonnees : `/products/admin/` et `/payments/admin/` declarees avant les routes dynamiques.
 - Build frontend : aucun `window.confirm` / `window.prompt` — tout remplace par des confirmations inline.
@@ -191,6 +199,7 @@ BACKEND_URL=https://naatalfi-backend.onrender.com
 FRONTEND_URL=https://naatalfi.vercel.app
 CORS_ALLOWED_ORIGINS=https://naatalfi.vercel.app
 CELERY_TASK_ALWAYS_EAGER=True
+CRON_SECRET=long-secret-random
 PAYTECH_ENV=prod
 ```
 

@@ -145,7 +145,7 @@ class AdminApproveVendorView(APIView):
 
         vendor.status = Vendor.Status.APPROVED
         vendor.save(update_fields=['status'])
-        send_vendor_approval_email.delay(str(vendor.user.id))
+        send_vendor_approval_email(str(vendor.user.id))
         return Response(AdminVendorSerializer(vendor).data)
 
 
@@ -161,5 +161,5 @@ class AdminSuspendVendorView(APIView):
         reason = request.data.get('reason', '')
         vendor.status = Vendor.Status.SUSPENDED
         vendor.save(update_fields=['status'])
-        send_vendor_rejection_email.delay(str(vendor.user.id), reason)
+        send_vendor_rejection_email(str(vendor.user.id), reason)
         return Response(AdminVendorSerializer(vendor).data)

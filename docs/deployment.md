@@ -23,10 +23,10 @@
 | Frontend Vercel | `https://naatalfi.vercel.app` |
 | API de test | `https://naatalfi-backend.onrender.com/api/v1/marketplace/categories/` |
 | Webhook PayTech | `https://naatalfi-backend.onrender.com/api/v1/payments/webhook/` |
-| Worker Celery | ReportÃ© |
-| Mode tÃ¢ches async | `CELERY_TASK_ALWAYS_EAGER=True` |
+| Worker Celery | Non utilise pour le MVP |
+| Mode taches async | `EmailLog` + endpoint cron securise + GitHub Actions |
 
-Tant que le worker Celery n'est pas dÃ©ployÃ©, les emails et tÃ¢ches Celery s'exÃ©cutent directement dans le process web.
+Les emails sont enregistres en base avec le statut `PENDING`, puis traites par l'endpoint cron securise appele par GitHub Actions.
 
 ---
 
@@ -44,9 +44,10 @@ Tant que le worker Celery n'est pas dÃ©ployÃ©, les emails et tÃ¢ches Celer
 | `DB_USER` | User Supabase | `postgres.uwlczpjq...` |
 | `DB_PASSWORD` | Mot de passe Supabase | `xxxxxxxx` |
 | `DB_PORT` | Port | `5432` |
-| `CELERY_BROKER_URL` | URL Redis Upstash | `rediss://default:xxx@xxx.upstash.io:6380` |
-| `CELERY_RESULT_BACKEND` | MÃªme URL Redis | idem |
-| `CELERY_TASK_ALWAYS_EAGER` | ExÃ©cute les tÃ¢ches Celery dans le web process si aucun worker n'est dÃ©ployÃ© | `True` temporairement, `False` avec worker |
+| `CELERY_BROKER_URL` | URL Redis Upstash utilisee pour le cache Redis | `rediss://default:xxx@xxx.upstash.io:6379` |
+| `CELERY_RESULT_BACKEND` | Optionnel tant qu'aucun worker Celery n'est deploye | idem |
+| `CELERY_TASK_ALWAYS_EAGER` | Optionnel. Les emails et taches planifiees ne dependent plus d'un worker Celery | `True` ou non defini |
+| `CRON_SECRET` | Secret partage pour proteger `/api/v1/internal/cron/run/` | `long-secret-random` |
 | `SUPABASE_URL` | URL projet Supabase | `https://xxx.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Cle service Supabase (nom exact attendu par settings.py) | `eyJxxxxx` |
 | `PAYTECH_API_KEY` | ClÃ© API PayTech | `xxxxxxxx` |
@@ -81,6 +82,7 @@ BACKEND_URL=https://naatalfi-backend.onrender.com
 FRONTEND_URL=https://naatalfi.vercel.app
 CORS_ALLOWED_ORIGINS=https://naatalfi.vercel.app
 CELERY_TASK_ALWAYS_EAGER=True
+CRON_SECRET=long-secret-random
 ```
 
 Frontend Vercel :
@@ -131,20 +133,31 @@ pip freeze > requirements.txt
    ```
 5. Ajouter toutes les variables d'environnement (tableau ci-dessus)
 
-### 4. Celery Worker sur Render
+### 4. Cron gratuit avec GitHub Actions
 
-Optionnel au dÃ©but. Si `CELERY_TASK_ALWAYS_EAGER=True`, ce service peut Ãªtre reportÃ©.
+Render Cron et Celery Worker sont reportes pour eviter un cout mensuel.
 
-Quand le worker devient nÃ©cessaire, crÃ©er un second service **Background Worker** :
-- **Root Directory** : `backend`
-- **Start Command** : `celery -A config worker --loglevel=info`
-- MÃªmes variables d'environnement
+Le repo contient `.github/workflows/cron.yml`. Il appelle toutes les 10 minutes :
 
-Puis passer sur le Web Service et le worker :
+```text
+POST https://naatalfi-backend.onrender.com/api/v1/internal/cron/run/
+Header: X-CRON-SECRET
+```
+
+Configurer dans Render :
 
 ```env
-CELERY_TASK_ALWAYS_EAGER=False
+CRON_SECRET=long-secret-random
 ```
+
+Configurer dans GitHub > Settings > Secrets and variables > Actions :
+
+```text
+CRON_URL=https://naatalfi-backend.onrender.com/api/v1/internal/cron/run/
+CRON_SECRET=la-meme-valeur-que-render
+```
+
+Ce cron traite les emails `EmailLog` en attente, libere les soldes wallet eligibles, expire les campagnes sponsorisees et lance les agregations analytics legeres.
 
 ---
 
@@ -294,7 +307,7 @@ Etat au 12 juin 2026 :
 
 - backend check : OK ;
 - migrations dry-run : OK, `No changes detected` ;
-- tests backend : 66 tests OK ;
+- tests backend : 69 tests OK ;
 - tests frontend : 12 tests OK (`npm test`) ;
 - build frontend : OK (~430ms).
 
@@ -337,11 +350,12 @@ A executer dans l'ordre, avec tes acces. Chaque etape est bloquante pour la suiv
 - [ ] Verifier wallet vendeur credite (net 92%) + transaction COMMISSION (8%)
 - [ ] **Securite** : sans cle API valide dans l'IPN, le webhook est refuse (403) en prod — c'est attendu
 
-### 6. Worker Celery (quand budget le permet)
-- [ ] Background Worker Render : `celery -A config worker --loglevel=info`
-- [ ] Celery Beat (cron) pour `release_pending_balance_task`, `aggregate_daily_analytics`, `expire_ad_campaigns`
-- [ ] Passer `CELERY_TASK_ALWAYS_EAGER=False` sur web + worker
-- [ ] Sans worker : laisser `True` (liberation des soldes a declencher manuellement ou via cron externe)
+### 6. Cron gratuit GitHub Actions
+- [ ] Render : definir `CRON_SECRET`
+- [ ] GitHub Actions secrets : definir `CRON_URL`
+- [ ] GitHub Actions secrets : definir `CRON_SECRET` avec la meme valeur que Render
+- [ ] Verifier manuellement le workflow `NaatalFi Cron` avec `workflow_dispatch`
+- [ ] Verifier dans l'admin Django que les `EmailLog` passent de `PENDING` a `SENT`
 
 ### 7. Verifications post-go-live
 - [ ] Inscription -> email de verification recu
@@ -355,4 +369,3 @@ A executer dans l'ordre, avec tes acces. Chaque etape est bloquante pour la suiv
 
 ### Hors perimetre code (a faire par toi)
 Domaine + DNS (SPF/DKIM/DMARC), email d'envoi sur domaine reel (remplacer `onboarding@resend.dev`), Sentry/monitoring, backups Supabase, conditions d'utilisation juridiques validees.
-

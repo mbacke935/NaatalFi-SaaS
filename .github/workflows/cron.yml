@@ -1,0 +1,16 @@
+name: NaatalFi Cron
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run scheduled backend tasks
+        run: |
+          curl --fail --silent --show-error \
+            --request POST "${{ secrets.CRON_URL }}" \
+            --header "X-CRON-SECRET: ${{ secrets.CRON_SECRET }}"

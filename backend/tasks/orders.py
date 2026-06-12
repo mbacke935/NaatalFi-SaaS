@@ -1,13 +1,14 @@
 from celery import shared_task
 from django.conf import settings
-from django.core.mail import send_mail
+
+from apps.internal.services import queue_email
 
 
 @shared_task
 def send_order_confirmation_email(order_id):
-    from apps.orders.models import Order
     from apps.notifications.models import Notification
     from apps.notifications.services import create_notification
+    from apps.orders.models import Order
 
     order = (
         Order.objects
@@ -21,10 +22,10 @@ def send_order_confirmation_email(order_id):
     lines = [
         f"Bonjour {buyer_name},",
         "",
-        f"Votre commande #{order.id} a bien été enregistrée.",
+        f"Votre commande #{order.id} a bien ete enregistree.",
         f"Total : {order.total} FCFA",
         "",
-        "Détail par vendeur :",
+        "Detail par vendeur :",
     ]
     for vendor_order in order.vendor_orders.all():
         lines.append(
@@ -35,15 +36,14 @@ def send_order_confirmation_email(order_id):
         "",
         f"Suivre la commande : {order_url}",
         "",
-        "L'équipe NaatalFi",
+        "L'equipe NaatalFi",
     ])
 
-    send_mail(
-        subject=f"Confirmation de commande #{order.id} — NaatalFi",
+    queue_email(
+        subject=f"Confirmation de commande #{order.id} - NaatalFi",
         message="\n".join(lines),
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[order.buyer.email],
-        fail_silently=False,
+        recipient=order.buyer.email,
     )
     create_notification(
         user=order.buyer,
@@ -56,9 +56,9 @@ def send_order_confirmation_email(order_id):
 
 @shared_task
 def send_vendor_new_order_email(vendor_order_id):
-    from apps.orders.models import VendorOrder
     from apps.notifications.models import Notification
     from apps.notifications.services import create_notification
+    from apps.orders.models import VendorOrder
 
     vendor_order = (
         VendorOrder.objects
@@ -72,7 +72,7 @@ def send_vendor_new_order_email(vendor_order_id):
     lines = [
         f"Bonjour {vendor.user.get_full_name() or vendor.user.email},",
         "",
-        f"Vous avez reçu une nouvelle commande pour {vendor.name}.",
+        f"Vous avez recu une nouvelle commande pour {vendor.name}.",
         f"Commande vendeur #{vendor_order.id}",
         f"Commande client #{vendor_order.order_id}",
         f"Sous-total : {vendor_order.subtotal} FCFA",
@@ -86,15 +86,14 @@ def send_vendor_new_order_email(vendor_order_id):
         "",
         f"Traiter la commande : {dashboard_url}",
         "",
-        "L'équipe NaatalFi",
+        "L'equipe NaatalFi",
     ])
 
-    send_mail(
-        subject=f"Nouvelle commande #{vendor_order.id} — NaatalFi",
+    queue_email(
+        subject=f"Nouvelle commande #{vendor_order.id} - NaatalFi",
         message="\n".join(lines),
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[vendor.user.email],
-        fail_silently=False,
+        recipient=vendor.user.email,
     )
     create_notification(
         user=vendor.user,

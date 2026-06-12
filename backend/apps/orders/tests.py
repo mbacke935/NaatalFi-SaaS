@@ -10,7 +10,6 @@ from apps.products.models import Product, ProductVariant
 from apps.users.models import CustomUser
 from apps.vendors.models import Vendor, VendorPlan
 from apps.wallet.models import Transaction, Wallet
-from apps.wallet.services import credit_wallet_from_order
 
 
 class OrderPaymentWalletFlowTests(APITestCase):
@@ -85,8 +84,7 @@ class OrderPaymentWalletFlowTests(APITestCase):
 
         with (
             patch('apps.payments.views.verify_webhook_signature', return_value=True),
-            patch('apps.payments.views.credit_vendor_wallets_task.delay', side_effect=lambda order_id: credit_wallet_from_order(Order.objects.get(pk=order_id))),
-            patch('apps.payments.views.send_payment_confirmation_email.delay', return_value=None),
+            patch('apps.payments.views.send_payment_confirmation_email', return_value=None),
         ):
             with self.captureOnCommitCallbacks(execute=True):
                 webhook_response = self.client.post(reverse('payment-webhook'), {
@@ -109,8 +107,7 @@ class OrderPaymentWalletFlowTests(APITestCase):
 
         with (
             patch('apps.payments.views.verify_webhook_signature', return_value=True),
-            patch('apps.payments.views.credit_vendor_wallets_task.delay', side_effect=lambda order_id: credit_wallet_from_order(Order.objects.get(pk=order_id))),
-            patch('apps.payments.views.send_payment_confirmation_email.delay', return_value=None),
+            patch('apps.payments.views.send_payment_confirmation_email', return_value=None),
         ):
             with self.captureOnCommitCallbacks(execute=True):
                 self.client.post(reverse('payment-webhook'), {

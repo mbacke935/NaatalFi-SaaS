@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.orders.models import Order
+from apps.wallet.services import credit_wallet_from_order
 from .models import Payment
 from .serializers import InitiatePaymentSerializer, PaymentSerializer, AdminPaymentSerializer
 from .services import (
@@ -15,7 +16,6 @@ from .services import (
     webhook_marks_paid,
 )
 from tasks.payments import send_payment_confirmation_email
-from tasks.wallet import credit_vendor_wallets_task
 
 
 class IsAdmin(IsAuthenticated):
@@ -134,10 +134,10 @@ class PayTechWebhookView(APIView):
                 order.status = Order.Status.PAID
                 order.save(update_fields=['status', 'updated_at'])
                 transaction.on_commit(
-                    lambda o_id=order.id: credit_vendor_wallets_task.delay(o_id)
+                    lambda paid_order=order: credit_wallet_from_order(paid_order)
                 )
             transaction.on_commit(
-                lambda payment_id=payment.id: send_payment_confirmation_email.delay(payment_id)
+                lambda payment_id=payment.id: send_payment_confirmation_email(payment_id)
             )
         else:
             payment.status = Payment.Status.FAILED
