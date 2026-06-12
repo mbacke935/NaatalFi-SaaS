@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import F, Q
 from django.utils import timezone
+import requests
 
 from .models import EmailLog
 
@@ -14,6 +15,37 @@ def queue_email(*, subject, message, recipient, from_email=None, scheduled_at=No
         message=message,
         from_email=from_email or settings.DEFAULT_FROM_EMAIL,
         scheduled_at=scheduled_at or timezone.now(),
+    )
+
+
+def send_logged_email(email):
+    resend_api_key = getattr(settings, 'RESEND_API_KEY', '')
+    if resend_api_key:
+        response = requests.post(
+            getattr(settings, 'RESEND_API_URL', 'https://api.resend.com/emails'),
+            headers={
+                'Authorization': f'Bearer {resend_api_key}',
+                'Content-Type': 'application/json',
+                'Idempotency-Key': f'email-log-{email.pk}-{email.attempts}',
+            },
+            json={
+                'from': email.from_email or settings.DEFAULT_FROM_EMAIL,
+                'to': [email.to_email],
+                'subject': email.subject,
+                'text': email.message,
+            },
+            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f'Resend API {response.status_code}: {response.text[:1000]}')
+        return
+
+    send_mail(
+        subject=email.subject,
+        message=email.message,
+        from_email=email.from_email or settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email.to_email],
+        fail_silently=False,
     )
 
 
@@ -53,13 +85,7 @@ def process_pending_emails(limit=25):
             locked.save(update_fields=['status', 'attempts', 'updated_at'])
 
         try:
-            send_mail(
-                subject=locked.subject,
-                message=locked.message,
-                from_email=locked.from_email or settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[locked.to_email],
-                fail_silently=False,
-            )
+            send_logged_email(locked)
         except Exception as exc:
             locked.status = EmailLog.Status.FAILED
             locked.last_error = str(exc)[:2000]

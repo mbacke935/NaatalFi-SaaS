@@ -2,13 +2,14 @@ from django.core import mail
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
+from unittest.mock import Mock, patch
 from rest_framework.test import APITestCase
 
 from apps.internal.models import EmailLog
 from apps.internal.services import process_pending_emails, queue_email
 
 
-@override_settings(CRON_SECRET='test-secret')
+@override_settings(CRON_SECRET='test-secret', RESEND_API_KEY='')
 class InternalCronTests(APITestCase):
     def test_process_pending_emails_sends_and_marks_sent(self):
         queue_email(
@@ -60,6 +61,44 @@ class InternalCronTests(APITestCase):
         self.assertEqual(email.status, EmailLog.Status.SENT)
         self.assertEqual(email.attempts, 2)
         self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(RESEND_API_KEY='re_test_key')
+    @patch('apps.internal.services.requests.post')
+    def test_process_pending_emails_uses_resend_api_when_configured(self, mock_post):
+        mock_post.return_value = Mock(status_code=200, text='{"id":"email-id"}')
+        queue_email(
+            subject='Resend',
+            message='Bonjour',
+            recipient='client@example.com',
+        )
+
+        result = process_pending_emails()
+
+        email = EmailLog.objects.get()
+        self.assertEqual(result['sent'], 1)
+        self.assertEqual(email.status, EmailLog.Status.SENT)
+        self.assertEqual(len(mail.outbox), 0)
+        mock_post.assert_called_once()
+        payload = mock_post.call_args.kwargs['json']
+        self.assertEqual(payload['to'], ['client@example.com'])
+        self.assertEqual(payload['text'], 'Bonjour')
+
+    @override_settings(RESEND_API_KEY='re_test_key')
+    @patch('apps.internal.services.requests.post')
+    def test_process_pending_emails_marks_failed_on_resend_api_error(self, mock_post):
+        mock_post.return_value = Mock(status_code=403, text='domain not verified')
+        queue_email(
+            subject='Resend error',
+            message='Bonjour',
+            recipient='client@example.com',
+        )
+
+        result = process_pending_emails()
+
+        email = EmailLog.objects.get()
+        self.assertEqual(result['failed'], 1)
+        self.assertEqual(email.status, EmailLog.Status.FAILED)
+        self.assertIn('Resend API 403', email.last_error)
 
     def test_cron_requires_secret(self):
         response = self.client.post(reverse('internal-cron-run'))

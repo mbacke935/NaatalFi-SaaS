@@ -163,6 +163,8 @@ else:
     EMAIL_TIMEOUT    = int(os.getenv('EMAIL_TIMEOUT', 10))
 
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'NaatalFi <noreply@naatalfi.com>')
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+RESEND_API_URL = os.getenv('RESEND_API_URL', 'https://api.resend.com/emails')
 
 # ── Celery ───────────────────────────────────────────────────────────
 CELERY_BROKER_URL        = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
