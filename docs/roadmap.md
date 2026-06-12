@@ -673,7 +673,7 @@ Etat : en grande partie implemente.
 
 Routes disponibles : `/dashboard`, `/dashboard/products`, `/dashboard/orders`, `/dashboard/orders/:id`, `/dashboard/wallet`, `/dashboard/analytics`, `/dashboard/shop`, `/dashboard/delivery`, `/dashboard/notifications`, `/dashboard/profile`, `/dashboard/ads`, `/dashboard/disputes`.
 
-Limite connue : `ads` et `disputes` sont des surfaces UI preparees ; la logique complete depend des phases 16 et 17.
+Limite connue : `disputes` reste une surface UI preparee ; la logique complete depend de la phase 17.
 
 ### Phase 13 - Dashboard admin
 
@@ -683,7 +683,7 @@ Routes disponibles : `/admin`, `/admin/vendors`, `/admin/vendors/:id`, `/admin/u
 
 Controles reels disponibles : KYC vendeur, roles utilisateurs, activation/desactivation users, moderation produit, historique paiements, logs webhook, wallets et retraits.
 
-Limite connue : `ads` et `disputes` seront finalises avec les phases 16 et 17.
+Limite connue : `disputes` sera finalise avec la phase 17.
 
 ### Phase 14 - Celery complet + notifications
 
@@ -721,6 +721,24 @@ Frontend disponible :
 
 Limite connue : la ponderation avec litiges/delais sera enrichie en phase 17 quand les litiges seront reels.
 
+### Phase 16 - Publicites sponsorisees
+
+Etat : implemente.
+
+Backend disponible :
+- app `ads` avec modele `AdCampaign` ;
+- `POST /vendors/me/ads/`, `GET /vendors/me/ads/`, `PATCH /vendors/me/ads/:id/` ;
+- `GET /ads/admin/` pour l'administration ;
+- `GET /ads/sponsored/` et `POST /ads/:id/click/` publics ;
+- debit immediat du budget depuis `Wallet.available_balance` avec transaction `AD_SPEND` ;
+- injection jusqu'a 3 produits sponsorises en tete du catalogue marketplace ;
+- expiration via la tache Celery `expire_ad_campaigns`.
+
+Frontend disponible :
+- badge `Sponsorise` dans la marketplace ;
+- creation/suivi/pause des campagnes dans `/dashboard/ads` ;
+- suivi global dans `/admin/ads`.
+
 ### Phase 19 - Tests
 
 Premiers tests backend ajoutes avec `config.test_settings`.
@@ -731,7 +749,7 @@ cd backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews.
+Couverture actuelle : wallet, shipping, users admin, products admin, payments admin, notifications, reviews, ads.
 
-Resultat actuel : 18 tests OK.
+Resultat actuel : 21 tests OK.
 

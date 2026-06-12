@@ -2,15 +2,28 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { FiFilter, FiX } from 'react-icons/fi'
 import { getMarketplaceProducts, getMarketplaceCategories } from '../../services/marketplace'
+import { trackAdClick } from '../../services/ads'
 import { useMeta } from '../../hooks/useMeta'
 
 function ProductCard({ product }) {
+  const handleClick = () => {
+    if (product.is_sponsored && product.ad_campaign_id) {
+      trackAdClick(product.ad_campaign_id).catch(() => {})
+    }
+  }
+
   return (
     <Link
       to={`/marketplace/${product.slug}`}
+      onClick={handleClick}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="aspect-square bg-[#2a2a3a] overflow-hidden">
+      <div className="aspect-square bg-[#2a2a3a] overflow-hidden relative">
+        {product.is_sponsored && (
+          <span className="absolute left-2 top-2 z-10 bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-1 rounded">
+            Sponsorise
+          </span>
+        )}
         {product.cover_image ? (
           <img src={product.cover_image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (

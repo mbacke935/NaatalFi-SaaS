@@ -144,6 +144,8 @@ Accessibles uniquement avec `role === 'ADMIN'`.
 | `/admin/disputes` | `AdminDisputesPage` | `src/pages/admin/disputes/DisputesPage.jsx` |
 | `/admin/ads` | `AdminAdsPage` | `src/pages/admin/ads/AdsPage.jsx` |
 
+Les pages `/dashboard/ads` et `/admin/ads` consomment l'API reelle des campagnes sponsorisees.
+
 ---
 
 ## 6. Erreurs

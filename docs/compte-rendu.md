@@ -1,7 +1,7 @@
 ﻿# Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 11 juin 2026  
-**Etat :** phases 0 a 15 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
+**Etat :** phases 0 a 16 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
 
 ---
 
@@ -24,8 +24,9 @@ La marketplace NaatalFi dispose maintenant d'un socle fonctionnel couvrant :
 - dashboard admin Phase 13 : KPIs, vendeurs/KYC, users, produits, commandes, paiements, wallets, categories, analytics, pages reviews/ads/disputes pretes.
 - Phase 14 : notifications in-app, endpoints `/notifications`, polling frontend 30s, taches Celery consolidees.
 - Phase 15 : avis verifies, moderation admin et trust score produit/vendeur.
+- Phase 16 : campagnes publicitaires sponsorisees financees par wallet.
 
-Les modules `ads` et `disputes` restent des surfaces UI/admin preparees, mais leur logique metier complete depend des phases 16 et 17.
+Le module `disputes` reste une surface UI/admin preparee, mais sa logique metier complete depend de la phase 17.
 
 ---
 
@@ -60,6 +61,7 @@ Le worker Celery Render est volontairement reporte pour eviter un cout supplemen
 | `shipping` | Phase 11 | Zones/tarifs vendeur, estimation region + poids, checkout |
 | `notifications` | Phase 14 | Modele Notification, liste utilisateur, mark read, read-all |
 | `reviews` | Phase 15 | Avis verifies sur commandes livrees, notes produit, trust score vendeur, moderation admin |
+| `ads` | Phase 16 | Campagnes sponsorisees, debit wallet, injection marketplace, impressions/clics, vue admin |
 
 ---
 
@@ -94,8 +96,9 @@ Couverture actuelle ajoutee :
 - `apps.payments.tests` : liste admin paiements avec statut webhook.
 - `apps.notifications.tests` : isolation utilisateur, mark read, read-all.
 - `apps.reviews.tests` : avis achat livre, anti-doublon, recalcul scores, suppression admin.
+- `apps.ads.tests` : creation campagne, debit wallet, solde insuffisant, produits sponsorises.
 
-Resultat actuel : **18 tests OK**.
+Resultat actuel : **21 tests OK**.
 
 ---
 
@@ -139,7 +142,7 @@ VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
 1. Redeployer Render + Vercel avec les phases 12-13.
 2. Relancer `python manage.py migrate` sur Render apres deploy.
 3. Tester les parcours admin : users, produits, paiements, wallets.
-4. Appliquer les migrations `products.0002_product_ratings` et `reviews.0001_initial` en local et sur Render.
+4. Appliquer les migrations `ads.0001_initial` et `wallet.0003_transaction_ad_spend` en local et sur Render.
 5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async, release wallet automatique et cron Phase 14.
-6. Demarrer Phase 16 : publicites sponsorisees.
+6. Demarrer Phase 17 : litiges.
 

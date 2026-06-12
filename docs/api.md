@@ -635,19 +635,27 @@ CrÃ©er une campagne. **Vendor.**
 **Body**
 ```json
 {
-  "product_id": "uuid",
-  "budget": 10000,
-  "cost_per_click": 50,
+  "product_id": 15,
+  "budget": "10000.00",
+  "cost_per_click": "50.00",
   "start_date": "2026-07-01",
   "end_date": "2026-07-31"
 }
 ```
+
+La creation debite immediatement `budget` du `Wallet.available_balance` du vendeur et cree une transaction `AD_SPEND`.
 
 ### `GET /vendors/me/ads` Â· `PATCH /vendors/me/ads/:id`
 GÃ©rer mes campagnes. **Vendor.**
 
 ### `GET /admin/ads`
 Vue globale. **Admin.**
+
+### `GET /ads/sponsored`
+Produits sponsorises actifs. **Public.**
+
+### `POST /ads/:id/click`
+Tracker un clic publicitaire. **Public.**
 
 ---
 

@@ -34,8 +34,9 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 | `payments` | `apps/payments/tests.py` | liste admin paiements, statut webhook |
 | `notifications` | `apps/notifications/tests.py` | liste utilisateur, isolation, mark read, read-all |
 | `reviews` | `apps/reviews/tests.py` | avis verifies, anti-doublon, recalcul notes, suppression admin |
+| `ads` | `apps/ads/tests.py` | creation campagne, debit wallet, solde insuffisant, produits sponsorises |
 
-Etat actuel : **18 tests OK**.
+Etat actuel : **21 tests OK**.
 
 ## Frontend
 
