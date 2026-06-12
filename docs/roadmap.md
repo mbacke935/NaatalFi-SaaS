@@ -661,121 +661,36 @@ Phase 20 â†’ DÃ©ploiement production
 
 ---
 
-## Etat d'avancement actuel - 11 juin 2026
+## Etat d'avancement actuel - 12 juin 2026
 
-### Phases 0 a 11
+### Phases 0 a 18 : completement implementees
 
-Les phases 0 a 11 sont implementees : conception, auth, vendeurs/KYC, categories, produits, marketplace publique, espace client, panier, commandes multi-vendeurs, paiements PayTech, wallet vendeur et livraison.
+Toutes les phases techniques sont implementees : conception, auth, vendeurs/KYC, categories, produits, marketplace publique, espace client, panier, commandes multi-vendeurs, paiements PayTech, wallet vendeur, livraison, dashboards vendeur et admin complets, notifications, avis, publicites, litiges et analytics.
 
-### Phase 12 - Dashboard vendeur
+### Phase MVP (appliquee le 12 juin 2026)
 
-Etat : en grande partie implemente.
+**Monetisation simplifiee :**
+- Commission unique : **8% flat** sur chaque vente (`PLATFORM_COMMISSION_RATE = Decimal('8.00')` dans `apps/wallet/services.py`).
+- Aucun abonnement mensuel. Plan vendeur ignore pour le calcul du taux.
+- Tous les modeles DB conserves (VendorPlan, AdCampaign, Review, Dispute, Notification).
 
-Routes disponibles : `/dashboard`, `/dashboard/products`, `/dashboard/orders`, `/dashboard/orders/:id`, `/dashboard/wallet`, `/dashboard/analytics`, `/dashboard/shop`, `/dashboard/delivery`, `/dashboard/notifications`, `/dashboard/profile`, `/dashboard/ads`, `/dashboard/disputes`.
+**Fonctionnalites differees (code conserve en commentaire dans les fichiers) :**
 
-Limite connue : `disputes` reste une surface UI preparee ; la logique complete depend de la phase 17.
+| Feature | Phase Future | Fichier frontend |
+| :--- | :--- | :--- |
+| Favoris | 1 | `ProductDetailPage`, `AccountFavoritesPage` |
+| Avis client | 1 | `AccountReviewsPage` |
+| Analytics avancees (items vendus, panier moyen, taux litiges, top produits) | 1 | `AnalyticsPage` (dashboard vendeur) |
+| Publicites sponsorisees | 2 | `AdsPage` |
+| Litiges (workflow complet) | 3 | `DisputesPage` (remplace par page contact) |
 
-### Phase 13 - Dashboard admin
+Aucune page supprimee. Composant `src/components/ui/ComingSoon.jsx` cree pour les pages differees.
 
-Etat : en grande partie implemente.
+### Phase 10 - Wallet (mise a jour)
 
-Routes disponibles : `/admin`, `/admin/vendors`, `/admin/vendors/:id`, `/admin/users`, `/admin/products`, `/admin/orders`, `/admin/payments`, `/admin/wallets`, `/admin/categories`, `/admin/reviews`, `/admin/ads`, `/admin/disputes`, `/admin/analytics`.
-
-Controles reels disponibles : KYC vendeur, roles utilisateurs, activation/desactivation users, moderation produit, historique paiements, logs webhook, wallets et retraits.
-
-Limite connue : `disputes` sera finalise avec la phase 17.
-
-### Phase 14 - Celery complet + notifications
-
-Etat : demarree et fonctionnelle sur le socle actuel.
-
-Backend disponible :
-- app `notifications` avec modele `Notification` ;
-- endpoints `/notifications/`, `/notifications/:id/read/`, `/notifications/read-all/` ;
-- notifications creees pour commandes, nouvelles commandes vendeur, paiement confirme, KYC vendeur, retraits wallet et changements de statut commande ;
-- taches Celery `aggregate_daily_analytics`, `expire_ad_campaigns` et `calculate_trust_score` ajoutees ;
-- Celery Beat planifie `release_pending_balance_task`, `aggregate_daily_analytics` et `expire_ad_campaigns`.
-
-Frontend disponible :
-- `/dashboard/notifications` consomme l'API reelle, marque lu/lu global et rafraichit toutes les 30 secondes.
-
-Limites connues : `calculate_trust_score` integre les avis depuis la phase 15 ; la ponderation fine par delais reste un enrichissement analytics.
-
-### Phase 15 - Avis + trust score
-
-Etat : implemente.
-
-Backend disponible :
-- app `reviews` avec modele `Review` ;
-- `POST /reviews/` pour publier un avis verifie sur une commande vendeur `DELIVERED` ;
-- `GET /marketplace/products/:slug/reviews/` et `GET /marketplace/vendors/:slug/reviews/` publics ;
-- `GET /reviews/me/` pour l'espace client ;
-- `GET /reviews/admin/` et `DELETE /reviews/admin/:id/` pour la moderation ;
-- recalcul automatique de `Product.average_rating`, `Product.total_reviews`, `Product.trust_score` et `Vendor.trust_score`.
-
-Frontend disponible :
-- notes visibles sur les fiches produit et boutique ;
-- formulaire d'avis depuis le detail d'une commande livree ;
-- page `/account/reviews` ;
-- page `/admin/reviews` connectee a l'API reelle.
-
-Limite connue : la ponderation avec litiges/delais sera enrichie en phase 17 quand les litiges seront reels.
-
-### Phase 16 - Publicites sponsorisees
-
-Etat : implemente.
-
-Backend disponible :
-- app `ads` avec modele `AdCampaign` ;
-- `POST /vendors/me/ads/`, `GET /vendors/me/ads/`, `PATCH /vendors/me/ads/:id/` ;
-- `GET /ads/admin/` pour l'administration ;
-- `GET /ads/sponsored/` et `POST /ads/:id/click/` publics ;
-- debit immediat du budget depuis `Wallet.available_balance` avec transaction `AD_SPEND` ;
-- injection jusqu'a 3 produits sponsorises en tete du catalogue marketplace ;
-- expiration via la tache Celery `expire_ad_campaigns`.
-
-Frontend disponible :
-- badge `Sponsorise` dans la marketplace ;
-- creation/suivi/pause des campagnes dans `/dashboard/ads` ;
-- suivi global dans `/admin/ads`.
-
-### Phase 17 - Litiges
-
-Etat : implemente.
-
-Backend disponible :
-- app `disputes` avec modele `Dispute` ;
-- `POST /disputes/`, `GET /disputes/`, `GET /disputes/:id/` ;
-- `GET /vendors/me/disputes/` pour le vendeur ;
-- `GET /disputes/admin/` et `POST /disputes/admin/:id/resolve/` pour l'admin ;
-- gel du wallet vendeur (`available_balance -> frozen_balance`) a l'ouverture ;
-- resolution `REFUND` : consomme le solde gele et marque la sous-commande `REFUNDED` ;
-- resolution `NO_REFUND` : libere le solde gele vers le solde disponible avec transaction `UNFREEZE`.
-
-Frontend disponible :
-- ouverture de litige depuis le detail d'une commande expediee/livree ;
-- suivi vendeur dans `/dashboard/disputes` ;
-- arbitrage admin dans `/admin/disputes`.
-
-### Phase 18 - Analytics
-
-Etat : implemente.
-
-Backend disponible :
-- app `analytics` sans stockage supplementaire, basee sur les donnees reelles commandes, wallet et litiges ;
-- `GET /analytics/admin/overview/` pour GMV, commissions, commandes, panier moyen, conversion, taux litiges et serie quotidienne ;
-- `GET /analytics/admin/vendors/` pour le classement vendeurs par revenu ;
-- `GET /analytics/vendors/me/` pour revenus vendeur, commandes, articles vendus, panier moyen, taux litiges, serie quotidienne et top produits ;
-- tache Celery `aggregate_daily_analytics` alignee sur le service analytics.
-
-Frontend disponible :
-- `/dashboard/analytics` consomme l'API vendeur avec filtres 7j, 30j, 90j ;
-- `/admin/analytics` consomme les API admin avec filtres 7j, 30j, 90j ;
-- graphiques barres internes, cartes KPIs et classements reels.
+La commission est maintenant **8% flat** independamment du plan vendeur. Le serializer `WalletSerializer` expose `commission_rate = "8.00"` pour tous les vendeurs. La source de verite est la constante `PLATFORM_COMMISSION_RATE`.
 
 ### Phase 19 - Tests
-
-Premiers tests backend ajoutes avec `config.test_settings`.
 
 Commande :
 ```powershell
@@ -783,7 +698,9 @@ cd backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle : wallet, shipping, users admin/login, vendors, categories, products admin, marketplace, account, orders, payments admin/webhook, notifications, reviews, ads, disputes, analytics.
+Couverture : wallet, shipping, users, vendors, categories, products, marketplace, account, orders, payments, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : 44 tests OK.
+Resultat actuel : **57 tests OK**.
+
+Dont 15 tests wallet specifiques a la commission 8% (idempotence, multi-vendeur, vendeur sans plan, revenue admin comptable) et le flux complet webhook PayTech → credit wallet (20 000 FCFA → commission 1 600 → net vendeur 18 400).
 

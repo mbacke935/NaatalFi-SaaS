@@ -1,32 +1,43 @@
-﻿# Compte Rendu - Etat Actuel NaatalFi
+# Compte Rendu - Etat Actuel NaatalFi
 
-**Date :** 11 juin 2026  
-**Etat :** phases 0 a 18 largement implementees, deploiement Render/Vercel engage, premiers tests backend ajoutes.
+**Date :** 12 juin 2026
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 57 tests backend OK. Pret pour deploiement production.
 
 ---
 
-## Resume
+## Resume Executif
 
-La marketplace NaatalFi dispose maintenant d'un socle fonctionnel couvrant :
+NaatalFi est une marketplace multi-vendeurs senegalaise. Le socle technique est complet et stabilise. Une simplification MVP a ete appliquee le 12 juin 2026 pour permettre un lancement rapide : monetisation par commission flat 8%, fonctionnalites avancees differees avec code conserve en commentaire.
 
-- authentification JWT, verification email, reset password ;
-- vendeurs, KYC admin, plans vendeur et upload logo Supabase ;
-- categories hierarchiques avec CRUD admin, image et reorder ;
-- produits, galerie, variantes, stock et moderation admin ;
-- marketplace publique avec recherche, cache Redis et pagination ;
-- espace client : commandes, adresses, favoris, profil, avatar Supabase ;
-- panier persistant multi-vendeurs avec validation stock ;
-- commandes multi-vendeurs : `Order` parent + `VendorOrder` par vendeur ;
-- paiements PayTech : initiation, webhook, statut, logs webhook admin ;
-- wallet vendeur : commission, credit automatique, transactions, retraits, approbation admin ;
-- livraison : zones vendeur, tarifs par region et poids, estimation au checkout ;
-- dashboard vendeur Phase 12 : KPIs, produits, commandes, wallet, analytics, boutique, livraison, profil ;
-- dashboard admin Phase 13 : KPIs, vendeurs/KYC, users, produits, commandes, paiements, wallets, categories, analytics, pages reviews/ads/disputes pretes.
-- Phase 14 : notifications in-app, endpoints `/notifications`, polling frontend 30s, taches Celery consolidees.
-- Phase 15 : avis verifies, moderation admin et trust score produit/vendeur.
-- Phase 16 : campagnes publicitaires sponsorisees financees par wallet.
-- Phase 17 : litiges acheteur/vendeur, gel wallet et resolution admin.
-- Phase 18 : analytics business reels, filtres periode, top vendeurs/produits et aggregation Celery.
+---
+
+## Strategie MVP (appliquee le 12 juin 2026)
+
+### Monetisation
+
+- **Un seul plan** : inscription gratuite pour tous les vendeurs.
+- **Commission flat 8%** deduire automatiquement de chaque vente (`PLATFORM_COMMISSION_RATE = Decimal('8.00')`).
+- Aucun abonnement mensuel, aucun frais d'inscription.
+- La constante `PLATFORM_COMMISSION_RATE` est dans `apps/wallet/services.py` et importee par les serializers — un seul endroit a modifier pour ajuster le taux.
+
+### Fonctionnalites actives au lancement
+
+Auth, catalogue, recherche, panier, commandes multi-vendeurs, paiement PayTech, historique/suivi commandes, gestion boutique/produits/stock/commandes/livraison/wallet vendeur, admin KYC/vendeurs/produits/commandes/wallets/retraits/categories/analytics.
+
+### Fonctionnalites differees (code conserve en commentaire)
+
+| Fonctionnalite | Phase Future | Etat frontend | Etat backend |
+| :--- | :--- | :--- | :--- |
+| Favoris produit | 1 | Bouton commente dans `ProductDetailPage`, page `AccountFavoritesPage` affiche ComingSoon | Endpoints actifs, modele intact |
+| Avis / notes | 1 | Page `AccountReviewsPage` affiche ComingSoon | Endpoints actifs, modele intact |
+| Trust Score / Badges | 1 | — | Calcul desactive en surface |
+| Analytics avancees vendeur | 1 | Cards "Articles vendus", "Panier moyen", "Taux litiges", "Top produits" commente dans `AnalyticsPage` | Endpoint complet, champs disponibles |
+| Publicites sponsorisees | 2 | `AdsPage` affiche ComingSoon, badge Sponsorise masque | Backend complet |
+| Litiges | 3 | `DisputesPage` vendeur = page contact WhatsApp/Email | Backend complet |
+| Notifications temps reel | 3 | Email uniquement, polling desactive | — |
+| Features IA | 3 | — | — |
+
+**Principe** : aucune page supprimee. Le code original est conserve dans des blocs `/* PHASE_FUTURE_X ... */`. Pour reactiver, decommenter le bloc et supprimer le composant actif.
 
 ---
 
@@ -35,13 +46,11 @@ La marketplace NaatalFi dispose maintenant d'un socle fonctionnel couvrant :
 | Element | URL / Etat |
 | :--- | :--- |
 | Backend Render | `https://naatalfi-backend.onrender.com` |
-| API testee | `https://naatalfi-backend.onrender.com/api/v1/marketplace/categories/` |
 | Frontend Vercel | `https://naatalfi.vercel.app` |
 | Webhook PayTech | `https://naatalfi-backend.onrender.com/api/v1/payments/webhook/` |
-| Worker Celery | Non deploye pour l'instant |
-| Mode Celery temporaire | `CELERY_TASK_ALWAYS_EAGER=True` |
-
-Le worker Celery Render est volontairement reporte pour eviter un cout supplementaire. Les taches email et wallet peuvent fonctionner en eager, mais la liberation automatique `pending -> available` necessite un worker/beat pour etre totalement automatique en production.
+| Worker Celery | Non deploye (CELERY_TASK_ALWAYS_EAGER=True en prod) |
+| Base de donnees | Supabase PostgreSQL |
+| Stockage fichiers | Supabase Storage |
 
 ---
 
@@ -49,78 +58,111 @@ Le worker Celery Render est volontairement reporte pour eviter un cout supplemen
 
 | App | Etat | Detail |
 | :--- | :--- | :--- |
-| `users` | Phases 1 + 13 | Auth, `/auth/me`, liste admin users, update role/actif/verifie |
-| `vendors` | Phases 2 + 13 | Boutique, KYC admin, detail admin enrichi wallet/stats |
-| `categories` | Phase 3 + admin | Arbre, CRUD admin, image, reorder |
-| `products` | Phases 4 + 13 | CRUD vendeur, images, variantes, moderation admin statut |
-| `marketplace` | Phase 5 | Catalogue public, recherche, cache Redis, cursor pagination |
-| `account` | Phase 6 | Profil, avatar, commandes client, adresses, favoris |
-| `orders` | Phases 7-8 + 13 | Validation panier, split multi-vendeurs, statuts vendeur, liste admin |
-| `payments` | Phases 9 + 13 | PayTech, webhook, statut, historique admin avec webhook |
-| `wallet` | Phase 10 + admin | Wallet, transactions, commission, retrait, approbation/rejet admin |
-| `shipping` | Phase 11 | Zones/tarifs vendeur, estimation region + poids, checkout |
-| `notifications` | Phase 14 | Modele Notification, liste utilisateur, mark read, read-all |
-| `reviews` | Phase 15 | Avis verifies sur commandes livrees, notes produit, trust score vendeur, moderation admin |
-| `ads` | Phase 16 | Campagnes sponsorisees, debit wallet, injection marketplace, impressions/clics, vue admin |
-| `disputes` | Phase 17 | Ouverture litige, gel wallet, resolution remboursement/liberation, vues vendeur/admin |
-| `analytics` | Phase 18 | GMV, commissions, panier moyen, top vendeurs/produits, taux litiges, endpoints admin/vendeur |
+| `users` | Complet | Auth JWT, verification email, reset password, liste admin, update role/actif |
+| `vendors` | Complet | Boutique, KYC admin, detail enrichi wallet/stats, approbation/suspension |
+| `categories` | Complet | Arbre hierarchique, CRUD admin, image, reorder |
+| `products` | Complet | CRUD vendeur, galerie, variantes, stock, moderation admin |
+| `marketplace` | Complet | Catalogue public, recherche full-text, cache Redis, pagination cursor |
+| `account` | Complet | Profil, avatar Supabase, commandes client, adresses, favoris |
+| `orders` | Complet | Validation panier, split multi-vendeurs, statuts vendeur, liste admin |
+| `payments` | Complet | PayTech initiation + webhook HMAC, statut, historique admin |
+| `wallet` | Complet | Commission 8% flat, credit auto apres paiement, pending->available (7j), retraits, approbation/rejet admin |
+| `shipping` | Complet | Zones/tarifs vendeur, estimation region + poids, checkout |
+| `notifications` | Complet | Modele, liste, mark read, read-all |
+| `reviews` | Complet | Avis verifies, recalcul notes produit/vendeur, moderation admin |
+| `ads` | Complet (defere MVP) | Campagnes sponsorisees, debit wallet, injection marketplace, expiration Celery |
+| `disputes` | Complet (defere MVP) | Ouverture litige, gel wallet, resolution admin remboursement/liberation |
+| `analytics` | Complet | GMV, commissions, top vendeurs/produits, serie quotidienne, endpoints admin + vendeur |
+
+### Commission — flux complet
+
+```
+Client paie via PayTech (montant total vers NaatalFi)
+  ↓ webhook
+credit_wallet_from_order()
+  ↓ pour chaque VendorOrder
+  commission = subtotal × 8%
+  net = subtotal - commission + shipping_cost
+  → Transaction SALE (net)  → pending_balance vendeur
+  → Transaction COMMISSION (commission) [ecriture comptable]
+  ↓ (7 jours apres livraison)
+release_pending_balances()
+  → pending_balance → available_balance
+  ↓
+Vendeur demande retrait → admin approuve → virement manuel
+
+Revenue plateforme = somme des Transaction.COMMISSION
+Visible dans /admin/analytics → card "Commissions"
+```
 
 ---
 
 ## Frontend
 
-| Zone | Etat |
-| :--- | :--- |
-| Auth | Login, register, verify email, forgot/reset password |
-| Public | Home, marketplace, recherche, fiche produit, profil vendeur |
-| Panier/checkout | Panier persistant, validation stock, region livraison, PayTech |
-| Espace client | Dashboard client, commandes, adresses, favoris, parametres |
-| Dashboard vendeur | Layout responsive, KPIs, produits, commandes, wallet, analytics, boutique, livraison, notifications, profil |
-| Admin | Layout responsive, KPIs, vendeurs/KYC, users, produits, commandes, paiements, wallets, categories, analytics, reviews/ads/disputes |
+| Zone | Pages | Etat |
+| :--- | :--- | :--- |
+| Auth | /login, /register, /forgot-password, /reset-password, /verify-email | Complet |
+| Public | /, /marketplace, /marketplace/:slug, /search, /vendors/:slug | Complet |
+| Panier/checkout | /cart, /checkout | Complet (adresses sauvegardees, PayTech) |
+| Espace client | /account, /account/orders, /account/orders/:id, /account/addresses, /account/settings | Complet |
+| Espace client (differe) | /account/favorites, /account/reviews | ComingSoon (Phase Future 1) |
+| Dashboard vendeur | /dashboard, /dashboard/products, /dashboard/orders, /dashboard/wallet, /dashboard/shop, /dashboard/delivery, /dashboard/notifications, /dashboard/profile | Complet |
+| Dashboard vendeur (simplifie) | /dashboard/analytics | Revenus + Commandes + graphe uniquement |
+| Dashboard vendeur (differe) | /dashboard/ads, /dashboard/disputes | ComingSoon / page contact |
+| Admin | /admin, /admin/vendors, /admin/users, /admin/products, /admin/orders, /admin/payments, /admin/wallets, /admin/categories, /admin/reviews, /admin/ads, /admin/disputes, /admin/analytics | Complet |
+
+### Composant ComingSoon
+
+`src/components/ui/ComingSoon.jsx` — composant reutilisable avec icone horloge, titre, description et badge "Bientot disponible". Utilise par toutes les pages differees.
+
+### Performances frontend
+
+- Toutes les pages sont lazy-loadees (React.lazy + Suspense) avec spinner dore.
+- Build Vite : ~490ms, chunks separes par page.
+- Debounce 400ms sur la recherche dans la nav publique.
+- Confirmations inline (zero window.confirm / window.prompt).
 
 ---
 
-## Tests Ajoutes
+## Tests Backend
 
-Tests backend Django natifs avec settings isoles :
+57 tests, tous verts.
 
 ```powershell
 cd C:\NaatalFi-SaaS\backend
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Couverture actuelle ajoutee :
+Couverture :
 
-- `apps.wallet.tests` : credit wallet, commission, idempotence, release pending -> available ;
-- `apps.shipping.tests` : estimation livraison avec poids min/max ;
-- `apps.users.tests` : admin update role/actif et protection auto-desactivation ;
-- `apps.vendors.tests` : creation boutique, unicite boutique, approbation/suspension admin ;
-- `apps.categories.tests` : listing public actif, protection admin, creation et reorder ;
-- `apps.products.tests` : route admin produits et moderation statut ;
-- `apps.marketplace.tests` : produits publies uniquement, recherche, detail vendeur approuve ;
-- `apps.account.tests` : adresses par utilisateur, adresse par defaut unique, favoris idempotents ;
-- `apps.orders.tests` : validation stock, permissions commandes, flux checkout -> webhook -> wallet ;
-- `apps.payments.tests` : liste admin paiements avec statut webhook.
-- `apps.notifications.tests` : isolation utilisateur, mark read, read-all.
-- `apps.reviews.tests` : avis achat livre, anti-doublon, recalcul scores, suppression admin.
-- `apps.ads.tests` : creation campagne, debit wallet, solde insuffisant, produits sponsorises.
-- `apps.disputes.tests` : ouverture litige, gel wallet, resolution refund/no-refund.
-- `apps.analytics.tests` : overview admin, top vendeurs, analytics vendeur.
-
-Resultat actuel : **44 tests OK**.
+- `wallet` : 15 tests — commission 8% flat, idempotence, multi-vendeur, release pending/available, revenue admin comptable
+- `orders` : 6 tests — validation stock, permissions, flux webhook->wallet complet (18 400 FCFA net sur 20 000 FCFA)
+- `shipping` : estimation region + poids
+- `users` : admin role/actif, protection auto-desactivation
+- `vendors` : creation boutique, unicite, approbation/suspension
+- `categories` : listing public, protection admin, creation, reorder
+- `products` : route admin, moderation statut
+- `marketplace` : produits publies, recherche, detail vendeur approuve
+- `account` : adresses, defaut unique, favoris idempotents
+- `payments` : liste admin, statut webhook
+- `notifications` : isolation, mark read, read-all
+- `reviews` : achat livre, anti-doublon, recalcul scores, suppression admin
+- `ads` : creation campagne, debit wallet, solde insuffisant, sponsorises
+- `disputes` : ouverture, gel wallet, resolution refund/no-refund
+- `analytics` : overview admin, top vendeurs, analytics vendeur
 
 ---
 
 ## Points Techniques Importants
 
-- `backend/.env` et `frontend/.env` sont ignores par Git.
-- `config/test_settings.py` force SQLite en memoire pour les tests et evite Supabase.
-- `gunicorn` et `whitenoise` sont ajoutes pour Render.
-- `CORS_ALLOWED_ORIGINS` est configurable par variable d'environnement.
-- `CELERY_TASK_ALWAYS_EAGER=True` permet de fonctionner sans worker Celery au debut.
-- Celery Beat declare `release_pending_balance_task`, `aggregate_daily_analytics` et `expire_ad_campaigns`.
+- `PLATFORM_COMMISSION_RATE = Decimal('8.00')` dans `apps/wallet/services.py` — source de verite unique pour le taux.
+- `WalletSerializer.get_commission_rate()` et `AdminWalletSerializer.get_commission_rate()` retournent `PLATFORM_COMMISSION_RATE`, jamais le taux du plan.
+- `config/test_settings.py` force SQLite en memoire, Celery eager, email local, hash rapide.
+- `CELERY_TASK_ALWAYS_EAGER=True` en production sur Render (pas de worker separe).
+- Celery Beat declare : `release_pending_balance_task` (quotidien), `aggregate_daily_analytics` (quotidien), `expire_ad_campaigns` (quotidien).
 - PayTech utilise `BACKEND_URL` pour construire automatiquement `ipn_url`.
-- Routes critiques corrigees : `/products/admin/` et `/payments/admin/` sont declarees avant les routes dynamiques.
+- Routes critiques ordonnees : `/products/admin/` et `/payments/admin/` declarees avant les routes dynamiques.
+- Build frontend : aucun `window.confirm` / `window.prompt` — tout remplace par des confirmations inline.
 
 ---
 
@@ -148,10 +190,10 @@ VITE_API_URL=https://naatalfi-backend.onrender.com/api/v1
 
 ## Prochaines Etapes Recommandees
 
-1. Redeployer Render + Vercel avec les phases 12-13.
-2. Relancer `python manage.py migrate` sur Render apres deploy.
-3. Tester les parcours admin : users, produits, paiements, wallets.
-4. Appliquer les migrations `disputes.0001_initial` et `wallet.0004_transaction_unfreeze` en local et sur Render.
-5. Ajouter un worker Celery/Beat quand le budget le permet pour emails async, release wallet automatique et cron analytics.
-6. Continuer Phase 19 avec des tests frontend Playwright/Vitest si necessaire avant nouvelles grosses features.
-
+1. **Redeployer** Render + Vercel avec l'etat actuel (commit `96b038b`).
+2. **Valider en production** le flux complet : inscription → boutique → produit → commande → webhook PayTech → wallet vendeur → retrait.
+3. **Configurer compte PayTech** et tester un vrai paiement avec le webhook.
+4. **Ajouter worker Celery/Beat** sur Render quand le budget le permet (release wallet automatique, emails async, cron analytics).
+5. **Phase Future 1** (quand 50+ vendeurs actifs) : decommenter favoris, avis, trust score, analytics avancees.
+6. **Phase Future 2** (quand revenus stables) : decommenter publicites sponsorisees.
+7. **Phase Future 3** (si volume litiges le justifie) : decommenter litiges, notifications temps reel.
