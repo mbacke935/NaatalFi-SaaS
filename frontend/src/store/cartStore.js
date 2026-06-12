@@ -9,18 +9,19 @@ const useCartStore = create(
       items: [],
 
       addItem: (item) => {
+        const qty      = item.quantity ?? 1
         const k        = key(item.product_id, item.variant_id)
         const existing = get().items.find((i) => key(i.product_id, i.variant_id) === k)
         if (existing) {
           set({
             items: get().items.map((i) =>
               key(i.product_id, i.variant_id) === k
-                ? { ...i, quantity: i.quantity + 1 }
+                ? { ...i, quantity: i.quantity + qty }
                 : i
             ),
           })
         } else {
-          set({ items: [...get().items, { ...item, quantity: 1 }] })
+          set({ items: [...get().items, { ...item, quantity: qty }] })
         }
       },
 

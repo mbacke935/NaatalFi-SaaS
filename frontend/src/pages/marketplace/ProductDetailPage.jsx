@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiStar, FiShoppingCart, FiPackage, FiCheck } from 'react-icons/fi'
+import { FiStar, FiShoppingCart, FiPackage, FiCheck, FiMinus, FiPlus } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { getMarketplaceProduct, getProductReviews } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
@@ -13,6 +13,7 @@ function ProductDetailPage() {
   const [notFound, setNotFound]= useState(false)
   const [activeImage, setActiveImage] = useState(0)
   const [selectedVariants, setSelectedVariants] = useState({})
+  const [quantity, setQuantity] = useState(1)
   const [reviews, setReviews] = useState([])
   const addItem = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
@@ -27,6 +28,7 @@ function ProductDetailPage() {
     setLoading(true)
     setActiveImage(0)
     setSelectedVariants({})
+    setQuantity(1)
     getMarketplaceProduct(slug)
       .then(({ data }) => setProduct(data))
       .catch((err) => { if (err.response?.status === 404) setNotFound(true) })
@@ -97,6 +99,7 @@ function ProductDetailPage() {
       variant_id:   primaryVariant?.id ?? null,
       variant_label: variantLabel,
       unit_price:   finalPrice,
+      quantity,
     })
     toast.success(`${product.name} ajouté au panier !`)
     setAdded(true)
@@ -153,7 +156,7 @@ function ProductDetailPage() {
                 <span className="font-semibold">{product.average_rating}</span>
               </div>
               <span className="text-gray-500">
-                {product.total_reviews} avis verifie{product.total_reviews > 1 ? 's' : ''}
+                {product.total_reviews} avis vérifié{product.total_reviews > 1 ? 's' : ''}
               </span>
             </div>
           )}
@@ -201,6 +204,28 @@ function ProductDetailPage() {
                 : `${Math.min(...selectedVariantObjects.map((v) => v.stock))} en stock`}
             </p>
           )}
+
+          {/* Quantity selector */}
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-sm text-gray-400">Quantité</span>
+            <div className="flex items-center gap-2 bg-[#16161E] border border-[#2a2a3a] rounded-lg px-1">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition"
+              >
+                <FiMinus size={13} />
+              </button>
+              <span className="text-white font-semibold w-6 text-center text-sm">{quantity}</span>
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => q + 1)}
+                className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition"
+              >
+                <FiPlus size={13} />
+              </button>
+            </div>
+          </div>
 
           {/* Add to cart */}
           <button

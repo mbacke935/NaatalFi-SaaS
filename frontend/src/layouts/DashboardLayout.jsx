@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   FiBarChart2,
@@ -18,6 +18,7 @@ import {
   FiZap,
 } from 'react-icons/fi'
 import useAuthStore from '../store/authStore'
+import { getNotifications } from '../services/notifications'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Accueil', icon: FiGrid, end: true },
@@ -35,10 +36,22 @@ const NAV_ITEMS = [
 
 function DashboardLayout() {
   const [open, setOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+
+  useEffect(() => {
+    const fetchUnread = () => {
+      getNotifications({ is_read: false, page_size: 1 })
+        .then(({ data }) => setUnreadCount(data.count ?? 0))
+        .catch(() => {})
+    }
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -117,10 +130,15 @@ function DashboardLayout() {
         <div className="flex items-center gap-2">
           <Link
             to="/dashboard/notifications"
-            className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
+            className="relative p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-white/5"
             aria-label="Notifications"
           >
             <FiBell size={19} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Link>
           <Link
             to="/dashboard/profile"
@@ -140,8 +158,13 @@ function DashboardLayout() {
           NaatalFi <span className="text-[#D4AF37] text-xs">vendeur</span>
         </Link>
         <div className="flex items-center gap-2">
-          <Link to="/dashboard/notifications" className="p-2 text-gray-400 hover:text-white">
+          <Link to="/dashboard/notifications" className="relative p-2 text-gray-400 hover:text-white">
             <FiBell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Link>
           <button onClick={() => setOpen(true)} className="p-2 text-gray-300 hover:text-white">
             <FiMenu size={22} />

@@ -65,14 +65,22 @@ function PublicNav() {
               >
                 <FiUser size={14} /> Mon compte
               </Link>
-              {user?.role === 'VENDOR' || user?.role === 'ADMIN' ? (
+              {user?.role === 'VENDOR' && (
                 <Link
                   to="/dashboard"
                   className="flex items-center gap-2 text-sm bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-3 py-1.5 rounded-lg transition"
                 >
                   Dashboard
                 </Link>
-              ) : null}
+              )}
+              {user?.role === 'ADMIN' && (
+                <Link
+                  to="/admin"
+                  className="flex items-center gap-2 text-sm bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-3 py-1.5 rounded-lg transition"
+                >
+                  Admin
+                </Link>
+              )}
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-2">
@@ -115,8 +123,11 @@ function PublicNav() {
           {token ? (
             <>
               <Link to="/account" className="block text-gray-300 py-1" onClick={() => setMenuOpen(false)}>Mon compte</Link>
-              {(user?.role === 'VENDOR' || user?.role === 'ADMIN') && (
+              {user?.role === 'VENDOR' && (
                 <Link to="/dashboard" className="block text-[#D4AF37] py-1" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+              )}
+              {user?.role === 'ADMIN' && (
+                <Link to="/admin" className="block text-[#D4AF37] py-1" onClick={() => setMenuOpen(false)}>Admin</Link>
               )}
             </>
           ) : (

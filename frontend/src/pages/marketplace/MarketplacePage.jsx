@@ -93,23 +93,23 @@ function MarketplacePage() {
   }
 
   const SORTS = [
-    { value: 'recent', label: 'Plus recents' },
+    { value: 'recent', label: 'Plus récents' },
     { value: 'price_asc', label: 'Prix croissant' },
-    { value: 'price_desc', label: 'Prix decroissant' },
-    { value: 'trust', label: 'Mieux notes' },
+    { value: 'price_desc', label: 'Prix décroissant' },
+    { value: 'trust', label: 'Mieux notés' },
   ]
 
   const SidebarContent = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">Categories</h3>
+        <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">Catégories</h3>
         <div className="space-y-1">
           <button
             type="button"
             onClick={() => setParam('category', '')}
             className={`w-full text-left text-sm px-2 py-1.5 rounded-lg transition ${!category ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-gray-400 hover:text-white'}`}
           >
-            Toutes les categories
+            Toutes les catégories
           </button>
           {categories.map((cat) => (
             <div key={cat.id}>
@@ -125,9 +125,9 @@ function MarketplacePage() {
                   key={child.id}
                   type="button"
                   onClick={() => setParam('category', child.slug)}
-                  className={`w-full text-left text-sm pl-6 pr-2 py-1.5 rounded-lg transition ${category === child.slug ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-gray-500 hover:text-white'}`}
+                  className={`w-full text-left text-sm pl-5 pr-2 py-1.5 rounded-lg transition ${category === child.slug ? 'text-[#D4AF37] bg-[#D4AF37]/10' : 'text-gray-500 hover:text-white'}`}
                 >
-                  {'->'} {child.name}
+                  ↳ {child.name}
                 </button>
               ))}
             </div>
@@ -223,7 +223,7 @@ function MarketplacePage() {
             </div>
           ) : !result || result.results.length === 0 ? (
             <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-12 text-center">
-              <p className="text-gray-500">Aucun produit trouve.</p>
+              <p className="text-gray-500">Aucun produit trouvé.</p>
               {(category || minPrice || maxPrice) && (
                 <button type="button" onClick={clearFilters} className="text-[#D4AF37] hover:underline text-sm mt-3 block mx-auto">
                   Effacer les filtres
