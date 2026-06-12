@@ -1,23 +1,3 @@
-// PHASE_FUTURE_1: Avis — décommenter le bloc ci-dessous et supprimer ce composant
-import { useMeta } from '../../hooks/useMeta'
-import ComingSoon from '../../components/ui/ComingSoon'
-
-function AccountReviewsPage() {
-  useMeta({ title: 'Mes avis' })
-  return (
-    <ComingSoon
-      title="Mes avis"
-      description="Notez et commentez vos achats pour aider la communauté. Disponible prochainement."
-    />
-  )
-}
-
-export default AccountReviewsPage
-
-/* =====================================================================
-   CODE ORIGINAL AccountReviewsPage — PHASE FUTURE 1 (décommenter pour réactiver)
-   =====================================================================
-
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiStar } from 'react-icons/fi'
@@ -55,7 +35,7 @@ function AccountReviewsPage() {
       <h1 className="text-2xl font-bold text-white mb-6">Mes avis</h1>
 
       {reviews.length === 0 ? (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-10 text-center">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-8 sm:p-10 text-center">
           <FiStar className="text-gray-600 mx-auto mb-3" size={32} />
           <p className="text-sm text-gray-500">Aucun avis publie pour le moment.</p>
         </div>
@@ -85,5 +65,3 @@ function AccountReviewsPage() {
 }
 
 export default AccountReviewsPage
-
-===================================================================== */

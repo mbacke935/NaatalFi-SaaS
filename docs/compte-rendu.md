@@ -31,9 +31,9 @@ Le footer public, l'image hero et les categories populaires de l'accueil sont co
 
 | Fonctionnalite | Phase Future | Etat frontend | Etat backend |
 | :--- | :--- | :--- | :--- |
-| Favoris produit | 1 | Bouton commente dans `ProductDetailPage`, page `AccountFavoritesPage` affiche ComingSoon | Endpoints actifs, modele intact |
-| Avis / notes | 1 | Page `AccountReviewsPage` affiche ComingSoon | Endpoints actifs, modele intact |
-| Trust Score / Badges | 1 | — | Calcul desactive en surface |
+| Favoris produit | 1 | ✅ **Reactive** : bouton coeur sur `ProductDetailPage`, page `AccountFavoritesPage` complete | Endpoints actifs, modele intact |
+| Avis / notes | 1 | ✅ **Reactive** : avis sur fiche produit + page `AccountReviewsPage` complete | Endpoints actifs, modele intact |
+| Trust Score / Badges | 1 | — (reste differe) | Calcul desactive en surface |
 | Analytics avancees vendeur | 1 | Cards "Articles vendus", "Panier moyen", "Taux litiges", "Top produits" commente dans `AnalyticsPage` | Endpoint complet, champs disponibles |
 | Publicites sponsorisees | 2 | `AdsPage` affiche ComingSoon, badge Sponsorise masque | Backend complet |
 | Litiges | 3 | `DisputesPage` vendeur = page contact WhatsApp/Email | Backend complet |
@@ -108,8 +108,7 @@ Visible dans /admin/analytics → card "Commissions"
 | Auth | /login, /register, /forgot-password, /reset-password, /verify-email | Complet |
 | Public | /, /marketplace, /marketplace/:slug, /search, /vendors/:slug | Complet |
 | Panier/checkout | /cart, /checkout | Complet (adresses sauvegardees, PayTech) |
-| Espace client | /account, /account/orders, /account/orders/:id, /account/addresses, /account/settings | Complet |
-| Espace client (differe) | /account/favorites, /account/reviews | ComingSoon (Phase Future 1) |
+| Espace client | /account, /account/orders, /account/orders/:id, /account/addresses, /account/settings, /account/favorites, /account/reviews | Complet (favoris + avis reactives) |
 | Dashboard vendeur | /dashboard, /dashboard/products, /dashboard/orders, /dashboard/wallet, /dashboard/shop, /dashboard/delivery, /dashboard/notifications, /dashboard/profile | Complet |
 | Dashboard vendeur (simplifie) | /dashboard/analytics | Revenus + Commandes + graphe uniquement |
 | Dashboard vendeur (differe) | /dashboard/ads, /dashboard/disputes | ComingSoon / page contact |

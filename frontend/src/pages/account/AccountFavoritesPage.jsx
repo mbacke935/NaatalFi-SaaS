@@ -1,23 +1,3 @@
-// PHASE_FUTURE_1: Favoris — décommenter le bloc ci-dessous et supprimer ce composant
-import { useMeta } from '../../hooks/useMeta'
-import ComingSoon from '../../components/ui/ComingSoon'
-
-function AccountFavoritesPage() {
-  useMeta({ title: 'Mes favoris' })
-  return (
-    <ComingSoon
-      title="Mes favoris"
-      description="Retrouvez ici tous les produits que vous avez mis en favori. Disponible prochainement."
-    />
-  )
-}
-
-export default AccountFavoritesPage
-
-/* =====================================================================
-   CODE ORIGINAL AccountFavoritesPage — PHASE FUTURE 1 (décommenter pour réactiver)
-   =====================================================================
-
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -64,7 +44,7 @@ function AccountFavoritesPage() {
           ))}
         </div>
       ) : favorites.length === 0 ? (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-16 text-center">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-8 sm:p-16 text-center">
           <FiHeart size={36} className="text-gray-600 mx-auto mb-3" />
           <p className="text-gray-500 text-sm mb-4">Vous n'avez pas encore de favoris.</p>
           <Link to="/marketplace" className="text-[#D4AF37] hover:underline text-sm">
@@ -81,10 +61,10 @@ function AccountFavoritesPage() {
               >
                 <button
                   onClick={() => handleRemove(product.id)}
-                  className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-300"
+                  className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition text-red-400 hover:text-red-300"
                   title="Retirer des favoris"
                 >
-                  <FiTrash2 size={12} />
+                  <FiTrash2 size={13} />
                 </button>
 
                 <Link to={`/marketplace/${product.slug}`}>
@@ -114,5 +94,3 @@ function AccountFavoritesPage() {
 }
 
 export default AccountFavoritesPage
-
-===================================================================== */

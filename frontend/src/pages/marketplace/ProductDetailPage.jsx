@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiStar, FiShoppingCart, FiPackage, FiCheck, FiMinus, FiPlus } from 'react-icons/fi'
-// PHASE_FUTURE_1: Favoris — décommenter la ligne ci-dessous
-// import { FiHeart } from 'react-icons/fi'
+import { FiStar, FiShoppingCart, FiPackage, FiCheck, FiMinus, FiPlus, FiHeart } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { getMarketplaceProduct, getProductReviews } from '../../services/marketplace'
-// PHASE_FUTURE_1: Favoris — décommenter la ligne ci-dessous
-// import { addFavorite, removeFavorite, getFavorites } from '../../services/account'
+import { addFavorite, removeFavorite, getFavorites } from '../../services/account'
 import { useMeta } from '../../hooks/useMeta'
 import useCartStore from '../../store/cartStore'
-// PHASE_FUTURE_1: Favoris — décommenter la ligne ci-dessous
-// import useAuthStore from '../../store/authStore'
+import useAuthStore from '../../store/authStore'
 
 function ProductDetailPage() {
   const { slug }               = useParams()
@@ -23,10 +19,9 @@ function ProductDetailPage() {
   const [reviews, setReviews] = useState([])
   const addItem = useCartStore((s) => s.addItem)
   const [added, setAdded] = useState(false)
-  // PHASE_FUTURE_1: Favoris — décommenter les 3 lignes ci-dessous
-  // const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  // const [isFavorited, setIsFavorited] = useState(false)
-  // const [favLoading, setFavLoading] = useState(false)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favLoading, setFavLoading] = useState(false)
 
   useMeta({
     title:       product?.name,
@@ -39,24 +34,23 @@ function ProductDetailPage() {
     setActiveImage(0)
     setSelectedVariants({})
     setQuantity(1)
-    // PHASE_FUTURE_1: Favoris — décommenter: setIsFavorited(false)
+    setIsFavorited(false)
     getMarketplaceProduct(slug)
       .then(({ data }) => {
         setProduct(data)
-        // PHASE_FUTURE_1: Favoris — décommenter le bloc ci-dessous
-        // if (isAuthenticated) {
-        //   getFavorites().then(({ data: favs }) => {
-        //     const list = Array.isArray(favs) ? favs : (favs?.results ?? [])
-        //     setIsFavorited(list.some((f) => f.product?.id === data.id))
-        //   }).catch(() => {})
-        // }
+        if (isAuthenticated) {
+          getFavorites().then(({ data: favs }) => {
+            const list = Array.isArray(favs) ? favs : (favs?.results ?? [])
+            setIsFavorited(list.some((f) => f.product?.id === data.id))
+          }).catch(() => {})
+        }
       })
       .catch((err) => { if (err.response?.status === 404) setNotFound(true) })
       .finally(() => setLoading(false))
     getProductReviews(slug)
       .then(({ data }) => setReviews(Array.isArray(data) ? data : []))
       .catch(() => setReviews([]))
-  }, [slug])
+  }, [slug, isAuthenticated])
 
   if (loading) {
     return (
@@ -102,26 +96,25 @@ function ProductDetailPage() {
   const allTypesSelected = Object.keys(variantGroups).every((name) => selectedVariants[name])
   const canAddToCart     = Object.keys(variantGroups).length === 0 || allTypesSelected
 
-  // PHASE_FUTURE_1: Favoris — décommenter la fonction ci-dessous
-  // const handleToggleFavorite = async () => {
-  //   if (!isAuthenticated) { toast.error('Connectez-vous pour gérer vos favoris.'); return }
-  //   setFavLoading(true)
-  //   try {
-  //     if (isFavorited) {
-  //       await removeFavorite(product.id)
-  //       setIsFavorited(false)
-  //       toast.success('Retiré des favoris.')
-  //     } else {
-  //       await addFavorite(product.id)
-  //       setIsFavorited(true)
-  //       toast.success('Ajouté aux favoris !')
-  //     }
-  //   } catch {
-  //     toast.error('Impossible de modifier les favoris.')
-  //   } finally {
-  //     setFavLoading(false)
-  //   }
-  // }
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated) { toast.error('Connectez-vous pour gérer vos favoris.'); return }
+    setFavLoading(true)
+    try {
+      if (isFavorited) {
+        await removeFavorite(product.id)
+        setIsFavorited(false)
+        toast.success('Retiré des favoris.')
+      } else {
+        await addFavorite(product.id)
+        setIsFavorited(true)
+        toast.success('Ajouté aux favoris !')
+      }
+    } catch {
+      toast.error('Impossible de modifier les favoris.')
+    } finally {
+      setFavLoading(false)
+    }
+  }
 
   const handleAddToCart = () => {
     const primaryVariant = selectedVariantObjects[0] ?? null
@@ -283,7 +276,6 @@ function ProductDetailPage() {
             >
               {added ? <><FiCheck size={18} /> Ajouté au panier</> : <><FiShoppingCart size={18} /> Ajouter au panier</>}
             </button>
-            {/* PHASE_FUTURE_1: Favoris — décommenter le bouton ci-dessous
             <button
               onClick={handleToggleFavorite}
               disabled={favLoading}
@@ -296,7 +288,6 @@ function ProductDetailPage() {
             >
               <FiHeart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
             </button>
-            */}
           </div>
 
           {/* Vendor card */}
