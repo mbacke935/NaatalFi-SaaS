@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 // Guards
 import PrivateRoute from './PrivateRoute'
 import AdminGuard from './AdminGuard'
+import VendorGuard from './VendorGuard'
 
 // Layouts
 import AuthLayout from '../layouts/AuthLayout'
@@ -125,8 +126,8 @@ function AppRoutes() {
           <Route path="/verify-email/:uid/:token" element={<VerifyEmailPage />} />
         </Route>
 
-        {/* ── Vendeur (authentifié) ────────────────────────────────── */}
-        <Route element={<PrivateRoute />}>
+        {/* ── Vendeur (rôle VENDOR requis) ────────────────────────── */}
+        <Route element={<VendorGuard />}>
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dashboard/products" element={<ProductsPage />} />

@@ -35,7 +35,7 @@ class Transaction(models.Model):
         RELEASE = 'RELEASE', 'Dégel'
 
     wallet      = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
-    type        = models.CharField(max_length=10, choices=Type.choices)
+    type        = models.CharField(max_length=15, choices=Type.choices)
     amount      = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.TextField(blank=True)
     reference   = models.CharField(max_length=100, blank=True)
