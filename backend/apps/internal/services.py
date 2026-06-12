@@ -61,13 +61,24 @@ def process_pending_emails(limit=25):
     return {'sent': sent, 'failed': failed}
 
 
+def run_task_safely(fn):
+    try:
+        return {'ok': True, 'result': fn()}
+    except Exception as exc:
+        return {
+            'ok': False,
+            'error': str(exc)[:2000],
+            'error_type': exc.__class__.__name__,
+        }
+
+
 def run_scheduled_tasks():
     from apps.wallet.services import release_pending_balances
     from tasks.analytics import aggregate_daily_analytics, expire_ad_campaigns
 
     return {
-        'emails': process_pending_emails(),
-        'wallet_released': release_pending_balances(days=7),
-        'analytics': aggregate_daily_analytics(),
-        'ads': expire_ad_campaigns(),
+        'emails': run_task_safely(process_pending_emails),
+        'wallet_released': run_task_safely(lambda: release_pending_balances(days=7)),
+        'analytics': run_task_safely(aggregate_daily_analytics),
+        'ads': run_task_safely(expire_ad_campaigns),
     }

@@ -36,4 +36,5 @@ class InternalCronTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['emails']['sent'], 1)
+        self.assertTrue(response.data['emails']['ok'])
+        self.assertEqual(response.data['emails']['result']['sent'], 1)
