@@ -48,12 +48,12 @@ Tant que le worker Celery n'est pas dÃ©ployÃ©, les emails et tÃ¢ches Celer
 | `CELERY_RESULT_BACKEND` | MÃªme URL Redis | idem |
 | `CELERY_TASK_ALWAYS_EAGER` | ExÃ©cute les tÃ¢ches Celery dans le web process si aucun worker n'est dÃ©ployÃ© | `True` temporairement, `False` avec worker |
 | `SUPABASE_URL` | URL projet Supabase | `https://xxx.supabase.co` |
-| `SUPABASE_KEY` | ClÃ© service Supabase | `eyJxxxxx` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Cle service Supabase (nom exact attendu par settings.py) | `eyJxxxxx` |
 | `PAYTECH_API_KEY` | ClÃ© API PayTech | `xxxxxxxx` |
 | `PAYTECH_API_SECRET` | Secret PayTech | `xxxxxxxx` |
 | `PAYTECH_BASE_URL` | Endpoint PayTech request-payment | `https://paytech.sn/api/payment/request-payment` |
 | `PAYTECH_ENV` | Environnement PayTech | `prod` |
-| `PAYTECH_WEBHOOK_SECRET` | Secret HMAC webhook | `xxxxxxxx` |
+| `PAYTECH_WEBHOOK_SECRET` | Secret HMAC webhook (fallback uniquement ; la verification principale utilise api_key_sha256/api_secret_sha256 de PayTech) | `xxxxxxxx` |
 | `BACKEND_URL` | URL publique du backend pour webhook | `https://api.naatalfi.com` |
 | `EMAIL_HOST` | Serveur SMTP | `smtp.resend.com` |
 | `EMAIL_HOST_USER` | Login SMTP | `resend` |
@@ -290,10 +290,69 @@ cd C:\NaatalFi-SaaS\frontend
 npm run build
 ```
 
-Etat au 11 juin 2026 :
+Etat au 12 juin 2026 :
 
 - backend check : OK ;
 - migrations dry-run : OK, `No changes detected` ;
-- tests backend : 11 tests OK ;
-- build frontend : OK avec warning Vite de taille de bundle.
+- tests backend : 66 tests OK ;
+- tests frontend : 12 tests OK (`npm test`) ;
+- build frontend : OK (~430ms).
+
+---
+
+## Runbook go-live (ordre d'execution)
+
+A executer dans l'ordre, avec tes acces. Chaque etape est bloquante pour la suivante.
+
+### 1. Pre-requis (local)
+- [ ] `cd backend && venv\Scripts\python manage.py test --settings=config.test_settings` -> 66 OK
+- [ ] `cd frontend && npm test` -> 12 OK
+- [ ] `cd frontend && npm run build` -> OK
+
+### 2. Base de donnees & stockage (Supabase)
+- [ ] Recuperer les credentials Pooler (host/user/password/port) du projet prod
+- [ ] Buckets crees : `avatars`, `vendor-logos`, `product-images`
+- [ ] Lecture publique activee sur `vendor-logos` et `product-images`
+- [ ] Politiques RLS configurees
+
+### 3. Backend (Render)
+- [ ] Variables d'env definies (voir tableau) — **attention : `SUPABASE_SERVICE_ROLE_KEY` (pas `SUPABASE_KEY`)**
+- [ ] `DEBUG=False`, `SECRET_KEY` unique de prod, `ALLOWED_HOSTS` restreint
+- [ ] `CORS_ALLOWED_ORIGINS` = domaine frontend exact
+- [ ] `BACKEND_URL` / `FRONTEND_URL` corrects (servent a construire l'IPN PayTech et les liens email)
+- [ ] Build command applique les migrations (`python manage.py migrate`)
+- [ ] Apres 1er deploy : `python manage.py createsuperuser` via Render Shell
+- [ ] Verifier `GET /api/v1/marketplace/categories/` repond 200
+
+### 4. Frontend (Vercel)
+- [ ] `VITE_API_URL` = `https://<backend>/api/v1`
+- [ ] Redeploy apres toute modif de variable `VITE_*`
+- [ ] Verifier que l'accueil charge produits + boutiques
+
+### 5. PayTech (paiement reel)
+- [ ] `PAYTECH_API_KEY` / `PAYTECH_API_SECRET` de prod definis sur Render
+- [ ] `PAYTECH_ENV=prod`
+- [ ] URL IPN cote PayTech : `https://<backend>/api/v1/payments/webhook/`
+- [ ] Test paiement sandbox/reel -> commande passe `PAID`
+- [ ] Verifier wallet vendeur credite (net 92%) + transaction COMMISSION (8%)
+- [ ] **Securite** : sans cle API valide dans l'IPN, le webhook est refuse (403) en prod — c'est attendu
+
+### 6. Worker Celery (quand budget le permet)
+- [ ] Background Worker Render : `celery -A config worker --loglevel=info`
+- [ ] Celery Beat (cron) pour `release_pending_balance_task`, `aggregate_daily_analytics`, `expire_ad_campaigns`
+- [ ] Passer `CELERY_TASK_ALWAYS_EAGER=False` sur web + worker
+- [ ] Sans worker : laisser `True` (liberation des soldes a declencher manuellement ou via cron externe)
+
+### 7. Verifications post-go-live
+- [ ] Inscription -> email de verification recu
+- [ ] Connexion (rate limiting actif : 429 apres 10 tentatives/min)
+- [ ] Creation boutique -> approbation admin (KYC)
+- [ ] Publication produit avec images
+- [ ] Commande -> paiement -> wallet -> demande de retrait -> approbation admin
+- [ ] Favoris + avis fonctionnels cote client
+- [ ] Pages `/cgu` et `/confidentialite` accessibles
+- [ ] Test mobile : accueil, marketplace, panier, checkout, dashboard, admin
+
+### Hors perimetre code (a faire par toi)
+Domaine + DNS (SPF/DKIM/DMARC), email d'envoi sur domaine reel (remplacer `onboarding@resend.dev`), Sentry/monitoring, backups Supabase, conditions d'utilisation juridiques validees.
 
