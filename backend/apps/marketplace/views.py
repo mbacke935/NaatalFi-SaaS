@@ -15,6 +15,7 @@ from apps.products.serializers import ProductListSerializer, ProductDetailSerial
 from apps.vendors.models import Vendor
 from apps.categories.models import Category
 from apps.categories.serializers import CategoryTreeSerializer
+from apps.ads.services import active_campaigns_queryset, register_impressions
 from .serializers import MarketplaceVendorSerializer, MarketplaceVendorDetailSerializer
 
 
@@ -153,7 +154,29 @@ class MarketplaceProductListView(APIView):
         }
         ordering = valid_sorts.get(sort, ['-created_at', '-id'])
 
+        sponsored_products = []
+        sponsored_ids = []
+        campaign_ids = []
+        if not request.query_params.get('cursor'):
+            campaigns = active_campaigns_queryset()
+            if cat := request.query_params.get('category'):
+                campaigns = campaigns.filter(product__category__slug=cat)
+            if vendor := request.query_params.get('vendor'):
+                campaigns = campaigns.filter(vendor__slug=vendor)
+            for campaign in campaigns[:3]:
+                product = campaign.product
+                product.is_sponsored = True
+                product.ad_campaign_id = campaign.id
+                sponsored_products.append(product)
+                sponsored_ids.append(product.id)
+                campaign_ids.append(campaign.id)
+            if sponsored_ids:
+                qs = qs.exclude(id__in=sponsored_ids)
+                register_impressions(campaign_ids)
+
         data = cursor_paginate(qs, request, ProductListSerializer, ordering)
+        if sponsored_products:
+            data['results'] = ProductListSerializer(sponsored_products, many=True).data + data['results']
         cache.set(cache_key, data, 300)
         return Response(data)
 
