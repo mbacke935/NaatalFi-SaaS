@@ -7,6 +7,7 @@ from .views import (
     AdminApprovePayoutView,
     AdminRejectPayoutView,
     AdminPayoutListView,
+    PlatformPayoutAccountView,
 )
 
 urlpatterns = [
@@ -20,4 +21,5 @@ urlpatterns = [
     path('admin/payouts/',                  AdminPayoutListView.as_view(),    name='admin-payout-list'),
     path('admin/payouts/<int:pk>/approve/', AdminApprovePayoutView.as_view(), name='admin-payout-approve'),
     path('admin/payouts/<int:pk>/reject/',  AdminRejectPayoutView.as_view(),  name='admin-payout-reject'),
+    path('admin/platform-account/',          PlatformPayoutAccountView.as_view(), name='admin-platform-payout-account'),
 ]

@@ -23,19 +23,19 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **57 tests OK**.
+Resultat actuel : **59 tests OK**.
 
 ### Detail par module
 
 | App | Fichier | Tests | Couverture |
 | :--- | :--- | :---: | :--- |
-| `wallet` | `apps/wallet/tests.py` | 15 | Voir detail ci-dessous |
+| `wallet` | `apps/wallet/tests.py` | 16 | Voir detail ci-dessous |
 | `orders` | `apps/orders/tests.py` | 6 | Validation stock, permissions, flux complet webhook→wallet |
 | `shipping` | `apps/shipping/tests.py` | — | Estimation livraison par region et poids |
 | `users` | `apps/users/tests.py` | — | Admin update role/actif, protection auto-desactivation |
-| `vendors` | `apps/vendors/tests.py` | — | Creation boutique, unicite, approbation/suspension admin |
+| `vendors` | `apps/vendors/tests.py` | — | Creation boutique, unicite, plan FREE 8% illimite, approbation/suspension admin |
 | `categories` | `apps/categories/tests.py` | — | Listing public actif, protection admin, creation, reorder |
-| `products` | `apps/products/tests.py` | — | Route admin produits, moderation statut |
+| `products` | `apps/products/tests.py` | — | Route admin produits, moderation statut, produits illimites |
 | `marketplace` | `apps/marketplace/tests.py` | — | Produits publies uniquement, recherche, detail vendeur approuve |
 | `account` | `apps/account/tests.py` | — | Adresses par utilisateur, defaut unique, favoris idempotents |
 | `payments` | `apps/payments/tests.py` | — | Liste admin paiements, statut webhook |
@@ -47,7 +47,7 @@ Resultat actuel : **57 tests OK**.
 
 ---
 
-### Tests wallet (15 tests) — Commission 8% flat
+### Tests wallet (16 tests) — Commission 8% flat
 
 Le module wallet est le plus critique — il couvre toute la logique financiere.
 
@@ -89,6 +89,7 @@ net SALE   =  9 700 FCFA → pending_balance
 | `test_release_pending_balances_respects_delay` | Vente recente (< 7j) → pas liberee |
 | `test_admin_commission_revenue_tracked_via_transactions` | Somme COMMISSION = 800 (revenue plateforme) |
 | `test_admin_commission_revenue_multi_vendor` | Multi-vendeur : total commissions = 8% du GMV |
+| `test_only_admin_can_update_platform_payout_account` | Coordonnees admin mobile money/banque modifiables par admin uniquement |
 
 ---
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Wallet, Transaction, PayoutRequest
+from .models import PlatformPayoutAccount, Wallet, Transaction, PayoutRequest
 
 
 class TransactionInline(admin.TabularInline):
@@ -37,4 +37,10 @@ class PayoutRequestAdmin(admin.ModelAdmin):
     list_display  = ['wallet', 'amount', 'status', 'created_at']
     list_filter   = ['status']
     search_fields = ['wallet__vendor__name']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(PlatformPayoutAccount)
+class PlatformPayoutAccountAdmin(admin.ModelAdmin):
+    list_display = ['method', 'account_name', 'phone_number', 'bank_name', 'account_number', 'updated_at']
     readonly_fields = ['created_at', 'updated_at']

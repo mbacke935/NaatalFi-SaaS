@@ -8,7 +8,7 @@ from rest_framework import status
 from apps.users.models import CustomUser
 from apps.notifications.models import Notification
 from apps.notifications.services import create_notification
-from .models import Wallet, Transaction, PayoutRequest
+from .models import PlatformPayoutAccount, Wallet, Transaction, PayoutRequest
 from .serializers import (
     WalletSerializer,
     TransactionSerializer,
@@ -16,6 +16,7 @@ from .serializers import (
     CreatePayoutRequestSerializer,
     AdminWalletSerializer,
     AdminPayoutRequestSerializer,
+    PlatformPayoutAccountSerializer,
 )
 
 
@@ -219,3 +220,28 @@ class AdminPayoutListView(APIView):
         if s := request.query_params.get('status'):
             qs = qs.filter(status=s.upper())
         return Response(AdminPayoutRequestSerializer(qs, many=True).data)
+
+
+class PlatformPayoutAccountView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get_object(self):
+        obj, _ = PlatformPayoutAccount.objects.get_or_create(
+            singleton_key='default',
+            defaults={
+                'method': PlatformPayoutAccount.Method.MOBILE_MONEY,
+                'account_name': 'NaatalFi',
+                'phone_number': '',
+            },
+        )
+        return obj
+
+    def get(self, request):
+        return Response(PlatformPayoutAccountSerializer(self.get_object()).data)
+
+    def patch(self, request):
+        account = self.get_object()
+        serializer = PlatformPayoutAccountSerializer(account, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)

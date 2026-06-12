@@ -2,12 +2,14 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
+from rest_framework.test import APITestCase
 
 from apps.orders.models import Order, VendorOrder
 from apps.users.models import CustomUser
 from apps.vendors.models import Vendor, VendorPlan
-from apps.wallet.models import Transaction, Wallet
+from apps.wallet.models import PlatformPayoutAccount, Transaction, Wallet
 from apps.wallet.services import (
     PLATFORM_COMMISSION_RATE,
     credit_wallet_from_order,
@@ -269,3 +271,51 @@ class WalletServiceTests(TestCase):
         # Vendor 2: 20000 * 8% = 1600
         # Total: 2400
         self.assertEqual(total_commissions, Decimal('2400.00'))
+
+
+class PlatformPayoutAccountApiTests(APITestCase):
+    def setUp(self):
+        self.admin = CustomUser.objects.create_user(
+            email='platform-admin@example.com',
+            password='pass',
+            first_name='Platform',
+            last_name='Admin',
+            role=CustomUser.Role.ADMIN,
+            is_verified=True,
+        )
+        self.vendor_user = CustomUser.objects.create_user(
+            email='platform-vendor@example.com',
+            password='pass',
+            first_name='Platform',
+            last_name='Vendor',
+            role=CustomUser.Role.VENDOR,
+            is_verified=True,
+        )
+
+    def test_only_admin_can_update_platform_payout_account(self):
+        self.client.force_authenticate(self.vendor_user)
+        denied = self.client.patch(reverse('admin-platform-payout-account'), {
+            'method': PlatformPayoutAccount.Method.MOBILE_MONEY,
+            'account_name': 'NaatalFi',
+            'phone_number': '771234567',
+        }, format='json')
+        self.assertEqual(denied.status_code, 403)
+
+        self.client.force_authenticate(self.admin)
+        mobile = self.client.patch(reverse('admin-platform-payout-account'), {
+            'method': PlatformPayoutAccount.Method.MOBILE_MONEY,
+            'account_name': 'NaatalFi',
+            'phone_number': '771234567',
+        }, format='json')
+        self.assertEqual(mobile.status_code, 200)
+        self.assertEqual(mobile.data['phone_number'], '771234567')
+
+        bank = self.client.patch(reverse('admin-platform-payout-account'), {
+            'method': PlatformPayoutAccount.Method.BANK,
+            'account_name': 'NaatalFi SARL',
+            'bank_name': 'Banque Test',
+            'account_number': 'SN123456789',
+        }, format='json')
+        self.assertEqual(bank.status_code, 200)
+        self.assertEqual(bank.data['bank_name'], 'Banque Test')
+        self.assertEqual(PlatformPayoutAccount.objects.count(), 1)

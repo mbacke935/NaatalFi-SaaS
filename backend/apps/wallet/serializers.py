@@ -1,6 +1,6 @@
 from decimal import Decimal
 from rest_framework import serializers
-from .models import Wallet, Transaction, PayoutRequest
+from .models import PlatformPayoutAccount, Wallet, Transaction, PayoutRequest
 from .services import PLATFORM_COMMISSION_RATE
 
 
@@ -82,3 +82,33 @@ class AdminPayoutRequestSerializer(serializers.ModelSerializer):
         fields = ['id', 'vendor_id', 'vendor_name', 'amount', 'status',
                   'bank_info', 'admin_note', 'created_at', 'updated_at']
         read_only_fields = fields
+
+
+class PlatformPayoutAccountSerializer(serializers.ModelSerializer):
+    total_commissions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PlatformPayoutAccount
+        fields = [
+            'method', 'account_name', 'phone_number', 'bank_name',
+            'account_number', 'instructions', 'total_commissions',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['total_commissions', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        method = attrs.get('method', getattr(self.instance, 'method', PlatformPayoutAccount.Method.MOBILE_MONEY))
+        phone_number = attrs.get('phone_number', getattr(self.instance, 'phone_number', ''))
+        bank_name = attrs.get('bank_name', getattr(self.instance, 'bank_name', ''))
+        account_number = attrs.get('account_number', getattr(self.instance, 'account_number', ''))
+
+        if method == PlatformPayoutAccount.Method.MOBILE_MONEY and not phone_number:
+            raise serializers.ValidationError({'phone_number': 'Numero requis pour le mobile money.'})
+        if method == PlatformPayoutAccount.Method.BANK and (not bank_name or not account_number):
+            raise serializers.ValidationError({'bank_name': 'Banque et numero de compte requis.'})
+        return attrs
+
+    def get_total_commissions(self, obj):
+        from django.db.models import Sum
+        total = Transaction.objects.filter(type=Transaction.Type.COMMISSION).aggregate(total=Sum('amount'))['total']
+        return str(total or 0)

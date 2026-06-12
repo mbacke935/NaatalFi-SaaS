@@ -4,7 +4,7 @@ from unittest.mock import patch
 from rest_framework.test import APITestCase
 
 from apps.users.models import CustomUser
-from apps.vendors.models import Vendor
+from apps.vendors.models import Vendor, VendorPlan
 
 
 class VendorApiTests(APITestCase):
@@ -44,6 +44,10 @@ class VendorApiTests(APITestCase):
         second = self.client.post(reverse('vendor-create'), {'name': 'Second Shop'}, format='json')
         self.assertEqual(first.status_code, 201)
         self.assertEqual(second.status_code, 400)
+        vendor = Vendor.objects.get(user=self.vendor_user)
+        self.assertEqual(vendor.plan.name, VendorPlan.Name.FREE)
+        self.assertEqual(str(vendor.plan.commission_rate), '8.00')
+        self.assertIsNone(vendor.plan.max_products)
 
     def test_admin_can_approve_and_suspend_vendor(self):
         vendor = Vendor.objects.create(user=self.vendor_user, name='Pending Shop')

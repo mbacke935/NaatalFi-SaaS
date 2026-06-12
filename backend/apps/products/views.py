@@ -108,14 +108,6 @@ class VendorProductListView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        if vendor.plan and vendor.plan.max_products is not None:
-            count = Product.objects.filter(vendor=vendor).exclude(status=Product.Status.ARCHIVED).count()
-            if count >= vendor.plan.max_products:
-                return Response(
-                    {'error': f"Limite de {vendor.plan.max_products} produits atteinte. Passez au plan supérieur."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-
         serializer = ProductWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         product = serializer.save(vendor=vendor)

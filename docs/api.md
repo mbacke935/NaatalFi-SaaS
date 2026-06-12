@@ -516,8 +516,8 @@ Solde vendeur connecte. **Vendor.**
   "pending_balance": "45000.00",
   "available_balance": "120000.00",
   "frozen_balance": "0.00",
-  "plan_name": "PRO",
-  "commission_rate": "7.00"
+  "plan_name": "FREE",
+  "commission_rate": "8.00"
 }
 ```
 
@@ -555,6 +555,31 @@ Approuver un retrait. **Admin.**
 
 ### `PATCH /wallet/admin/payouts/:id/reject/`
 Rejeter un retrait avec motif. **Admin.**
+
+### `GET /wallet/admin/platform-account/`
+Coordonnees de versement de la plateforme. **Admin.**
+
+### `PATCH /wallet/admin/platform-account/`
+Modifier les coordonnees de versement de la plateforme. **Admin.**
+
+**Body mobile money**
+```json
+{
+  "method": "MOBILE_MONEY",
+  "account_name": "NaatalFi",
+  "phone_number": "+221771234567"
+}
+```
+
+**Body banque**
+```json
+{
+  "method": "BANK",
+  "account_name": "NaatalFi SARL",
+  "bank_name": "Banque",
+  "account_number": "SN123456789"
+}
+```
 
 ---
 

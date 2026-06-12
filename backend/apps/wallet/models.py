@@ -78,3 +78,24 @@ class PayoutRequest(models.Model):
 
     def __str__(self):
         return f"Retrait {self.amount} FCFA — {self.wallet.vendor.name} ({self.status})"
+class PlatformPayoutAccount(models.Model):
+    class Method(models.TextChoices):
+        MOBILE_MONEY = 'MOBILE_MONEY', 'Mobile money'
+        BANK = 'BANK', 'Banque'
+
+    singleton_key  = models.CharField(max_length=20, default='default', unique=True, editable=False)
+    method         = models.CharField(max_length=20, choices=Method.choices, default=Method.MOBILE_MONEY)
+    account_name   = models.CharField(max_length=150)
+    phone_number   = models.CharField(max_length=30, blank=True)
+    bank_name      = models.CharField(max_length=120, blank=True)
+    account_number = models.CharField(max_length=80, blank=True)
+    instructions   = models.TextField(blank=True)
+    updated_at     = models.DateTimeField(auto_now=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Compte de versement plateforme'
+        verbose_name_plural = 'Compte de versement plateforme'
+
+    def __str__(self):
+        return f"Compte plateforme - {self.method}"

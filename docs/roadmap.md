@@ -671,7 +671,10 @@ Toutes les phases techniques sont implementees : conception, auth, vendeurs/KYC,
 
 **Monetisation simplifiee :**
 - Commission unique : **8% flat** sur chaque vente (`PLATFORM_COMMISSION_RATE = Decimal('8.00')` dans `apps/wallet/services.py`).
-- Aucun abonnement mensuel. Plan vendeur ignore pour le calcul du taux.
+- Aucun abonnement mensuel. Tous les vendeurs sont rattaches au plan FREE.
+- Produits illimites pour tous les vendeurs.
+- Coordonnees de versement plateforme configurables par l'admin dans `/admin/wallets`.
+- Plan vendeur ignore pour le calcul du taux.
 - Tous les modeles DB conserves (VendorPlan, AdCampaign, Review, Dispute, Notification).
 
 **Fonctionnalites differees (code conserve en commentaire dans les fichiers) :**
@@ -688,7 +691,7 @@ Aucune page supprimee. Composant `src/components/ui/ComingSoon.jsx` cree pour le
 
 ### Phase 10 - Wallet (mise a jour)
 
-La commission est maintenant **8% flat** independamment du plan vendeur. Le serializer `WalletSerializer` expose `commission_rate = "8.00"` pour tous les vendeurs. La source de verite est la constante `PLATFORM_COMMISSION_RATE`.
+La commission est maintenant **8% flat** independamment du plan vendeur. Le serializer `WalletSerializer` expose `commission_rate = "8.00"` pour tous les vendeurs. La source de verite est la constante `PLATFORM_COMMISSION_RATE`. Les commissions sont tracees par `Transaction.COMMISSION`; le compte de versement plateforme est gerable via `/wallet/admin/platform-account/`.
 
 ### Phase 19 - Tests
 
@@ -700,7 +703,6 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 
 Couverture : wallet, shipping, users, vendors, categories, products, marketplace, account, orders, payments, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : **57 tests OK**.
+Resultat actuel : **59 tests OK**.
 
-Dont 15 tests wallet specifiques a la commission 8% (idempotence, multi-vendeur, vendeur sans plan, revenue admin comptable) et le flux complet webhook PayTech → credit wallet (20 000 FCFA → commission 1 600 → net vendeur 18 400).
-
+Dont 16 tests wallet specifiques a la commission 8% (idempotence, multi-vendeur, vendeur sans plan, revenue admin comptable, coordonnees versement plateforme) et le flux complet webhook PayTech → credit wallet (20 000 FCFA → commission 1 600 → net vendeur 18 400).

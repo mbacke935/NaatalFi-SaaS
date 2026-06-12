@@ -1,7 +1,7 @@
 # Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 12 juin 2026
-**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 57 tests backend OK. Pret pour deploiement production.
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 59 tests backend OK. Pret pour deploiement production.
 
 ---
 
@@ -16,8 +16,10 @@ NaatalFi est une marketplace multi-vendeurs senegalaise. Le socle technique est 
 ### Monetisation
 
 - **Un seul plan** : inscription gratuite pour tous les vendeurs.
+- Produits illimites pour tous les vendeurs.
 - **Commission flat 8%** deduire automatiquement de chaque vente (`PLATFORM_COMMISSION_RATE = Decimal('8.00')`).
 - Aucun abonnement mensuel, aucun frais d'inscription.
+- Les coordonnees de versement de la plateforme sont configurables par l'admin dans `/admin/wallets`.
 - La constante `PLATFORM_COMMISSION_RATE` est dans `apps/wallet/services.py` et importee par les serializers — un seul endroit a modifier pour ajuster le taux.
 
 ### Fonctionnalites actives au lancement
@@ -66,7 +68,7 @@ Auth, catalogue, recherche, panier, commandes multi-vendeurs, paiement PayTech, 
 | `account` | Complet | Profil, avatar Supabase, commandes client, adresses, favoris |
 | `orders` | Complet | Validation panier, split multi-vendeurs, statuts vendeur, liste admin |
 | `payments` | Complet | PayTech initiation + webhook HMAC, statut, historique admin |
-| `wallet` | Complet | Commission 8% flat, credit auto apres paiement, pending->available (7j), retraits, approbation/rejet admin |
+| `wallet` | Complet | Commission 8% flat, credit auto apres paiement, pending->available (7j), retraits, approbation/rejet admin, coordonnees versement plateforme |
 | `shipping` | Complet | Zones/tarifs vendeur, estimation region + poids, checkout |
 | `notifications` | Complet | Modele, liste, mark read, read-all |
 | `reviews` | Complet | Avis verifies, recalcul notes produit/vendeur, moderation admin |
@@ -126,7 +128,7 @@ Visible dans /admin/analytics → card "Commissions"
 
 ## Tests Backend
 
-57 tests, tous verts.
+59 tests, tous verts.
 
 ```powershell
 cd C:\NaatalFi-SaaS\backend
@@ -135,13 +137,13 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 
 Couverture :
 
-- `wallet` : 15 tests — commission 8% flat, idempotence, multi-vendeur, release pending/available, revenue admin comptable
+- `wallet` : 16 tests — commission 8% flat, idempotence, multi-vendeur, release pending/available, revenue admin comptable, coordonnees versement plateforme
 - `orders` : 6 tests — validation stock, permissions, flux webhook->wallet complet (18 400 FCFA net sur 20 000 FCFA)
 - `shipping` : estimation region + poids
 - `users` : admin role/actif, protection auto-desactivation
-- `vendors` : creation boutique, unicite, approbation/suspension
+- `vendors` : creation boutique, unicite, plan FREE 8% illimite, approbation/suspension
 - `categories` : listing public, protection admin, creation, reorder
-- `products` : route admin, moderation statut
+- `products` : route admin, moderation statut, produits illimites
 - `marketplace` : produits publies, recherche, detail vendeur approuve
 - `account` : adresses, defaut unique, favoris idempotents
 - `payments` : liste admin, statut webhook
