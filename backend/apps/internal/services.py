@@ -8,6 +8,28 @@ import requests
 from .models import EmailLog
 
 
+def get_email_provider():
+    provider = getattr(settings, 'EMAIL_PROVIDER', '').strip().lower()
+    if provider:
+        return provider
+    if getattr(settings, 'AWS_SES_ACCESS_KEY_ID', '') and getattr(settings, 'AWS_SES_SECRET_ACCESS_KEY', ''):
+        return 'aws_ses'
+    if getattr(settings, 'RESEND_API_KEY', ''):
+        return 'resend'
+    return 'smtp'
+
+
+def get_aws_ses_client():
+    import boto3
+
+    return boto3.client(
+        'sesv2',
+        region_name=getattr(settings, 'AWS_SES_REGION', 'us-east-1'),
+        aws_access_key_id=getattr(settings, 'AWS_SES_ACCESS_KEY_ID', ''),
+        aws_secret_access_key=getattr(settings, 'AWS_SES_SECRET_ACCESS_KEY', ''),
+    )
+
+
 def queue_email(*, subject, message, recipient, from_email=None, scheduled_at=None):
     return EmailLog.objects.create(
         to_email=recipient,
@@ -18,28 +40,48 @@ def queue_email(*, subject, message, recipient, from_email=None, scheduled_at=No
     )
 
 
-def send_logged_email(email):
-    resend_api_key = getattr(settings, 'RESEND_API_KEY', '')
-    if resend_api_key:
-        response = requests.post(
-            getattr(settings, 'RESEND_API_URL', 'https://api.resend.com/emails'),
-            headers={
-                'Authorization': f'Bearer {resend_api_key}',
-                'Content-Type': 'application/json',
-                'Idempotency-Key': f'email-log-{email.pk}-{email.attempts}',
+def send_email_with_aws_ses(email):
+    client = get_aws_ses_client()
+    try:
+        client.send_email(
+            FromEmailAddress=email.from_email or settings.DEFAULT_FROM_EMAIL,
+            Destination={'ToAddresses': [email.to_email]},
+            Content={
+                'Simple': {
+                    'Subject': {'Data': email.subject, 'Charset': 'UTF-8'},
+                    'Body': {'Text': {'Data': email.message, 'Charset': 'UTF-8'}},
+                }
             },
-            json={
-                'from': email.from_email or settings.DEFAULT_FROM_EMAIL,
-                'to': [email.to_email],
-                'subject': email.subject,
-                'text': email.message,
-            },
-            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
         )
-        if response.status_code >= 400:
-            raise RuntimeError(f'Resend API {response.status_code}: {response.text[:1000]}')
-        return
+    except Exception as exc:
+        raise RuntimeError(f'AWS SES: {exc}') from exc
 
+
+def send_email_with_resend(email):
+    resend_api_key = getattr(settings, 'RESEND_API_KEY', '')
+    if not resend_api_key:
+        raise RuntimeError('RESEND_API_KEY is not configured')
+
+    response = requests.post(
+        getattr(settings, 'RESEND_API_URL', 'https://api.resend.com/emails'),
+        headers={
+            'Authorization': f'Bearer {resend_api_key}',
+            'Content-Type': 'application/json',
+            'Idempotency-Key': f'email-log-{email.pk}-{email.attempts}',
+        },
+        json={
+            'from': email.from_email or settings.DEFAULT_FROM_EMAIL,
+            'to': [email.to_email],
+            'subject': email.subject,
+            'text': email.message,
+        },
+        timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
+    )
+    if response.status_code >= 400:
+        raise RuntimeError(f'Resend API {response.status_code}: {response.text[:1000]}')
+
+
+def send_email_with_smtp(email):
     send_mail(
         subject=email.subject,
         message=email.message,
@@ -47,6 +89,17 @@ def send_logged_email(email):
         recipient_list=[email.to_email],
         fail_silently=False,
     )
+
+
+def send_logged_email(email):
+    provider = get_email_provider()
+    if provider == 'aws_ses':
+        send_email_with_aws_ses(email)
+        return
+    if provider == 'resend':
+        send_email_with_resend(email)
+        return
+    send_email_with_smtp(email)
 
 
 def process_pending_emails(limit=25):

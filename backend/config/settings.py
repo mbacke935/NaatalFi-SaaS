@@ -163,8 +163,12 @@ else:
     EMAIL_TIMEOUT    = int(os.getenv('EMAIL_TIMEOUT', 10))
 
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'NaatalFi <noreply@naatalfi.com>')
+EMAIL_PROVIDER = os.getenv('EMAIL_PROVIDER', '')
 RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
 RESEND_API_URL = os.getenv('RESEND_API_URL', 'https://api.resend.com/emails')
+AWS_SES_REGION = os.getenv('AWS_SES_REGION', 'us-east-1')
+AWS_SES_ACCESS_KEY_ID = os.getenv('AWS_SES_ACCESS_KEY_ID', os.getenv('AWS_ACCESS_KEY_ID', ''))
+AWS_SES_SECRET_ACCESS_KEY = os.getenv('AWS_SES_SECRET_ACCESS_KEY', os.getenv('AWS_SECRET_ACCESS_KEY', ''))
 
 # ── Celery ───────────────────────────────────────────────────────────
 CELERY_BROKER_URL        = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
