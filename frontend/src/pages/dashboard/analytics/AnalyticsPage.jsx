@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiAlertCircle, FiBarChart2, FiBox, FiShoppingBag, FiTrendingUp } from 'react-icons/fi'
+import { FiShoppingBag, FiTrendingUp } from 'react-icons/fi'
+// PHASE_FUTURE_1: décommenter les icônes ci-dessous lors de la réactivation des cards
+// import { FiAlertCircle, FiBarChart2, FiBox } from 'react-icons/fi'
 import { getVendorAnalytics } from '../../../services/analytics'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
@@ -31,12 +33,11 @@ function AnalyticsPage() {
     return <div className="h-64 bg-[#16161E] border border-[#2a2a3a] rounded-xl animate-pulse" />
   }
 
+  // MVP: Revenus + Commandes uniquement
+  // PHASE_FUTURE_1: ajouter Articles vendus, Panier moyen, Taux litiges (voir tableau complet commenté en bas)
   const cards = [
     { label: 'Revenus', value: fmt(analytics?.revenue), icon: FiTrendingUp },
     { label: 'Commandes', value: analytics?.orders_count ?? 0, icon: FiShoppingBag },
-    { label: 'Articles vendus', value: analytics?.items_sold ?? 0, icon: FiBox },
-    { label: 'Panier moyen', value: fmt(analytics?.average_basket), icon: FiBarChart2 },
-    { label: 'Taux litiges', value: `${Math.round(Number(analytics?.dispute_rate ?? 0) * 1000) / 10}%`, icon: FiAlertCircle },
   ]
 
   return (
@@ -44,7 +45,7 @@ function AnalyticsPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-white">Analytics</h1>
-          <p className="text-sm text-gray-500 mt-1">Ventes, revenus et produits les plus performants.</p>
+          <p className="text-sm text-gray-500 mt-1">Ventes et revenus.</p>
         </div>
         <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-1 flex">
           {[
@@ -63,7 +64,7 @@ function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid sm:grid-cols-2 gap-4">
         {cards.map((card) => {
           const Icon = card.icon
           return (
@@ -78,65 +79,73 @@ function AnalyticsPage() {
         })}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
-          <h2 className="font-semibold text-white mb-5">Revenus par jour</h2>
+      {/* Graphe revenus par jour */}
+      <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
+        <h2 className="font-semibold text-white mb-5">Revenus par jour</h2>
 
-          <div className="flex gap-3">
-            <div className="w-10 flex flex-col justify-between items-end text-right pb-5 pt-0.5 flex-shrink-0">
-              <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue)}</span>
-              <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue * 0.5)}</span>
-              <span className="text-[10px] text-gray-500 leading-none">0</span>
+        <div className="flex gap-3">
+          <div className="w-10 flex flex-col justify-between items-end text-right pb-5 pt-0.5 flex-shrink-0">
+            <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue)}</span>
+            <span className="text-[10px] text-gray-500 leading-none">{fmtShort(maxRevenue * 0.5)}</span>
+            <span className="text-[10px] text-gray-500 leading-none">0</span>
+          </div>
+
+          <div className="flex-1 relative">
+            <div className="absolute inset-x-0 pointer-events-none" style={{ top: 0, bottom: '1.25rem' }}>
+              <div className="absolute top-0 inset-x-0 border-t border-[#2a2a3a]" />
+              <div className="absolute inset-x-0 border-t border-[#2a2a3a]" style={{ top: '50%' }} />
+              <div className="absolute bottom-0 inset-x-0 border-t border-[#2a2a3a]" />
             </div>
 
-            <div className="flex-1 relative">
-              <div className="absolute inset-x-0 pointer-events-none" style={{ top: 0, bottom: '1.25rem' }}>
-                <div className="absolute top-0 inset-x-0 border-t border-[#2a2a3a]" />
-                <div className="absolute inset-x-0 border-t border-[#2a2a3a]" style={{ top: '50%' }} />
-                <div className="absolute bottom-0 inset-x-0 border-t border-[#2a2a3a]" />
-              </div>
-
-              <div className="h-64 flex items-end gap-0.5">
-                {daily.map((day) => {
-                  const revenue = Number(day.revenue ?? 0)
-                  const label = new Date(day.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
-                  return (
-                    <div key={day.date} className="flex-1 min-w-0 h-full flex flex-col justify-end gap-1.5">
-                      <div className="relative flex-1 flex items-end">
-                        <div
-                          className="w-full rounded-t bg-[#D4AF37]/80 hover:bg-[#D4AF37] transition"
-                          style={{ height: `${Math.max((revenue / maxRevenue) * 100, revenue ? 5 : 1)}%` }}
-                          title={`${label}: ${fmt(revenue)}`}
-                        />
-                      </div>
-                      <span className="text-[10px] text-gray-600 text-center truncate">{label}</span>
+            <div className="h-64 flex items-end gap-0.5">
+              {daily.map((day) => {
+                const revenue = Number(day.revenue ?? 0)
+                const label = new Date(day.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+                return (
+                  <div key={day.date} className="flex-1 min-w-0 h-full flex flex-col justify-end gap-1.5">
+                    <div className="relative flex-1 flex items-end">
+                      <div
+                        className="w-full rounded-t bg-[#D4AF37]/80 hover:bg-[#D4AF37] transition"
+                        style={{ height: `${Math.max((revenue / maxRevenue) * 100, revenue ? 5 : 1)}%` }}
+                        title={`${label}: ${fmt(revenue)}`}
+                      />
                     </div>
-                  )
-                })}
-              </div>
+                    <span className="text-[10px] text-gray-600 text-center truncate">{label}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
-
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
-          <h2 className="font-semibold text-white mb-4">Top produits</h2>
-          {(analytics?.top_products ?? []).length === 0 ? (
-            <p className="text-sm text-gray-500">Pas encore de ventes sur cette periode.</p>
-          ) : (
-            <div className="space-y-4">
-              {analytics.top_products.slice(0, 5).map((product, index) => (
-                <div key={`${product.product_id}-${product.name}`}>
-                  <div className="flex justify-between gap-3 text-sm mb-1">
-                    <span className="text-gray-300 truncate">{index + 1}. {product.name}</span>
-                    <span className="text-white font-semibold whitespace-nowrap">{fmt(product.revenue)}</span>
-                  </div>
-                  <p className="text-xs text-gray-500">{product.quantity} vendu{product.quantity !== 1 ? 's' : ''}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* PHASE_FUTURE_1: Top produits — décommenter le bloc ci-dessous
+      <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
+        <h2 className="font-semibold text-white mb-4">Top produits</h2>
+        {(analytics?.top_products ?? []).length === 0 ? (
+          <p className="text-sm text-gray-500">Pas encore de ventes sur cette periode.</p>
+        ) : (
+          <div className="space-y-4">
+            {analytics.top_products.slice(0, 5).map((product, index) => (
+              <div key={`${product.product_id}-${product.name}`}>
+                <div className="flex justify-between gap-3 text-sm mb-1">
+                  <span className="text-gray-300 truncate">{index + 1}. {product.name}</span>
+                  <span className="text-white font-semibold whitespace-nowrap">{fmt(product.revenue)}</span>
+                </div>
+                <p className="text-xs text-gray-500">{product.quantity} vendu{product.quantity !== 1 ? 's' : ''}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      */}
+
+      {/* PHASE_FUTURE_1: Cards supplémentaires — ajouter au tableau cards[] ci-dessus
+          { label: 'Articles vendus', value: analytics?.items_sold ?? 0, icon: FiBox },
+          { label: 'Panier moyen', value: fmt(analytics?.average_basket), icon: FiBarChart2 },
+          { label: 'Taux litiges', value: `${Math.round(Number(analytics?.dispute_rate ?? 0) * 1000) / 10}%`, icon: FiAlertCircle },
+          Et changer la grille en : className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4"
+      */}
     </div>
   )
 }

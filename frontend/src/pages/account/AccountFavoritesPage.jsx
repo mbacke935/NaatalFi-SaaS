@@ -1,3 +1,23 @@
+// PHASE_FUTURE_1: Favoris — décommenter le bloc ci-dessous et supprimer ce composant
+import { useMeta } from '../../hooks/useMeta'
+import ComingSoon from '../../components/ui/ComingSoon'
+
+function AccountFavoritesPage() {
+  useMeta({ title: 'Mes favoris' })
+  return (
+    <ComingSoon
+      title="Mes favoris"
+      description="Retrouvez ici tous les produits que vous avez mis en favori. Disponible prochainement."
+    />
+  )
+}
+
+export default AccountFavoritesPage
+
+/* =====================================================================
+   CODE ORIGINAL AccountFavoritesPage — PHASE FUTURE 1 (décommenter pour réactiver)
+   =====================================================================
+
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -59,7 +79,6 @@ function AccountFavoritesPage() {
               <div key={id}
                 className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5 relative"
               >
-                {/* Bouton retirer */}
                 <button
                   onClick={() => handleRemove(product.id)}
                   className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-red-400 hover:text-red-300"
@@ -95,3 +114,5 @@ function AccountFavoritesPage() {
 }
 
 export default AccountFavoritesPage
+
+===================================================================== */

@@ -1,3 +1,23 @@
+// PHASE_FUTURE_1: Avis — décommenter le bloc ci-dessous et supprimer ce composant
+import { useMeta } from '../../hooks/useMeta'
+import ComingSoon from '../../components/ui/ComingSoon'
+
+function AccountReviewsPage() {
+  useMeta({ title: 'Mes avis' })
+  return (
+    <ComingSoon
+      title="Mes avis"
+      description="Notez et commentez vos achats pour aider la communauté. Disponible prochainement."
+    />
+  )
+}
+
+export default AccountReviewsPage
+
+/* =====================================================================
+   CODE ORIGINAL AccountReviewsPage — PHASE FUTURE 1 (décommenter pour réactiver)
+   =====================================================================
+
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiStar } from 'react-icons/fi'
@@ -65,3 +85,5 @@ function AccountReviewsPage() {
 }
 
 export default AccountReviewsPage
+
+===================================================================== */

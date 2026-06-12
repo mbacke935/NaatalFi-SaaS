@@ -1,3 +1,21 @@
+// PHASE_FUTURE_2: Publicités sponsorisées — décommenter le bloc ci-dessous et supprimer ce composant
+import ComingSoon from '../../../components/ui/ComingSoon'
+
+function AdsPage() {
+  return (
+    <ComingSoon
+      title="Publicités sponsorisées"
+      description="Mettez vos produits en avant auprès de milliers d'acheteurs. Disponible après les premières ventes."
+    />
+  )
+}
+
+export default AdsPage
+
+/* =====================================================================
+   CODE ORIGINAL AdsPage — PHASE FUTURE 2 (décommenter pour réactiver)
+   =====================================================================
+
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { FiPause, FiPlay, FiPlus, FiZap } from 'react-icons/fi'
@@ -147,3 +165,5 @@ function AdsPage() {
 }
 
 export default AdsPage
+
+===================================================================== */

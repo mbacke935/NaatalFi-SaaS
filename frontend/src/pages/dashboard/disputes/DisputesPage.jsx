@@ -1,3 +1,54 @@
+// PHASE_FUTURE_3: Litiges — décommenter le bloc ci-dessous et supprimer ce composant
+import { FiMail, FiMessageCircle } from 'react-icons/fi'
+
+function DisputesPage() {
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white">Litiges</h1>
+        <p className="text-sm text-gray-500 mt-1">Signalez un problème avec une commande.</p>
+      </div>
+
+      <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-8 text-center max-w-lg mx-auto">
+        <div className="w-14 h-14 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center mx-auto mb-5">
+          <FiMessageCircle size={26} className="text-[#D4AF37]" />
+        </div>
+        <h2 className="text-white font-semibold text-lg mb-2">Contactez notre équipe</h2>
+        <p className="text-gray-400 text-sm mb-6">
+          Pour tout litige ou réclamation sur une commande, notre équipe est disponible pour vous aider rapidement.
+        </p>
+        <div className="space-y-3">
+          <a
+            href="https://wa.me/221777000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium text-sm transition"
+          >
+            <FiMessageCircle size={18} />
+            WhatsApp — Réponse rapide
+          </a>
+          <a
+            href="mailto:support@naatalfi.sn"
+            className="flex items-center justify-center gap-3 w-full px-4 py-3 rounded-xl border border-[#2a2a3a] text-gray-300 hover:text-white hover:border-[#D4AF37]/40 font-medium text-sm transition"
+          >
+            <FiMail size={18} />
+            support@naatalfi.sn
+          </a>
+        </div>
+        <p className="text-xs text-gray-600 mt-5">
+          Précisez votre numéro de commande pour un traitement prioritaire.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default DisputesPage
+
+/* =====================================================================
+   CODE ORIGINAL DisputesPage — PHASE FUTURE 3 (décommenter pour réactiver)
+   =====================================================================
+
 import { useEffect, useMemo, useState } from 'react'
 import { FiAlertCircle, FiCheckCircle, FiMessageSquare } from 'react-icons/fi'
 import { getVendorDisputes } from '../../../services/disputes'
@@ -85,3 +136,5 @@ function DisputesPage() {
 }
 
 export default DisputesPage
+
+===================================================================== */
