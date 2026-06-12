@@ -175,7 +175,7 @@ function DashboardLayout() {
       {/* Mobile drawer */}
       {open && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <button className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} aria-label="Fermer" />
+          <button className="absolute inset-0 bg-black/80" onClick={() => setOpen(false)} aria-label="Fermer" />
           <aside className="relative w-72 max-w-[85vw] h-full bg-[#111118] border-r border-[#2a2a3a] flex flex-col">
             <div className="h-14 px-4 flex items-center justify-between border-b border-[#2a2a3a]">
               <span className="font-bold">NaatalFi</span>

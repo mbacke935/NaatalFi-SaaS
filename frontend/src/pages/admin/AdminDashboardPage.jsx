@@ -41,7 +41,7 @@ function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {[1,2,3,4,5,6].map((i) => (
             <div key={i} className="h-28 bg-[#16161E] border border-[#2a2a3a] rounded-xl animate-pulse" />
           ))}
@@ -69,7 +69,7 @@ function AdminDashboardPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon
           return (

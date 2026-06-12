@@ -55,7 +55,7 @@ function DashboardPage() {
     return (
       <div className="space-y-4">
         <div className="h-28 bg-[#16161E] border border-[#2a2a3a] rounded-xl animate-pulse" />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 bg-[#16161E] border border-[#2a2a3a] rounded-xl animate-pulse" />)}
         </div>
       </div>
@@ -85,7 +85,7 @@ function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card) => {
           const Icon = card.icon
           return (
