@@ -94,7 +94,7 @@ function DashboardLayout() {
   )
 
   return (
-    <div className="bg-[#0B0B0F] text-white lg:min-h-screen">
+    <div className="min-h-dvh bg-[#0B0B0F] text-white flex flex-col lg:block">
       {/* Sidebar desktop */}
       <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 bg-[#111118] border-r border-[#2a2a3a] flex-col z-40">
         <Link to="/dashboard" className="h-16 px-5 flex items-center border-b border-[#2a2a3a]">
@@ -204,8 +204,8 @@ function DashboardLayout() {
       )}
 
       {/* Main content — offset for sidebar + top header on desktop */}
-      <main className="lg:pl-64 lg:pt-14 min-w-0">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-5 pb-3 lg:py-8 min-w-0">
+      <main className="flex-1 lg:pl-64 lg:pt-14 min-w-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-5 pb-6 lg:py-8 min-w-0">
           <Outlet />
         </div>
       </main>

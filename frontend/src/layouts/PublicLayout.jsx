@@ -6,7 +6,7 @@ function PublicLayout() {
   return (
     <div className="min-h-dvh bg-[#0B0B0F] flex flex-col">
       <PublicNav />
-      <main className="min-w-0 lg:flex-1">
+      <main className="flex-1 min-w-0 flex flex-col">
         <Outlet />
       </main>
       <PublicFooter />

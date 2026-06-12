@@ -15,6 +15,12 @@ body {
   background: #0B0B0F;
 }
 
+body,
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 img,
 video,
 canvas,
