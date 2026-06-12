@@ -61,7 +61,7 @@ function RegisterPage() {
     <>
       <h1 className="text-2xl font-bold text-white mb-6">Créer un compte</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Prénom</label>
             <input

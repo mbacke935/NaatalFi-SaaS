@@ -173,7 +173,7 @@ function ProductDetailPage() {
             )}
           </div>
           {product.images.length > 1 && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {product.images.map((img, i) => (
                 <button key={img.id} onClick={() => setActiveImage(i)}
                   className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}

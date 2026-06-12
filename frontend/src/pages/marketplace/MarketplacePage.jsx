@@ -165,23 +165,23 @@ function MarketplacePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Marketplace</h1>
           {result && <p className="text-sm text-gray-500 mt-0.5">{result.count} produit{result.count !== 1 ? 's' : ''}</p>}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden flex items-center gap-2 text-sm border border-[#2a2a3a] text-gray-400 hover:text-white px-3 py-2 rounded-lg transition"
+            className="lg:hidden flex items-center justify-center gap-2 text-sm border border-[#2a2a3a] text-gray-400 hover:text-white px-3 py-2 rounded-lg transition flex-1 sm:flex-none"
           >
             <FiFilter size={14} /> Filtres
           </button>
           <select
             value={sort}
             onChange={(e) => setParam('sort', e.target.value)}
-            className="bg-[#16161E] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition"
+            className="bg-[#16161E] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition flex-1 sm:flex-none min-w-0"
           >
             {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>

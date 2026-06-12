@@ -65,7 +65,7 @@ function ProductsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-white">Mes produits</h1>
         <Link
           to="/dashboard/products/new"
@@ -76,7 +76,7 @@ function ProductsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {[
           { label: 'Total',     value: stats.total },
           { label: 'Publiés',   value: stats.published },
@@ -90,12 +90,12 @@ function ProductsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-4 bg-[#16161E] border border-[#2a2a3a] rounded-xl p-1 w-fit">
+      <div className="flex gap-1 mb-4 bg-[#16161E] border border-[#2a2a3a] rounded-xl p-1 w-full sm:w-fit max-w-full overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => { setLoading(true); setTab(t.key) }}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition whitespace-nowrap ${
               tab === t.key
                 ? 'bg-[#D4AF37] text-black'
                 : 'text-gray-400 hover:text-white'

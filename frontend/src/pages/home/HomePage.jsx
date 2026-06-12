@@ -219,7 +219,7 @@ function HomePage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between gap-3 mb-6">
           <h2 className="text-xl font-bold text-white">Produits vedettes</h2>
           <Link to="/marketplace" className="text-sm text-[#D4AF37] hover:underline flex items-center gap-1">
             Voir tout <FiArrowRight size={14} />

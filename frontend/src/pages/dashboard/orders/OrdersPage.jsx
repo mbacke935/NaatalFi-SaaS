@@ -40,7 +40,7 @@ function VendorOrdersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-white">Commandes</h1>
         <span className="text-sm text-gray-500">{orders.length} commande{orders.length !== 1 ? 's' : ''}</span>
       </div>

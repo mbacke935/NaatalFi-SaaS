@@ -15,7 +15,7 @@ function AccountLayout() {
   const { user } = useAuthStore()
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-8 min-w-0">
       <div className="flex flex-col sm:flex-row gap-6">
 
         {/* Sidebar */}

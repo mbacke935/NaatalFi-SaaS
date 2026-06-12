@@ -204,8 +204,8 @@ function DashboardLayout() {
       )}
 
       {/* Main content — offset for sidebar + top header on desktop */}
-      <main className="lg:pl-64 lg:pt-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
+      <main className="lg:pl-64 lg:pt-14 min-w-0">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 lg:py-8 min-w-0">
           <Outlet />
         </div>
       </main>

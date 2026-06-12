@@ -67,7 +67,7 @@ function AccountSettingsPage() {
             <FiUser size={15} className="text-[#D4AF37]" /> Informations personnelles
           </h2>
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Prénom</label>
                 <input value={form.first_name} onChange={set('first_name')} className={inputCls} />

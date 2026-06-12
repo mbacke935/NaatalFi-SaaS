@@ -77,7 +77,7 @@ function ShopSettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-white">Ma boutique</h1>
         {StatusBadge && (
           <div className={`flex items-center gap-2 text-sm font-medium ${StatusBadge.color}`}>
@@ -88,16 +88,16 @@ function ShopSettingsPage() {
       </div>
 
       {vendor?.plan && (
-        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4 mb-6 flex items-center justify-between">
+        <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4 mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide">Plan actuel</p>
             <p className="text-white font-semibold">{vendor.plan.name}</p>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <p className="text-xs text-gray-500">Commission</p>
             <p className="text-[#D4AF37] font-bold">{vendor.plan.commission_rate}%</p>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <p className="text-xs text-gray-500">Produits max</p>
             <p className="text-white font-medium">{vendor.plan.max_products ?? '∞'}</p>
           </div>
@@ -139,7 +139,7 @@ function ShopSettingsPage() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm text-gray-400 mb-1">Téléphone</label>
             <input

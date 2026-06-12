@@ -94,7 +94,7 @@ function CartPage() {
         <div className="flex-1 space-y-6">
           {groups.map((group) => (
             <div key={group.vendor_id} className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#2a2a3a] flex items-center justify-between">
+              <div className="px-4 py-3 border-b border-[#2a2a3a] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <Link
                   to={`/vendors/${group.vendor_slug}`}
                   className="text-sm font-medium text-[#D4AF37] hover:underline"
@@ -113,7 +113,7 @@ function CartPage() {
                 return (
                   <div
                     key={`${item.product_id}-${item.variant_id ?? 'x'}`}
-                    className={`flex items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0 ${hasStockError ? 'bg-red-900/10' : ''}`}
+                    className={`flex flex-wrap sm:flex-nowrap items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0 ${hasStockError ? 'bg-red-900/10' : ''}`}
                   >
                     {/* Image */}
                     <Link to={`/marketplace/${item.product_slug}`} className="flex-shrink-0">
@@ -148,7 +148,7 @@ function CartPage() {
                     </div>
 
                     {/* Quantity */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-20 sm:ml-0">
                       <button
                         onClick={() => updateQuantity(item.product_id, item.variant_id, item.quantity - 1)}
                         className="w-7 h-7 rounded-lg border border-[#2a2a3a] text-gray-400 hover:text-white hover:border-gray-500 transition flex items-center justify-center"
@@ -167,7 +167,7 @@ function CartPage() {
                     {/* Delete */}
                     <button
                       onClick={() => removeItem(item.product_id, item.variant_id)}
-                      className="text-gray-600 hover:text-red-400 transition flex-shrink-0"
+                      className="text-gray-600 hover:text-red-400 transition flex-shrink-0 ml-auto sm:ml-0"
                     >
                       <FiTrash2 size={16} />
                     </button>

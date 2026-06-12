@@ -90,7 +90,7 @@ function ZoneModal({ zone, onClose, onSave }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
       <div className="bg-[#16161E] border border-[#2a2a3a] rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between gap-3 mb-5">
           <h2 className="text-lg font-bold text-white">
             {editing ? 'Modifier la zone' : 'Nouvelle zone de livraison'}
           </h2>
@@ -136,7 +136,7 @@ function ZoneModal({ zone, onClose, onSave }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Tarif (FCFA)</label>
               <input
@@ -158,7 +158,7 @@ function ZoneModal({ zone, onClose, onSave }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-gray-500 uppercase tracking-wide block mb-1">Poids min. (kg)</label>
               <input

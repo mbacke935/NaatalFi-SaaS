@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 0;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+.bg-\[\#16161E\]:has(> table) {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bg-\[\#16161E\]:has(> table) > table {
+  min-width: 720px;
+}
+
+.bg-\[\#16161E\]:has(> table)::-webkit-scrollbar {
+  height: 8px;
+}
+
+.bg-\[\#16161E\]:has(> table)::-webkit-scrollbar-thumb {
+  background: #2a2a3a;
+  border-radius: 999px;
+}
+
 @keyframes home-category-scroll {
   from {
     transform: translateX(0);

@@ -98,7 +98,7 @@ function NewProductPage() {
           </div>
 
           {/* Prix + Catégorie */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-400 mb-1">Prix (FCFA) *</label>
               <input
@@ -133,7 +133,7 @@ function NewProductPage() {
           {/* Statut */}
           <div>
             <label className="block text-sm text-gray-400 mb-2">Statut initial</label>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               {[
                 { value: 'DRAFT',     label: 'Brouillon',  desc: 'Non visible au public' },
                 { value: 'PUBLISHED', label: 'Publié',     desc: 'Visible immédiatement' },

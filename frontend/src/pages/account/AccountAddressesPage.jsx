@@ -51,7 +51,7 @@ function AddressForm({ initial, onSave, onCancel }) {
       {field('Nom complet', 'full_name', 'Prénom et nom du destinataire')}
       {field('Téléphone', 'phone', '+221 77 000 00 00')}
       {field('Adresse', 'street', 'Rue, quartier, point de repère')}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {field('Ville', 'city', 'Dakar')}
         {field('Région', 'region', 'Dakar', false)}
       </div>
@@ -59,7 +59,7 @@ function AddressForm({ initial, onSave, onCancel }) {
         <input type="checkbox" checked={form.is_default} onChange={set('is_default')} className="accent-[#D4AF37]" />
         Définir comme adresse par défaut
       </label>
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-col sm:flex-row gap-2 pt-1">
         <button type="submit" disabled={saving}
           className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] hover:bg-[#c49e30] text-black text-sm font-semibold rounded-lg transition disabled:opacity-50"
         >
@@ -121,7 +121,7 @@ function AccountAddressesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-white">Mes adresses</h1>
         {!showForm && (
           <button onClick={() => setShowForm(true)}

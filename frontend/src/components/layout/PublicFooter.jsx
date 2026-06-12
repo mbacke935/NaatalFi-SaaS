@@ -24,8 +24,8 @@ function PublicFooter() {
   return (
     <footer className="border-t border-[#2a2a3a] bg-[#0B0B0F] mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-          <div className="col-span-2 md:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+          <div className="sm:col-span-2 md:col-span-1">
             <Link to="/" className="text-[#D4AF37] font-bold text-lg tracking-tight">
               NaatalFi
             </Link>
@@ -57,7 +57,7 @@ function PublicFooter() {
             <ul className="space-y-2.5 text-sm text-gray-500">
               {settings?.contact_email && (
                 <li>
-                  <a href={`mailto:${settings.contact_email}`} className="inline-flex items-center gap-2 hover:text-white transition">
+                  <a href={`mailto:${settings.contact_email}`} className="inline-flex items-center gap-2 hover:text-white transition break-all">
                     <FiMail size={14} /> {settings.contact_email}
                   </a>
                 </li>
@@ -100,4 +100,3 @@ function PublicFooter() {
 }
 
 export default PublicFooter
-

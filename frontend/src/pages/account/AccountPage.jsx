@@ -36,7 +36,7 @@ function AccountPage() {
       <h1 className="text-2xl font-bold text-white mb-6">Tableau de bord</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         {[
           { label: 'Commandes',        value: orders.length,    icon: FiShoppingBag, to: '/account/orders' },
           { label: 'En attente',       value: pending,          icon: FiClock,       to: '/account/orders' },
@@ -56,7 +56,7 @@ function AccountPage() {
 
       {/* Commandes récentes */}
       <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden mb-6">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a2a3a]">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[#2a2a3a]">
           <h2 className="text-sm font-semibold text-white">Commandes récentes</h2>
           <Link to="/account/orders" className="text-xs text-[#D4AF37] hover:underline flex items-center gap-1">
             Voir tout <FiChevronRight size={12} />
@@ -81,7 +81,7 @@ function AccountPage() {
               const orderDate = new Date(order.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
               return (
                 <Link key={order.id} to={`/account/orders/${order.id}`}
-                  className="flex items-center justify-between px-4 py-3 border-b border-[#2a2a3a] last:border-0 hover:bg-white/5 transition"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 py-3 border-b border-[#2a2a3a] last:border-0 hover:bg-white/5 transition"
                 >
                   <div>
                     <span className="text-white text-sm font-medium">#{order.id}</span>
@@ -102,7 +102,7 @@ function AccountPage() {
       </div>
 
       {/* Liens rapides */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Link to="/account/addresses"
           className="flex items-center gap-3 p-4 bg-[#16161E] border border-[#2a2a3a] rounded-xl hover:border-[#D4AF37]/40 transition"
         >

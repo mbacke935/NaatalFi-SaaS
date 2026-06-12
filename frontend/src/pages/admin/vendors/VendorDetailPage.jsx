@@ -70,7 +70,7 @@ function VendorDetailPage() {
       </button>
 
       <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-6 mb-6">
-        <div className="flex items-start gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           {vendor.logo ? (
             <img src={vendor.logo} alt="" className="w-16 h-16 rounded-xl object-cover" />
           ) : (
@@ -78,7 +78,7 @@ function VendorDetailPage() {
               {vendor.name[0].toUpperCase()}
             </div>
           )}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-white">{vendor.name}</h1>
             <p className="text-gray-400 text-sm">{vendor.user_email} · {vendor.user_name}</p>
             <p className={`text-sm font-medium mt-1 ${statusColor}`}>{vendor.status}</p>
@@ -89,7 +89,7 @@ function VendorDetailPage() {
           <p className="text-gray-400 text-sm mt-4">{vendor.description}</p>
         )}
 
-        <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-[#2a2a3a]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t border-[#2a2a3a]">
           <div>
             <p className="text-xs text-gray-500">Plan</p>
             <p className="text-white font-medium">{vendor.plan?.name ?? '—'}</p>
@@ -111,7 +111,7 @@ function VendorDetailPage() {
             </div>
           )}
           {vendor.address && (
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <p className="text-xs text-gray-500">Adresse</p>
               <p className="text-white font-medium">{vendor.address}</p>
             </div>
@@ -127,7 +127,7 @@ function VendorDetailPage() {
           <button
             onClick={handleApprove}
             disabled={acting}
-            className="flex items-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 font-medium py-2 px-4 rounded-lg transition disabled:opacity-50"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 font-medium py-2 px-4 rounded-lg transition disabled:opacity-50"
           >
             <FiCheck size={15} />
             {acting ? 'Traitement...' : 'Approuver ce vendeur'}
@@ -146,7 +146,7 @@ function VendorDetailPage() {
             <button
               onClick={handleSuspend}
               disabled={acting}
-              className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-medium py-2 px-4 rounded-lg transition disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-medium py-2 px-4 rounded-lg transition disabled:opacity-50"
             >
               <FiSlash size={15} />
               {acting ? 'Traitement...' : 'Suspendre ce vendeur'}
