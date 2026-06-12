@@ -11,6 +11,16 @@ jobs:
     steps:
       - name: Run scheduled backend tasks
         run: |
-          curl --fail --silent --show-error \
+          response_file="$(mktemp)"
+          status_code="$(curl --silent --show-error \
+            --output "$response_file" \
+            --write-out "%{http_code}" \
             --request POST "${{ secrets.CRON_URL }}" \
-            --header "X-CRON-SECRET: ${{ secrets.CRON_SECRET }}"
+            --header "X-CRON-SECRET: ${{ secrets.CRON_SECRET }}")"
+
+          cat "$response_file"
+
+          if [ "$status_code" -lt 200 ] || [ "$status_code" -ge 300 ]; then
+            echo "Cron request failed with HTTP $status_code"
+            exit 1
+          fi
