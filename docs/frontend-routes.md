@@ -141,12 +141,14 @@ Accessibles uniquement avec `role === 'ADMIN'`.
 | `/admin/categories` | `CategoriesPage` | `src/pages/admin/categories/CategoriesPage.jsx` |
 | `/admin/reviews` | `ReviewsPage` | `src/pages/admin/reviews/ReviewsPage.jsx` |
 | `/admin/analytics` | `AdminAnalyticsPage` | `src/pages/admin/analytics/AnalyticsPage.jsx` |
+| `/admin/platform` | `PlatformSettingsPage` | `src/pages/admin/platform/PlatformSettingsPage.jsx` |
 | `/admin/disputes` | `AdminDisputesPage` | `src/pages/admin/disputes/DisputesPage.jsx` |
 | `/admin/ads` | `AdminAdsPage` | `src/pages/admin/ads/AdsPage.jsx` |
 
 Les pages `/dashboard/ads` et `/admin/ads` consomment l'API reelle des campagnes sponsorisees.
 Les pages `/dashboard/disputes` et `/admin/disputes` consomment l'API reelle des litiges.
 Les pages `/dashboard/analytics` et `/admin/analytics` consomment l'API reelle `/analytics`.
+La page `/admin/platform` modifie les informations publiques affichees dans le footer.
 
 ---
 

@@ -703,6 +703,6 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 
 Couverture : wallet, shipping, users, vendors, categories, products, marketplace, account, orders, payments, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : **59 tests OK**.
+Resultat actuel : **61 tests OK**.
 
 Dont 16 tests wallet specifiques a la commission 8% (idempotence, multi-vendeur, vendeur sans plan, revenue admin comptable, coordonnees versement plateforme) et le flux complet webhook PayTech → credit wallet (20 000 FCFA → commission 1 600 → net vendeur 18 400).

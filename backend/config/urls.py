@@ -18,4 +18,5 @@ urlpatterns = [
     path('api/v1/ads/',          include('apps.ads.urls')),
     path('api/v1/disputes/',     include('apps.disputes.urls')),
     path('api/v1/analytics/',    include('apps.analytics.urls')),
+    path('api/v1/platform/',     include('apps.platform.urls')),
 ]

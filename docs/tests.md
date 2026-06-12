@@ -23,7 +23,7 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **59 tests OK**.
+Resultat actuel : **61 tests OK**.
 
 ### Detail par module
 
@@ -44,6 +44,7 @@ Resultat actuel : **59 tests OK**.
 | `ads` | `apps/ads/tests.py` | — | Creation campagne, debit wallet, solde insuffisant, produits sponsorises |
 | `disputes` | `apps/disputes/tests.py` | — | Ouverture litige, gel wallet, resolution refund/no-refund |
 | `analytics` | `apps/analytics/tests.py` | — | Overview admin, top vendeurs, analytics vendeur |
+| `platform` | `apps/platform/tests.py` | 2 | Lecture publique footer, modification admin des infos plateforme |
 
 ---
 

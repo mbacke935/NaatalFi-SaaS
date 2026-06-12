@@ -1,0 +1,58 @@
+from django.urls import reverse
+from rest_framework.test import APITestCase
+
+from apps.platform.models import PlatformSettings
+from apps.users.models import CustomUser
+
+
+class PlatformSettingsApiTests(APITestCase):
+    def setUp(self):
+        self.admin = CustomUser.objects.create_user(
+            email='platform-settings-admin@example.com',
+            password='pass',
+            first_name='Platform',
+            last_name='Admin',
+            role=CustomUser.Role.ADMIN,
+            is_verified=True,
+        )
+        self.customer = CustomUser.objects.create_user(
+            email='platform-settings-customer@example.com',
+            password='pass',
+            first_name='Platform',
+            last_name='Customer',
+            is_verified=True,
+        )
+
+    def test_public_settings_are_readable_without_auth(self):
+        PlatformSettings.objects.create(
+            contact_email='contact@naatalfi.com',
+            phone_number='+221771234567',
+            instagram_url='https://instagram.com/naatalfi',
+        )
+
+        response = self.client.get(reverse('platform-public-settings'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['contact_email'], 'contact@naatalfi.com')
+        self.assertEqual(response.data['instagram_url'], 'https://instagram.com/naatalfi')
+
+    def test_only_admin_can_update_platform_settings(self):
+        self.client.force_authenticate(self.customer)
+        denied = self.client.patch(reverse('platform-admin-settings'), {
+            'contact_email': 'client@example.com',
+        }, format='json')
+        self.assertEqual(denied.status_code, 403)
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.patch(reverse('platform-admin-settings'), {
+            'contact_email': 'support@naatalfi.com',
+            'phone_number': '+221770000000',
+            'facebook_url': 'https://facebook.com/naatalfi',
+            'instagram_url': 'https://instagram.com/naatalfi',
+            'tiktok_url': 'https://www.tiktok.com/@naatalfi',
+            'linkedin_url': 'https://linkedin.com/company/naatalfi',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['contact_email'], 'support@naatalfi.com')
+        self.assertEqual(PlatformSettings.objects.count(), 1)
+

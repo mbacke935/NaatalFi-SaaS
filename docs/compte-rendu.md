@@ -1,7 +1,7 @@
 # Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 12 juin 2026
-**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 59 tests backend OK. Pret pour deploiement production.
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 61 tests backend OK. Pret pour deploiement production.
 
 ---
 
@@ -25,6 +25,7 @@ NaatalFi est une marketplace multi-vendeurs senegalaise. Le socle technique est 
 ### Fonctionnalites actives au lancement
 
 Auth, catalogue, recherche, panier, commandes multi-vendeurs, paiement PayTech, historique/suivi commandes, gestion boutique/produits/stock/commandes/livraison/wallet vendeur, admin KYC/vendeurs/produits/commandes/wallets/retraits/categories/analytics.
+Le footer public est configurable par l'admin : email, telephone, Facebook, Instagram, TikTok et LinkedIn.
 
 ### Fonctionnalites differees (code conserve en commentaire)
 
@@ -75,6 +76,7 @@ Auth, catalogue, recherche, panier, commandes multi-vendeurs, paiement PayTech, 
 | `ads` | Complet (defere MVP) | Campagnes sponsorisees, debit wallet, injection marketplace, expiration Celery |
 | `disputes` | Complet (defere MVP) | Ouverture litige, gel wallet, resolution admin remboursement/liberation |
 | `analytics` | Complet | GMV, commissions, top vendeurs/produits, serie quotidienne, endpoints admin + vendeur |
+| `platform` | Complet | Informations publiques de plateforme, API publique footer, edition admin |
 
 ### Commission — flux complet
 
@@ -111,7 +113,7 @@ Visible dans /admin/analytics → card "Commissions"
 | Dashboard vendeur | /dashboard, /dashboard/products, /dashboard/orders, /dashboard/wallet, /dashboard/shop, /dashboard/delivery, /dashboard/notifications, /dashboard/profile | Complet |
 | Dashboard vendeur (simplifie) | /dashboard/analytics | Revenus + Commandes + graphe uniquement |
 | Dashboard vendeur (differe) | /dashboard/ads, /dashboard/disputes | ComingSoon / page contact |
-| Admin | /admin, /admin/vendors, /admin/users, /admin/products, /admin/orders, /admin/payments, /admin/wallets, /admin/categories, /admin/reviews, /admin/ads, /admin/disputes, /admin/analytics | Complet |
+| Admin | /admin, /admin/vendors, /admin/users, /admin/products, /admin/orders, /admin/payments, /admin/wallets, /admin/categories, /admin/reviews, /admin/ads, /admin/disputes, /admin/analytics, /admin/platform | Complet |
 
 ### Composant ComingSoon
 
@@ -128,7 +130,7 @@ Visible dans /admin/analytics → card "Commissions"
 
 ## Tests Backend
 
-59 tests, tous verts.
+61 tests, tous verts.
 
 ```powershell
 cd C:\NaatalFi-SaaS\backend
@@ -152,6 +154,7 @@ Couverture :
 - `ads` : creation campagne, debit wallet, solde insuffisant, sponsorises
 - `disputes` : ouverture, gel wallet, resolution refund/no-refund
 - `analytics` : overview admin, top vendeurs, analytics vendeur
+- `platform` : lecture publique footer, modification admin des informations publiques
 
 ---
 

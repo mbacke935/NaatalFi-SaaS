@@ -16,6 +16,7 @@ import {
   FiZap,
   FiHome,
   FiStar,
+  FiGlobe,
 } from 'react-icons/fi'
 import useAuthStore from '../store/authStore'
 
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { to: '/admin/categories', label: 'Catégories',       icon: FiTag },
   { to: '/admin/reviews',    label: 'Avis',             icon: FiStar },
   { to: '/admin/analytics',  label: 'Analytics',        icon: FiBarChart2 },
+  { to: '/admin/platform',   label: 'Plateforme',       icon: FiGlobe },
   { to: '/admin/disputes',   label: 'Litiges',          icon: FiMessageSquare },
   { to: '/admin/ads',        label: 'Publicités',       icon: FiZap },
 ]

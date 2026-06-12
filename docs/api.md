@@ -784,6 +784,31 @@ Query params : `?period=7d|30d|90d`
 }
 ```
 
+---
+
+## 17. Plateforme â€” `/platform`
+
+### `GET /platform/public/`
+Informations publiques affichees dans le footer. **Public.**
+
+**Reponse 200**
+```json
+{
+  "contact_email": "contact@naatalfi.com",
+  "phone_number": "+221771234567",
+  "facebook_url": "https://facebook.com/naatalfi",
+  "instagram_url": "https://instagram.com/naatalfi",
+  "tiktok_url": "https://www.tiktok.com/@naatalfi",
+  "linkedin_url": "https://linkedin.com/company/naatalfi"
+}
+```
+
+### `GET /platform/admin/`
+Lire les informations publiques. **Admin.**
+
+### `PATCH /platform/admin/`
+Modifier les informations publiques. **Admin.**
+
 ### `GET /analytics/admin/vendors/`
 Top vendeurs. **Admin.**
 Query params : `?period=7d|30d|90d`
