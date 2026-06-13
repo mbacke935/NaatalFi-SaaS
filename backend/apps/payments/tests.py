@@ -1,7 +1,9 @@
 import hashlib
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.test import override_settings
+from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from apps.orders.models import Order
@@ -48,6 +50,63 @@ class AdminPaymentApiTests(APITestCase):
         self.assertEqual(response.data[0]['reference'], self.payment.reference)
         self.assertEqual(response.data[0]['buyer_email'], self.buyer.email)
         self.assertTrue(response.data[0]['has_webhook'])
+
+
+class GuestPaymentApiTests(APITestCase):
+    def setUp(self):
+        self.order = Order.objects.create(
+            buyer=None,
+            guest_name='Client Invite',
+            guest_email='guest-payment@example.com',
+            guest_phone='+221770000001',
+            status=Order.Status.PENDING,
+            total=Decimal('7500.00'),
+            delivery_address='Dakar',
+        )
+
+    def test_guest_payment_initiation_requires_order_token(self):
+        response = self.client.post(reverse('payment-initiate'), {
+            'order_id': self.order.id,
+            'provider': Payment.Provider.PAYTECH,
+        }, format='json')
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_guest_can_initiate_payment_with_order_token(self):
+        def fake_paytech(payment, request):
+            payment.payment_url = 'https://paytech.sn/pay/test'
+            payment.save(update_fields=['payment_url', 'updated_at'])
+            return payment
+
+        with patch('apps.payments.views.request_paytech_payment', side_effect=fake_paytech):
+            response = self.client.post(reverse('payment-initiate'), {
+                'order_id': self.order.id,
+                'provider': Payment.Provider.PAYTECH,
+                'access_token': str(self.order.guest_access_token),
+            }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['payment_url'], 'https://paytech.sn/pay/test')
+        payment = Payment.objects.get(reference=response.data['reference'])
+        self.assertIsNone(payment.buyer)
+
+    def test_guest_payment_status_requires_order_token(self):
+        payment = Payment.objects.create(
+            order=self.order,
+            buyer=None,
+            amount=self.order.total,
+            provider=Payment.Provider.PAYTECH,
+        )
+
+        blocked = self.client.get(reverse('payment-status', args=[payment.reference]))
+        self.assertEqual(blocked.status_code, 403)
+
+        allowed = self.client.get(
+            reverse('payment-status', args=[payment.reference]),
+            {'token': str(self.order.guest_access_token)},
+        )
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(allowed.data['reference'], str(payment.reference))
 
 
 @override_settings(

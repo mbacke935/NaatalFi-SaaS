@@ -24,7 +24,7 @@ class IsAdmin(IsAuthenticated):
 
 
 class InitiatePaymentView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     @transaction.atomic
     def post(self, request):
@@ -32,15 +32,22 @@ class InitiatePaymentView(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            order = Order.objects.select_for_update().get(
-                pk=serializer.validated_data['order_id'],
-                buyer=request.user,
-            )
+            order = Order.objects.select_for_update().get(pk=serializer.validated_data['order_id'])
         except Order.DoesNotExist:
             return Response({'error': 'Commande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
+        if order.buyer_id:
+            if not request.user.is_authenticated or (
+                order.buyer_id != request.user.id and request.user.role != 'ADMIN'
+            ):
+                return Response({'error': 'Acces refuse.'}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            token = serializer.validated_data.get('access_token', '')
+            if not token or str(order.guest_access_token) != token:
+                return Response({'error': 'Acces refuse.'}, status=status.HTTP_403_FORBIDDEN)
+
         if order.status == Order.Status.CANCELLED:
-            return Response({'error': 'Impossible de payer une commande annulée.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Impossible de payer une commande annulee.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if order.status == Order.Status.PAID:
             payment = order.payments.filter(status=Payment.Status.PAID).first()
@@ -51,14 +58,14 @@ class InitiatePaymentView(APIView):
         if not payment:
             payment = Payment.objects.create(
                 order=order,
-                buyer=request.user,
+                buyer=order.buyer,
                 provider=provider,
                 amount=order.total,
             )
 
         if provider != Payment.Provider.PAYTECH:
             return Response(
-                {'error': 'Ce fournisseur de paiement sera activé dans une phase ultérieure.'},
+                {'error': 'Ce fournisseur de paiement sera active dans une phase ulterieure.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -71,16 +78,23 @@ class InitiatePaymentView(APIView):
 
 
 class PaymentStatusView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, reference):
         try:
-            payment = Payment.objects.select_related('order').get(reference=reference)
+            payment = Payment.objects.select_related('order', 'buyer').get(reference=reference)
         except Payment.DoesNotExist:
             return Response({'error': 'Paiement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if payment.buyer_id != request.user.id and request.user.role != 'ADMIN':
-            return Response({'error': 'Accès refusé.'}, status=status.HTTP_403_FORBIDDEN)
+        if payment.buyer_id:
+            if not request.user.is_authenticated or (
+                payment.buyer_id != request.user.id and request.user.role != 'ADMIN'
+            ):
+                return Response({'error': 'Acces refuse.'}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            token = request.query_params.get('token', '')
+            if not token or str(payment.order.guest_access_token) != token:
+                return Response({'error': 'Acces refuse.'}, status=status.HTTP_403_FORBIDDEN)
 
         return Response(PaymentSerializer(payment).data)
 
@@ -113,7 +127,7 @@ class PayTechWebhookView(APIView):
             or payload.get('custom_field')
         )
         if not reference:
-            return Response({'error': 'Référence manquante.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Reference manquante.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             payment = Payment.objects.select_for_update().select_related('order').get(reference=reference)

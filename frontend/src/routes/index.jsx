@@ -41,6 +41,7 @@ const RegisterPage        = lazy(() => import('../pages/auth/register/RegisterPa
 const ForgotPasswordPage  = lazy(() => import('../pages/auth/forgotpassword/ForgotPasswordPage'))
 const ResetPasswordPage   = lazy(() => import('../pages/auth/resetpassword/ResetPasswordPage'))
 const VerifyEmailPage     = lazy(() => import('../pages/auth/verifyemail/VerifyEmailPage'))
+const GuestOrderDetailPage = lazy(() => import('../pages/orders/GuestOrderDetailPage'))
 
 // ── Dashboard vendeur ──────────────────────────────────────────────
 const DashboardPage       = lazy(() => import('../pages/dashboard/DashboardPage'))
@@ -104,14 +105,14 @@ function AppRoutes() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/vendors/:slug" element={<VendorProfilePage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/cgu" element={<TermsPage />} />
             <Route path="/confidentialite" element={<PrivacyPage />} />
           </Route>
 
-          {/* ── Checkout + commandes acheteur (auth requise) ─────────── */}
+          {/* ── Redirections commandes acheteur (auth requise) ───────── */}
           <Route element={<PrivateRoute />}>
             <Route element={<PublicLayout />}>
-              <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/orders" element={<Navigate to="/account/orders" replace />} />
               <Route path="/orders/:id" element={<LegacyOrderRedirect />} />
             </Route>
@@ -139,6 +140,10 @@ function AppRoutes() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
             <Route path="/verify-email/:uid/:token" element={<VerifyEmailPage />} />
+          </Route>
+
+          <Route element={<PublicLayout />}>
+            <Route path="/guest/orders/:id" element={<GuestOrderDetailPage />} />
           </Route>
 
           {/* ── Vendeur (rôle VENDOR requis) ────────────────────────── */}

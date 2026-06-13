@@ -1,7 +1,7 @@
 import api from './api'
 
-export const initiatePayment = (orderId, provider = 'PAYTECH') =>
-  api.post('/payments/initiate/', { order_id: orderId, provider })
+export const initiatePayment = (orderId, provider = 'PAYTECH', accessToken = '') =>
+  api.post('/payments/initiate/', { order_id: orderId, provider, access_token: accessToken })
 
-export const getPaymentStatus = (reference) =>
-  api.get(`/payments/${reference}/`)
+export const getPaymentStatus = (reference, token = '') =>
+  api.get(`/payments/${reference}/`, { params: token ? { token } : {} })

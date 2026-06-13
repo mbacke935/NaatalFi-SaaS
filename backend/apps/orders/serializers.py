@@ -37,7 +37,8 @@ class VendorOrderWithBuyerSerializer(serializers.ModelSerializer):
     vendor_name  = serializers.CharField(source='vendor.name', read_only=True)
     vendor_slug  = serializers.CharField(source='vendor.slug', read_only=True)
     buyer_name   = serializers.SerializerMethodField()
-    buyer_email  = serializers.EmailField(source='order.buyer.email', read_only=True)
+    buyer_email  = serializers.SerializerMethodField()
+    buyer_phone  = serializers.CharField(source='order.guest_phone', read_only=True)
     delivery_address = serializers.CharField(source='order.delivery_address', read_only=True)
     notes        = serializers.CharField(source='order.notes', read_only=True)
     total        = serializers.SerializerMethodField()
@@ -47,13 +48,18 @@ class VendorOrderWithBuyerSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'vendor_name', 'vendor_slug',
             'status', 'subtotal', 'shipping_cost', 'total',
-            'buyer_name', 'buyer_email',
+            'buyer_name', 'buyer_email', 'buyer_phone',
             'delivery_address', 'notes',
             'items', 'created_at', 'updated_at',
         ]
 
     def get_buyer_name(self, obj):
-        return obj.order.buyer.get_full_name() or obj.order.buyer.email
+        if obj.order.buyer_id:
+            return obj.order.buyer.get_full_name() or obj.order.buyer.email
+        return obj.order.guest_name
+
+    def get_buyer_email(self, obj):
+        return obj.order.buyer.email if obj.order.buyer_id else obj.order.guest_email
 
     def get_total(self, obj):
         return obj.subtotal + obj.shipping_cost
@@ -62,7 +68,8 @@ class VendorOrderWithBuyerSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     vendor_orders = VendorOrderSerializer(many=True, read_only=True)
     buyer_name    = serializers.SerializerMethodField()
-    buyer_email   = serializers.EmailField(source='buyer.email', read_only=True)
+    buyer_email   = serializers.SerializerMethodField()
+    buyer_phone   = serializers.CharField(source='guest_phone', read_only=True)
     cover_image   = serializers.SerializerMethodField()
     item_count    = serializers.SerializerMethodField()
 
@@ -70,13 +77,18 @@ class OrderSerializer(serializers.ModelSerializer):
         model  = Order
         fields = [
             'id', 'status', 'total', 'delivery_address', 'notes',
-            'buyer_name', 'buyer_email',
+            'buyer_name', 'buyer_email', 'buyer_phone', 'guest_access_token',
             'vendor_orders', 'cover_image', 'item_count',
             'created_at', 'updated_at',
         ]
 
     def get_buyer_name(self, obj):
-        return obj.buyer.get_full_name() or obj.buyer.email
+        if obj.buyer_id:
+            return obj.buyer.get_full_name() or obj.buyer.email
+        return obj.guest_name
+
+    def get_buyer_email(self, obj):
+        return obj.buyer.email if obj.buyer_id else obj.guest_email
 
     def get_cover_image(self, obj):
         for vo in obj.vendor_orders.all():
@@ -102,6 +114,9 @@ class CartItemSerializer(serializers.Serializer):
 
 
 class CreateOrderSerializer(serializers.Serializer):
+    guest_name       = serializers.CharField(required=False, allow_blank=True, default='')
+    guest_email      = serializers.EmailField(required=False, allow_blank=True, default='')
+    guest_phone      = serializers.CharField(required=False, allow_blank=True, default='')
     delivery_address = serializers.CharField(min_length=5)
     region           = serializers.CharField(required=False, allow_blank=True, default='')
     notes            = serializers.CharField(required=False, allow_blank=True, default='')

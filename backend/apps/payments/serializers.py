@@ -5,6 +5,7 @@ from .models import Payment
 
 class InitiatePaymentSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()
+    access_token = serializers.CharField(required=False, allow_blank=True, default='')
     provider = serializers.ChoiceField(
         choices=Payment.Provider.choices,
         default=Payment.Provider.PAYTECH,
@@ -29,7 +30,7 @@ class PaymentInitiatedSerializer(PaymentSerializer):
 
 
 class AdminPaymentSerializer(PaymentSerializer):
-    buyer_email = serializers.EmailField(source='buyer.email', read_only=True)
+    buyer_email = serializers.SerializerMethodField()
     has_webhook = serializers.SerializerMethodField()
 
     class Meta(PaymentSerializer.Meta):
@@ -39,3 +40,6 @@ class AdminPaymentSerializer(PaymentSerializer):
 
     def get_has_webhook(self, obj):
         return bool(obj.raw_webhook)
+
+    def get_buyer_email(self, obj):
+        return obj.buyer.email if obj.buyer_id else obj.order.guest_email

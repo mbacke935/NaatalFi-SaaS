@@ -19,7 +19,13 @@ class Payment(models.Model):
         EXPIRED = 'EXPIRED', 'Expiré'
 
     order = models.ForeignKey('orders.Order', on_delete=models.PROTECT, related_name='payments')
-    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='payments')
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='payments',
+        null=True,
+        blank=True,
+    )
     provider = models.CharField(max_length=20, choices=Provider.choices, default=Provider.PAYTECH)
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     currency = models.CharField(max_length=3, default='XOF')

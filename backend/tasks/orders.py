@@ -16,8 +16,16 @@ def send_order_confirmation_email(order_id):
         .prefetch_related('vendor_orders__items', 'vendor_orders__vendor')
         .get(pk=order_id)
     )
-    buyer_name = order.buyer.get_full_name() or order.buyer.email
-    order_url = f"{settings.FRONTEND_URL}/account/orders/{order.id}"
+    if order.buyer_id:
+        buyer_name = order.buyer.get_full_name() or order.buyer.email
+        buyer_email = order.buyer.email
+    else:
+        buyer_name = order.guest_name
+        buyer_email = order.guest_email
+    if order.buyer_id:
+        order_url = f"{settings.FRONTEND_URL}/account/orders/{order.id}"
+    else:
+        order_url = f"{settings.FRONTEND_URL}/guest/orders/{order.id}?token={order.guest_access_token}"
 
     lines = [
         f"Bonjour {buyer_name},",
@@ -43,15 +51,16 @@ def send_order_confirmation_email(order_id):
         subject=f"Confirmation de commande #{order.id} - NaatalFi",
         message="\n".join(lines),
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient=order.buyer.email,
+        recipient=buyer_email,
     )
-    create_notification(
-        user=order.buyer,
-        type=Notification.Type.ORDER,
-        title=f"Commande #{order.id} creee",
-        message=f"Votre commande de {order.total} FCFA a bien ete enregistree.",
-        link_url=f"/account/orders/{order.id}",
-    )
+    if order.buyer_id:
+        create_notification(
+            user=order.buyer,
+            type=Notification.Type.ORDER,
+            title=f"Commande #{order.id} creee",
+            message=f"Votre commande de {order.total} FCFA a bien ete enregistree.",
+            link_url=f"/account/orders/{order.id}",
+        )
 
 
 @shared_task

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiCheck, FiMapPin, FiTruck } from 'react-icons/fi'
 import { createOrder } from '../../services/orders'
@@ -14,25 +14,24 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
 
 function CheckoutPage() {
   useMeta({ title: 'Finaliser la commande' })
-  const location = useLocation()
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const items           = useCartStore((s) => s.items)
-  const clearCart       = useCartStore((s) => s.clearCart)
-  const totalPrice      = useCartStore((s) => s.totalPrice)
-  const byVendor        = useCartStore((s) => s.byVendor)
+  const items = useCartStore((s) => s.items)
+  const clearCart = useCartStore((s) => s.clearCart)
+  const totalPrice = useCartStore((s) => s.totalPrice)
+  const byVendor = useCartStore((s) => s.byVendor)
 
-  const [address,   setAddress]   = useState('')
-  const [region,    setRegion]    = useState('')
-  const [notes,     setNotes]     = useState('')
-  const [loading,   setLoading]   = useState(false)
+  const [address, setAddress] = useState('')
+  const [region, setRegion] = useState('')
+  const [notes, setNotes] = useState('')
+  const [guest, setGuest] = useState({ name: '', email: '', phone: '' })
+  const [loading, setLoading] = useState(false)
   const [savedAddresses, setSavedAddresses] = useState([])
   const [shippingEstimate, setShippingEstimate] = useState({})
   const [estimating, setEstimating] = useState(false)
 
   const groups = byVendor()
   const cartTotal = totalPrice()
-
   const shippingTotal = Object.values(shippingEstimate).reduce(
     (acc, s) => acc + parseFloat(s.price ?? 0),
     0
@@ -40,8 +39,14 @@ function CheckoutPage() {
   const grandTotal = cartTotal + shippingTotal
 
   useEffect(() => {
-    getAddresses().then(({ data }) => setSavedAddresses(Array.isArray(data) ? data : (data?.results ?? []))).catch(() => {})
-  }, [])
+    if (!isAuthenticated) {
+      setSavedAddresses([])
+      return
+    }
+    getAddresses()
+      .then(({ data }) => setSavedAddresses(Array.isArray(data) ? data : (data?.results ?? [])))
+      .catch(() => setSavedAddresses([]))
+  }, [isAuthenticated])
 
   const applyAddress = (addr) => {
     const parts = [addr.street, addr.city].filter(Boolean)
@@ -74,22 +79,6 @@ function CheckoutPage() {
     else setShippingEstimate({})
   }, [region, fetchEstimate])
 
-  if (!isAuthenticated) {
-    return (
-      <div className="max-w-xl mx-auto px-4 sm:px-6 py-20 text-center">
-        <h1 className="text-xl font-bold text-white mb-3">Connexion requise</h1>
-        <p className="text-gray-400 text-sm mb-6">Vous devez etre connecté pour passer une commande.</p>
-        <Link
-          to="/login"
-          state={{ from: location }}
-          className="bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold px-6 py-3 rounded-xl transition inline-block"
-        >
-          Se connecter
-        </Link>
-      </div>
-    )
-  }
-
   if (items.length === 0) {
     return (
       <div className="max-w-xl mx-auto px-4 sm:px-6 py-20 text-center">
@@ -107,21 +96,28 @@ function CheckoutPage() {
       toast.error("L'adresse de livraison est requise.")
       return
     }
+    if (!isAuthenticated && (!guest.name.trim() || !guest.email.trim() || !guest.phone.trim())) {
+      toast.error('Nom, email et telephone sont requis.')
+      return
+    }
 
     setLoading(true)
     try {
       const payload = {
         delivery_address: address.trim(),
-        region:           region || '',
-        notes:            notes.trim(),
-        items:            items.map((item) => ({
+        region: region || '',
+        notes: notes.trim(),
+        guest_name: isAuthenticated ? '' : guest.name.trim(),
+        guest_email: isAuthenticated ? '' : guest.email.trim(),
+        guest_phone: isAuthenticated ? '' : guest.phone.trim(),
+        items: items.map((item) => ({
           product_id: item.product_id,
           variant_id: item.variant_id ?? null,
-          quantity:   item.quantity,
+          quantity: item.quantity,
         })),
       }
-      const { data: order }   = await createOrder(payload)
-      const { data: payment } = await initiatePayment(order.id)
+      const { data: order } = await createOrder(payload)
+      const { data: payment } = await initiatePayment(order.id, 'PAYTECH', order.guest_access_token || '')
       clearCart()
       toast.success('Redirection vers le paiement...')
       window.location.assign(payment.payment_url)
@@ -143,14 +139,47 @@ function CheckoutPage() {
 
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
         <form onSubmit={handleSubmit} className="flex-1 space-y-5">
-          {/* Adresse */}
+          {!isAuthenticated && (
+            <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
+              <h2 className="text-white font-semibold mb-4">Informations client</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  value={guest.name}
+                  onChange={(e) => setGuest((g) => ({ ...g, name: e.target.value }))}
+                  required
+                  placeholder="Nom complet"
+                  className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition text-sm"
+                />
+                <input
+                  type="tel"
+                  value={guest.phone}
+                  onChange={(e) => setGuest((g) => ({ ...g, phone: e.target.value }))}
+                  required
+                  placeholder="+221 77 000 00 00"
+                  className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition text-sm"
+                />
+                <input
+                  type="email"
+                  value={guest.email}
+                  onChange={(e) => setGuest((g) => ({ ...g, email: e.target.value }))}
+                  required
+                  placeholder="email@example.com"
+                  className="w-full sm:col-span-2 bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition text-sm"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Vous recevrez les confirmations de commande et de paiement par email.
+              </p>
+            </div>
+          )}
+
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
             <h2 className="text-white font-semibold mb-4">Adresse de livraison</h2>
 
             {savedAddresses.length > 0 && (
               <div className="mb-4">
                 <p className="text-xs text-gray-500 mb-2 flex items-center gap-1.5">
-                  <FiMapPin size={11} /> Adresses sauvegardées
+                  <FiMapPin size={11} /> Adresses sauvegardees
                 </p>
                 <div className="flex flex-col gap-2">
                   {savedAddresses.slice(0, 3).map((addr) => (
@@ -161,8 +190,10 @@ function CheckoutPage() {
                       className="text-left px-3 py-2.5 rounded-lg border border-[#2a2a3a] hover:border-[#D4AF37]/60 text-sm text-gray-300 hover:text-white transition bg-[#0B0B0F]"
                     >
                       <span className="font-medium">{addr.label}</span>
-                      {addr.is_default && <span className="ml-2 text-xs text-[#D4AF37]">Par défaut</span>}
-                      <span className="block text-xs text-gray-500 mt-0.5 line-clamp-1">{addr.street}, {addr.city}{addr.region ? ` — ${addr.region}` : ''}</span>
+                      {addr.is_default && <span className="ml-2 text-xs text-[#D4AF37]">Par defaut</span>}
+                      <span className="block text-xs text-gray-500 mt-0.5 line-clamp-1">
+                        {addr.street}, {addr.city}{addr.region ? ` - ${addr.region}` : ''}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -176,7 +207,7 @@ function CheckoutPage() {
                 onChange={(e) => setRegion(e.target.value)}
                 className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37] transition"
               >
-                <option value="">Sélectionnez votre région</option>
+                <option value="">Selectionnez votre region</option>
                 {SENEGAL_REGIONS.map((r) => (
                   <option key={r} value={r}>{r}</option>
                 ))}
@@ -186,20 +217,19 @@ function CheckoutPage() {
                 onChange={(e) => setAddress(e.target.value)}
                 required
                 rows={3}
-                placeholder="Quartier, rue, numéro - Ville, Sénégal"
+                placeholder="Quartier, rue, numero - Ville, Senegal"
                 className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition resize-none text-sm"
               />
             </div>
           </div>
 
-          {/* Instructions */}
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
             <h2 className="text-white font-semibold mb-4">Instructions (optionnel)</h2>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="Instructions particulières pour la livraison..."
+              placeholder="Instructions particulieres pour la livraison..."
               className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition resize-none text-sm"
             />
           </div>
@@ -207,7 +237,7 @@ function CheckoutPage() {
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4 text-sm text-gray-400">
             <p className="flex items-start gap-2">
               <FiCheck size={14} className="text-green-400 mt-0.5 flex-shrink-0" />
-              Paiement sécurisé via PayTech après confirmation de la commande.
+              Paiement securise via PayTech apres confirmation de la commande.
             </p>
           </div>
 
@@ -216,17 +246,13 @@ function CheckoutPage() {
             disabled={loading}
             className="w-full bg-[#D4AF37] hover:bg-[#c49e30] text-black font-bold py-3.5 rounded-xl transition disabled:opacity-50 text-sm"
           >
-            {loading
-              ? 'Préparation du paiement...'
-              : `Payer avec PayTech — ${fmt(grandTotal)}`
-            }
+            {loading ? 'Preparation du paiement...' : `Payer avec PayTech - ${fmt(grandTotal)}`}
           </button>
         </form>
 
-        {/* Récapitulatif */}
         <div className="w-full lg:w-72 flex-shrink-0">
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5 sticky top-24">
-            <h2 className="text-white font-bold mb-4">Récapitulatif</h2>
+            <h2 className="text-white font-bold mb-4">Recapitulatif</h2>
             <div className="space-y-4 mb-4">
               {groups.map((group) => {
                 const shipping = shippingEstimate[group.vendor_id]
@@ -252,17 +278,16 @@ function CheckoutPage() {
                         </p>
                       </div>
                     ))}
-                    {/* Shipping per vendor */}
                     <div className="flex items-center justify-between mt-1 text-xs">
                       <span className="flex items-center gap-1 text-gray-500">
                         <FiTruck size={11} /> Livraison
                       </span>
                       <span className={estimating ? 'text-gray-600 animate-pulse' : 'text-gray-400'}>
                         {estimating
-                          ? '…'
+                          ? '...'
                           : region && shipping
                             ? parseFloat(shipping.price) === 0 ? 'Gratuit' : fmt(shipping.price)
-                            : region ? 'Non disponible' : '—'
+                            : region ? 'Non disponible' : '-'
                         }
                       </span>
                     </div>
@@ -283,7 +308,7 @@ function CheckoutPage() {
               </div>
               <div className="flex justify-between text-sm text-gray-400">
                 <span>Livraison</span>
-                <span>{region ? (shippingTotal === 0 ? 'Gratuit' : fmt(shippingTotal)) : '—'}</span>
+                <span>{region ? (shippingTotal === 0 ? 'Gratuit' : fmt(shippingTotal)) : '-'}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-[#2a2a3a]">
                 <span className="text-white font-semibold text-sm">Total</span>

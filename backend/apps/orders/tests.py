@@ -132,6 +132,53 @@ class OrderPaymentWalletFlowTests(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.data['valid'])
 
+    def test_guest_can_create_order_and_read_it_with_token(self):
+        order_response = self.client.post(reverse('order-create'), {
+            'guest_name': 'Client Invite',
+            'guest_email': 'guest-checkout@example.com',
+            'guest_phone': '+221770000000',
+            'delivery_address': 'Ouakam, Dakar',
+            'region': 'Dakar',
+            'items': [{
+                'product_id': self.product.id,
+                'variant_id': self.variant.id,
+                'quantity': 1,
+            }],
+        }, format='json')
+
+        self.assertEqual(order_response.status_code, 201)
+        order = Order.objects.get(pk=order_response.data['id'])
+        self.assertIsNone(order.buyer)
+        self.assertEqual(order.guest_email, 'guest-checkout@example.com')
+        self.assertTrue(order_response.data['guest_access_token'])
+
+        detail_response = self.client.get(
+            reverse('guest-order-detail', args=[order.id]),
+            {'token': order_response.data['guest_access_token']},
+        )
+        self.assertEqual(detail_response.status_code, 200)
+        self.assertEqual(detail_response.data['buyer_email'], 'guest-checkout@example.com')
+
+        forbidden_response = self.client.get(
+            reverse('guest-order-detail', args=[order.id]),
+            {'token': 'bad-token'},
+        )
+        self.assertEqual(forbidden_response.status_code, 404)
+
+    def test_guest_order_requires_contact_information(self):
+        response = self.client.post(reverse('order-create'), {
+            'delivery_address': 'Ouakam, Dakar',
+            'region': 'Dakar',
+            'items': [{
+                'product_id': self.product.id,
+                'variant_id': self.variant.id,
+                'quantity': 1,
+            }],
+        }, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['missing'], ['guest_name', 'guest_email', 'guest_phone'])
+
 
 class OrderPermissionTests(APITestCase):
     def setUp(self):

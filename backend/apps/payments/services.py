@@ -16,6 +16,13 @@ def paytech_configured():
 def build_paytech_payload(payment, request):
     frontend = settings.FRONTEND_URL.rstrip('/')
     backend = settings.BACKEND_URL.rstrip('/')
+    if payment.order.buyer_id:
+        success_url = f"{frontend}/account/orders/{payment.order_id}?payment=success"
+    else:
+        success_url = (
+            f"{frontend}/guest/orders/{payment.order_id}"
+            f"?token={payment.order.guest_access_token}&payment=success"
+        )
     return {
         'item_name': f"Commande #{payment.order_id}",
         'item_price': int(payment.amount),
@@ -24,7 +31,7 @@ def build_paytech_payload(payment, request):
         'command_name': f"NaatalFi commande #{payment.order_id}",
         'env': settings.PAYTECH_ENV,
         'ipn_url': f"{backend}/api/v1/payments/webhook/",
-        'success_url': f"{frontend}/account/orders/{payment.order_id}?payment=success",
+        'success_url': success_url,
         'cancel_url': f"{frontend}/checkout?payment=cancelled",
     }
 

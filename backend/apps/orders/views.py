@@ -1,6 +1,7 @@
 from decimal import Decimal
 from collections import defaultdict
 
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import F
 from rest_framework.views import APIView
@@ -86,13 +87,27 @@ class CartValidateView(APIView):
 # ── Acheteur ──────────────────────────────────────────────────────────
 
 class CreateOrderView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     @transaction.atomic
     def post(self, request):
         ser = CreateOrderSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         data = ser.validated_data
+        user = request.user if request.user.is_authenticated else None
+        if not user:
+            missing = []
+            if not data.get('guest_name', '').strip():
+                missing.append('guest_name')
+            if not data.get('guest_email', '').strip():
+                missing.append('guest_email')
+            if not data.get('guest_phone', '').strip():
+                missing.append('guest_phone')
+            if missing:
+                return Response(
+                    {'error': 'Nom, email et telephone sont requis pour commander sans compte.', 'missing': missing},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # Résolution des produits + variantes
         resolved = []
@@ -139,7 +154,10 @@ class CreateOrderView(APIView):
 
         # Créer le Order parent (1 par checkout)
         order = Order.objects.create(
-            buyer            = request.user,
+            buyer            = user,
+            guest_name       = data.get('guest_name', '').strip() if not user else '',
+            guest_email      = data.get('guest_email', '').strip() if not user else '',
+            guest_phone      = data.get('guest_phone', '').strip() if not user else '',
             status           = Order.Status.PENDING,
             delivery_address = data['delivery_address'],
             notes            = data.get('notes', ''),
@@ -238,6 +256,22 @@ class BuyerOrderDetailView(APIView):
                 .get(pk=pk, buyer=request.user)
             )
         except Order.DoesNotExist:
+            return Response({'error': 'Commande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(OrderSerializer(order).data)
+
+
+class GuestOrderDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        token = request.query_params.get('token', '')
+        try:
+            order = (
+                Order.objects
+                .prefetch_related('vendor_orders__items__product', 'vendor_orders__items__variant', 'vendor_orders__vendor')
+                .get(pk=pk, buyer__isnull=True, guest_access_token=token)
+            )
+        except (Order.DoesNotExist, ValueError, ValidationError):
             return Response({'error': 'Commande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
         return Response(OrderSerializer(order).data)
 
@@ -344,13 +378,14 @@ class VendorOrderStatusView(APIView):
 
         vo.status = new_status
         vo.save(update_fields=['status', 'updated_at'])
-        create_notification(
-            user=vo.order.buyer,
-            type=Notification.Type.ORDER,
-            title=f"Commande vendeur #{vo.id} : {vo.status}",
-            message=f"Une partie de votre commande #{vo.order_id} est maintenant {vo.status}.",
-            link_url=f"/account/orders/{vo.order_id}",
-        )
+        if vo.order.buyer_id:
+            create_notification(
+                user=vo.order.buyer,
+                type=Notification.Type.ORDER,
+                title=f"Commande vendeur #{vo.id} : {vo.status}",
+                message=f"Une partie de votre commande #{vo.order_id} est maintenant {vo.status}.",
+                link_url=f"/account/orders/{vo.order_id}",
+            )
 
         return Response({'status': vo.status})
 
