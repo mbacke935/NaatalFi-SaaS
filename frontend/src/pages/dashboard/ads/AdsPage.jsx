@@ -1,21 +1,3 @@
-// PHASE_FUTURE_2: Publicités sponsorisées — décommenter le bloc ci-dessous et supprimer ce composant
-import ComingSoon from '../../../components/ui/ComingSoon'
-
-function AdsPage() {
-  return (
-    <ComingSoon
-      title="Publicités sponsorisées"
-      description="Mettez vos produits en avant auprès de milliers d'acheteurs. Disponible après les premières ventes."
-    />
-  )
-}
-
-export default AdsPage
-
-/* =====================================================================
-   CODE ORIGINAL AdsPage — PHASE FUTURE 2 (décommenter pour réactiver)
-   =====================================================================
-
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { FiPause, FiPlay, FiPlus, FiZap } from 'react-icons/fi'
@@ -125,9 +107,26 @@ function AdsPage() {
               <option key={product.id} value={product.id}>{product.name}</option>
             ))}
           </select>
-          <input type="number" min="1000" value={form.budget} onChange={(event) => setForm((current) => ({ ...current, budget: event.target.value }))} className="bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white" placeholder="Budget" />
-          <input type="date" value={form.start_date} onChange={(event) => setForm((current) => ({ ...current, start_date: event.target.value }))} className="bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white" />
-          <input type="date" value={form.end_date} onChange={(event) => setForm((current) => ({ ...current, end_date: event.target.value }))} className="bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white" />
+          <input
+            type="number"
+            min="1000"
+            value={form.budget}
+            onChange={(event) => setForm((current) => ({ ...current, budget: event.target.value }))}
+            className="bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white"
+            placeholder="Budget"
+          />
+          <input
+            type="date"
+            value={form.start_date}
+            onChange={(event) => setForm((current) => ({ ...current, start_date: event.target.value }))}
+            className="bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white"
+          />
+          <input
+            type="date"
+            value={form.end_date}
+            onChange={(event) => setForm((current) => ({ ...current, end_date: event.target.value }))}
+            className="bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white"
+          />
         </div>
         <button disabled={saving} className="mt-4 inline-flex items-center gap-2 bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-50">
           <FiZap size={15} />
@@ -146,7 +145,7 @@ function AdsPage() {
             <div>
               <p className="text-white font-medium">{campaign.product_name}</p>
               <p className="text-xs text-gray-500">
-                {campaign.status} · {Number(campaign.budget).toLocaleString('fr-SN')} FCFA · {campaign.impressions} impressions · {campaign.clicks} clics
+                {campaign.status} - {Number(campaign.budget).toLocaleString('fr-SN')} FCFA - {campaign.impressions} impressions - {campaign.clicks} clics
               </p>
             </div>
             <button
@@ -165,5 +164,3 @@ function AdsPage() {
 }
 
 export default AdsPage
-
-===================================================================== */

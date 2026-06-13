@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiShoppingBag, FiTrendingUp } from 'react-icons/fi'
-// PHASE_FUTURE_1: décommenter les icônes ci-dessous lors de la réactivation des cards
-// import { FiAlertCircle, FiBarChart2, FiBox } from 'react-icons/fi'
+import { FiAlertCircle, FiBarChart2, FiBox, FiShoppingBag, FiTrendingUp } from 'react-icons/fi'
 import { getVendorAnalytics } from '../../../services/analytics'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
@@ -33,11 +31,16 @@ function AnalyticsPage() {
     return <div className="h-64 bg-[#16161E] border border-[#2a2a3a] rounded-xl animate-pulse" />
   }
 
-  // MVP: Revenus + Commandes uniquement
-  // PHASE_FUTURE_1: ajouter Articles vendus, Panier moyen, Taux litiges (voir tableau complet commenté en bas)
   const cards = [
     { label: 'Revenus', value: fmt(analytics?.revenue), icon: FiTrendingUp },
     { label: 'Commandes', value: analytics?.orders_count ?? 0, icon: FiShoppingBag },
+    { label: 'Articles vendus', value: analytics?.items_sold ?? 0, icon: FiBox },
+    { label: 'Panier moyen', value: fmt(analytics?.average_basket), icon: FiBarChart2 },
+    {
+      label: 'Taux litiges',
+      value: `${Math.round(Number(analytics?.dispute_rate ?? 0) * 1000) / 10}%`,
+      icon: FiAlertCircle,
+    },
   ]
 
   return (
@@ -64,7 +67,7 @@ function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map((card) => {
           const Icon = card.icon
           return (
@@ -119,7 +122,6 @@ function AnalyticsPage() {
         </div>
       </div>
 
-      {/* PHASE_FUTURE_1: Top produits — décommenter le bloc ci-dessous
       <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5">
         <h2 className="font-semibold text-white mb-4">Top produits</h2>
         {(analytics?.top_products ?? []).length === 0 ? (
@@ -138,14 +140,6 @@ function AnalyticsPage() {
           </div>
         )}
       </div>
-      */}
-
-      {/* PHASE_FUTURE_1: Cards supplémentaires — ajouter au tableau cards[] ci-dessus
-          { label: 'Articles vendus', value: analytics?.items_sold ?? 0, icon: FiBox },
-          { label: 'Panier moyen', value: fmt(analytics?.average_basket), icon: FiBarChart2 },
-          { label: 'Taux litiges', value: `${Math.round(Number(analytics?.dispute_rate ?? 0) * 1000) / 10}%`, icon: FiAlertCircle },
-          Et changer la grille en : className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4"
-      */}
     </div>
   )
 }

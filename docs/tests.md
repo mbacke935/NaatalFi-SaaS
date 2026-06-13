@@ -152,6 +152,6 @@ Etat actuel : **build OK en ~430ms**, aucune erreur ni import manquant.
 
 Points valides par le build :
 - Toutes les pages lazy-loadees compileent sans erreur (dont CGU/Confidentialite).
-- Composant `ComingSoon` importe correctement par les pages differees.
-- Imports favoris comentes dans `ProductDetailPage` n'introduisent pas de references cassees.
-- `AnalyticsPage` vendeur compile avec les cards simplifiees.
+- Composant `ComingSoon` conserve et teste, meme s'il n'est plus utilise par les pages applicatives principales.
+- Favoris, avis, publicites, litiges et analytics vendeur avances compileent dans l'etat actif.
+- `AnalyticsPage` vendeur compile avec revenus, commandes, articles vendus, panier moyen, taux litiges et top produits.

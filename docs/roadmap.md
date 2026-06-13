@@ -663,7 +663,7 @@ Phase 20 â†’ DÃ©ploiement production
 
 ---
 
-## Etat d'avancement actuel - 12 juin 2026
+## Etat d'avancement actuel - 13 juin 2026
 
 ### Phases 0 a 18 : completement implementees
 
@@ -671,7 +671,7 @@ Toutes les phases techniques sont implementees : conception, auth, vendeurs/KYC,
 
 Note paiement au 13 juin 2026 : l'automatisation du paiement reel est volontairement en pause jusqu'a activation PayTech ou Wave API. Wave Business reste un fallback manuel temporaire ; il ne doit pas etre considere comme une validation automatique definitive.
 
-### Phase MVP (appliquee le 12 juin 2026)
+### Phase MVP
 
 **Monetisation simplifiee :**
 - Commission unique : **8% flat** sur chaque vente (`PLATFORM_COMMISSION_RATE = Decimal('8.00')` dans `apps/wallet/services.py`).
@@ -681,17 +681,17 @@ Note paiement au 13 juin 2026 : l'automatisation du paiement reel est volontaire
 - Plan vendeur ignore pour le calcul du taux.
 - Tous les modeles DB conserves (VendorPlan, AdCampaign, Review, Dispute, Notification).
 
-**Fonctionnalites differees (code conserve en commentaire dans les fichiers) :**
+**Fonctionnalites reactives ou completees :**
 
-| Feature | Phase Future | Fichier frontend |
-| :--- | :--- | :--- |
-| Favoris | 1 | `ProductDetailPage`, `AccountFavoritesPage` |
-| Avis client | 1 | `AccountReviewsPage` |
-| Analytics avancees (items vendus, panier moyen, taux litiges, top produits) | 1 | `AnalyticsPage` (dashboard vendeur) |
-| Publicites sponsorisees | 2 | `AdsPage` |
-| Litiges (workflow complet) | 3 | `DisputesPage` (remplace par page contact) |
+| Feature | Etat actuel |
+| :--- | :--- |
+| Favoris | Actif sur fiche produit et espace client |
+| Avis client | Actif sur fiche produit et page `AccountReviewsPage` |
+| Analytics vendeur avancees | Actif : revenus, commandes, articles vendus, panier moyen, taux litiges, top produits |
+| Publicites sponsorisees | Actif : creation, suivi, pause/reprise campagnes vendeur |
+| Litiges | Actif : ouverture client, suivi vendeur, arbitrage admin |
 
-Aucune page supprimee. Composant `src/components/ui/ComingSoon.jsx` cree pour les pages differees.
+Le composant `src/components/ui/ComingSoon.jsx` reste disponible dans le codebase, mais les pages applicatives principales ne sont plus en mode placeholder.
 
 ### Phase 10 - Wallet (mise a jour)
 
@@ -707,6 +707,6 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 
 Couverture : wallet, shipping, users, vendors, categories, products, marketplace, account, orders, payments, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : **71 tests OK**.
+Resultat historique complet : suite backend verte. Derniere verification ciblee du 13 juin 2026 : `apps.disputes`, `apps.analytics`, `apps.ads` = **9 tests OK** ; frontend = **21 tests OK** ; build Vite OK.
 
 Dont 16 tests wallet specifiques a la commission 8% (idempotence, multi-vendeur, vendeur sans plan, revenue admin comptable, coordonnees versement plateforme) et le flux complet webhook PayTech → credit wallet (20 000 FCFA → commission 1 600 → net vendeur 18 400).
