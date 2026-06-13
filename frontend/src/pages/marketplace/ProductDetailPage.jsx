@@ -14,7 +14,7 @@ function ProductDetailPage() {
   const [loading, setLoading]  = useState(true)
   const [notFound, setNotFound]= useState(false)
   const [activeImage, setActiveImage] = useState(0)
-  const [selectedVariants, setSelectedVariants] = useState({})
+  const [selectedVariantId, setSelectedVariantId] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [reviews, setReviews] = useState([])
   const addItem = useCartStore((s) => s.addItem)
@@ -32,12 +32,16 @@ function ProductDetailPage() {
   useEffect(() => {
     setLoading(true)
     setActiveImage(0)
-    setSelectedVariants({})
+    setSelectedVariantId(null)
     setQuantity(1)
     setIsFavorited(false)
     getMarketplaceProduct(slug)
       .then(({ data }) => {
         setProduct(data)
+        const defaultVariant = data.variants?.find((variant) => variant.stock > 0) ?? data.variants?.[0]
+        if (defaultVariant) {
+          setSelectedVariantId(defaultVariant.id)
+        }
         if (isAuthenticated) {
           getFavorites().then(({ data: favs }) => {
             const list = Array.isArray(favs) ? favs : (favs?.results ?? [])
@@ -76,25 +80,10 @@ function ProductDetailPage() {
     )
   }
 
-  const variantGroups = product.variants.reduce((acc, v) => {
-    if (!acc[v.name]) acc[v.name] = []
-    acc[v.name].push(v)
-    return acc
-  }, {})
-
-  const getVariantForType = (typeName) =>
-    product.variants.find((v) => v.name === typeName && v.value === selectedVariants[typeName])
-
-  const totalDelta = Object.keys(selectedVariants).reduce((sum, name) => {
-    const v = getVariantForType(name)
-    return sum + (v ? Number(v.price_delta) : 0)
-  }, 0)
+  const selectedVariant = product.variants.find((v) => v.id === selectedVariantId) ?? null
+  const totalDelta = selectedVariant ? Number(selectedVariant.price_delta) : 0
   const finalPrice = Number(product.price) + totalDelta
-  const selectedVariantObjects = Object.keys(selectedVariants).map(getVariantForType).filter(Boolean)
-
-  // Tous les types de variantes ont une sélection
-  const allTypesSelected = Object.keys(variantGroups).every((name) => selectedVariants[name])
-  const canAddToCart     = Object.keys(variantGroups).length === 0 || allTypesSelected
+  const canAddToCart = product.variants.length === 0 || Boolean(selectedVariant)
 
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) { toast.error('Connectez-vous pour gérer vos favoris.'); return }
@@ -117,10 +106,8 @@ function ProductDetailPage() {
   }
 
   const handleAddToCart = () => {
-    const primaryVariant = selectedVariantObjects[0] ?? null
-    const variantLabel   = selectedVariantObjects
-      .map((v) => `${v.name}: ${v.value}`)
-      .join(', ')
+    const primaryVariant = selectedVariant
+    const variantLabel = primaryVariant ? `${primaryVariant.name}: ${primaryVariant.value}` : ''
 
     addItem({
       product_id:   product.id,
@@ -207,35 +194,33 @@ function ProductDetailPage() {
           )}
 
           {/* Variantes */}
-          {Object.entries(variantGroups).map(([name, options]) => (
-            <div key={name} className="mb-4">
-              <p className="text-sm text-gray-400 mb-2 font-medium">{name}</p>
+          {product.variants.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-400 mb-2 font-medium">Option</p>
               <div className="flex flex-wrap gap-2">
-                {options.map((opt) => (
+                {product.variants.map((opt) => (
                   <button key={opt.id}
-                    onClick={() => setSelectedVariants((s) => ({ ...s, [name]: opt.value }))}
+                    onClick={() => setSelectedVariantId(opt.id)}
                     disabled={opt.stock === 0}
                     className={`px-3 py-1.5 rounded-lg text-sm border transition ${
-                      selectedVariants[name] === opt.value
+                      selectedVariantId === opt.id
                         ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-white'
                         : opt.stock === 0
                         ? 'border-[#2a2a3a] text-gray-600 cursor-not-allowed line-through'
                         : 'border-[#2a2a3a] text-gray-300 hover:border-gray-500'
                     }`}
                   >
-                    {opt.value}
-                    {opt.price_delta > 0 && <span className="text-gray-500 ml-1 text-xs">+{Number(opt.price_delta).toLocaleString('fr-SN')}</span>}
+                    {opt.name === opt.value ? opt.value : `${opt.name}: ${opt.value}`}
+                    {Number(opt.price_delta) > 0 && <span className="text-gray-500 ml-1 text-xs">+{Number(opt.price_delta).toLocaleString('fr-SN')}</span>}
                   </button>
                 ))}
               </div>
             </div>
-          ))}
+          )}
 
-          {selectedVariantObjects.length > 0 && (
-            <p className={`text-sm mb-4 ${selectedVariantObjects.some((v) => v.stock === 0) ? 'text-red-400' : 'text-green-400'}`}>
-              {selectedVariantObjects.some((v) => v.stock === 0)
-                ? 'Rupture de stock'
-                : `${Math.min(...selectedVariantObjects.map((v) => v.stock))} en stock`}
+          {selectedVariant && (
+            <p className={`text-sm mb-4 ${selectedVariant.stock === 0 ? 'text-red-400' : 'text-green-400'}`}>
+              {selectedVariant.stock === 0 ? 'Rupture de stock' : `${selectedVariant.stock} en stock`}
             </p>
           )}
 
