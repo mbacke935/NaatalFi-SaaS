@@ -63,7 +63,7 @@ function ProductCard({ product }) {
       to={`/marketplace/${product.slug}`}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-lg overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden relative">
+      <div className="product-image-frame aspect-[4/3] relative">
         {images.length > 0 ? (
           <img
             src={images[imageIndex]}

@@ -10,7 +10,7 @@ function ProductResultCard({ product }) {
       to={`/marketplace/${product.slug}`}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
+      <div className="product-image-frame aspect-[4/3]">
         {product.cover_image ? (
           <img src={product.cover_image} alt={product.name} className="product-image-contain p-2" />
         ) : (

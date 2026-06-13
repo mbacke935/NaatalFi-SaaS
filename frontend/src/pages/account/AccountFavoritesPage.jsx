@@ -68,7 +68,7 @@ function AccountFavoritesPage() {
                 </button>
 
                 <Link to={`/marketplace/${product.slug}`}>
-                  <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
+                  <div className="product-image-frame aspect-[4/3]">
                     {cover
                       ? <img src={cover} alt={product.name} className="product-image-contain p-2" />
                       : <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl">📦</div>
