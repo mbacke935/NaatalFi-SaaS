@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiTrash2, FiMinus, FiPlus, FiShoppingCart, FiArrowRight, FiAlertCircle } from 'react-icons/fi'
 import useCartStore, { normalizeCartItems } from '../../store/cartStore'
 import { validateCart } from '../../services/orders'
+import { getMarketplaceProduct } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
 
 function CartPage() {
@@ -13,6 +14,7 @@ function CartPage() {
   const items          = useCartStore((s) => s.items)
   const removeItem     = useCartStore((s) => s.removeItem)
   const updateQuantity = useCartStore((s) => s.updateQuantity)
+  const setItem         = useCartStore((s) => s.setItem)
   const totalPrice     = useCartStore((s) => s.totalPrice)
   const byVendor       = useCartStore((s) => s.byVendor)
   const countItems     = useCartStore((s) => s.countItems)
@@ -20,9 +22,42 @@ function CartPage() {
   const total  = totalPrice()
   const count  = countItems()
   const groups = byVendor()
+  const normalizedItems = useMemo(() => normalizeCartItems(items), [items])
+  const refreshSignature = normalizedItems
+    .map((i) => `${i.product_slug}:${i.variant_id ?? 'x'}:${i.quantity}`)
+    .join('|')
+  const lastRefreshRef = useRef('')
 
   const [validating,   setValidating]   = useState(false)
   const [stockErrors,  setStockErrors]  = useState([])
+
+  useEffect(() => {
+    if (!normalizedItems.length || refreshSignature === lastRefreshRef.current) return
+    lastRefreshRef.current = refreshSignature
+
+    normalizedItems.forEach((item) => {
+      if (!item.product_slug) return
+      getMarketplaceProduct(item.product_slug)
+        .then(({ data }) => {
+          const variant = data.variants?.find((v) => v.id === item.variant_id)
+          const unitPrice = Number(data.price) + Number(variant?.price_delta ?? 0)
+          if (Number(item.unit_price) !== unitPrice) {
+            setItem({
+              ...item,
+              product_name: data.name,
+              vendor_id: data.vendor,
+              vendor_name: data.vendor_name,
+              vendor_slug: data.vendor_slug,
+              cover_image: data.images?.[0]?.image_url ?? item.cover_image ?? null,
+              variant_label: variant ? `${variant.name}: ${variant.value}` : '',
+              unit_price: unitPrice,
+              quantity: item.quantity,
+            })
+          }
+        })
+        .catch(() => {})
+    })
+  }, [normalizedItems, refreshSignature, setItem])
 
   const handleCheckout = async () => {
     setStockErrors([])

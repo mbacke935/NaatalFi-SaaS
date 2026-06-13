@@ -5,6 +5,7 @@ import { FiArrowLeft, FiCheck, FiCreditCard, FiMapPin, FiSmartphone, FiTruck } f
 import { createOrder } from '../../services/orders'
 import { initiatePayment } from '../../services/payments'
 import { estimateShipping, SENEGAL_REGIONS } from '../../services/shipping'
+import { getMarketplaceProduct } from '../../services/marketplace'
 import { getAddresses } from '../../services/account'
 import useCartStore, { normalizeCartItems } from '../../store/cartStore'
 import useAuthStore from '../../store/authStore'
@@ -18,6 +19,7 @@ function CheckoutPage() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const items = useCartStore((s) => s.items)
   const clearCart = useCartStore((s) => s.clearCart)
+  const setItem = useCartStore((s) => s.setItem)
   const totalPrice = useCartStore((s) => s.totalPrice)
   const byVendor = useCartStore((s) => s.byVendor)
 
@@ -31,6 +33,11 @@ function CheckoutPage() {
   const [shippingEstimate, setShippingEstimate] = useState({})
   const [estimating, setEstimating] = useState(false)
   const submittingRef = useRef(false)
+  const normalizedItems = normalizeCartItems(items)
+  const refreshSignature = normalizedItems
+    .map((i) => `${i.product_slug}:${i.variant_id ?? 'x'}:${i.quantity}`)
+    .join('|')
+  const lastRefreshRef = useRef('')
 
   const groups = byVendor()
   const cartTotal = totalPrice()
@@ -80,6 +87,34 @@ function CheckoutPage() {
     if (region) fetchEstimate(region)
     else setShippingEstimate({})
   }, [region, fetchEstimate])
+
+  useEffect(() => {
+    if (!normalizedItems.length || refreshSignature === lastRefreshRef.current) return
+    lastRefreshRef.current = refreshSignature
+
+    normalizedItems.forEach((item) => {
+      if (!item.product_slug) return
+      getMarketplaceProduct(item.product_slug)
+        .then(({ data }) => {
+          const variant = data.variants?.find((v) => v.id === item.variant_id)
+          const unitPrice = Number(data.price) + Number(variant?.price_delta ?? 0)
+          if (Number(item.unit_price) !== unitPrice) {
+            setItem({
+              ...item,
+              product_name: data.name,
+              vendor_id: data.vendor,
+              vendor_name: data.vendor_name,
+              vendor_slug: data.vendor_slug,
+              cover_image: data.images?.[0]?.image_url ?? item.cover_image ?? null,
+              variant_label: variant ? `${variant.name}: ${variant.value}` : '',
+              unit_price: unitPrice,
+              quantity: item.quantity,
+            })
+          }
+        })
+        .catch(() => {})
+    })
+  }, [normalizedItems, refreshSignature, setItem])
 
   if (items.length === 0) {
     return (
