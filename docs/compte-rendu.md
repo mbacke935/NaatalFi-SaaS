@@ -83,14 +83,15 @@ npm.cmd run build
 npm.cmd test -- --run
 
 cd C:\NaatalFi-SaaS\backend
-venv\Scripts\python manage.py test apps.disputes apps.analytics apps.ads --settings=config.test_settings --verbosity 1
+venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 1
 ```
 
 Resultats :
 
 - Build frontend OK.
 - Tests frontend : 21 OK.
-- Tests backend cibles `disputes`, `analytics`, `ads` : 9 OK.
+- Tests backend complets : 104 OK.
+- Tests checkout ajoutes : variante incompatible bloquee, vendeur non approuve bloque, commande invite visible cote vendeur avec coordonnees client.
 
 ## Points Restants Prioritaires
 

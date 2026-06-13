@@ -52,13 +52,22 @@ class CartValidateView(APIView):
         errors = []
         for item in ser.validated_data['items']:
             vid = item.get('variant_id')
+            if not vid and not Product.objects.filter(
+                pk=item['product_id'],
+                status=Product.Status.PUBLISHED,
+                vendor__status='APPROVED',
+            ).exists():
+                errors.append({
+                    'product_id': item['product_id'],
+                    'error':      'Produit indisponible.',
+                })
             if not vid:
                 continue  # pas de variante = pas de stock à vérifier
 
             try:
                 variant = (
                     ProductVariant.objects
-                    .select_related('product')
+                    .select_related('product__vendor')
                     .get(pk=vid)
                 )
             except ProductVariant.DoesNotExist:
@@ -66,6 +75,25 @@ class CartValidateView(APIView):
                     'product_id': item['product_id'],
                     'variant_id': vid,
                     'error':      'Variante introuvable.',
+                })
+                continue
+
+            if variant.product_id != item['product_id']:
+                errors.append({
+                    'product_id': item['product_id'],
+                    'variant_id': vid,
+                    'error':      'Variante incompatible avec ce produit.',
+                })
+                continue
+
+            if (
+                variant.product.status != Product.Status.PUBLISHED
+                or variant.product.vendor.status != 'APPROVED'
+            ):
+                errors.append({
+                    'product_id': item['product_id'],
+                    'variant_id': vid,
+                    'error':      'Produit indisponible.',
                 })
                 continue
 
@@ -122,6 +150,11 @@ class CreateOrderView(APIView):
             except Product.DoesNotExist:
                 return Response(
                     {'error': f"Produit #{cart_item['product_id']} introuvable ou indisponible."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if product.vendor.status != 'APPROVED':
+                return Response(
+                    {'error': f"Produit #{product.id} indisponible."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 

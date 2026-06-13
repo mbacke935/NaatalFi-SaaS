@@ -132,6 +132,67 @@ class OrderPaymentWalletFlowTests(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.data['valid'])
 
+    def test_cart_validation_rejects_variant_from_another_product(self):
+        other_product = Product.objects.create(
+            vendor=self.vendor,
+            name='Sac de plage',
+            price=Decimal('8000.00'),
+            status=Product.Status.PUBLISHED,
+        )
+        other_variant = ProductVariant.objects.create(
+            product=other_product,
+            name='Couleur',
+            value='Bleu',
+            stock=5,
+        )
+
+        response = self.client.post(reverse('cart-validate'), {
+            'items': [{
+                'product_id': self.product.id,
+                'variant_id': other_variant.id,
+                'quantity': 1,
+            }],
+        }, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.data['valid'])
+        self.assertEqual(response.data['errors'][0]['error'], 'Variante incompatible avec ce produit.')
+
+    def test_guest_cannot_order_product_from_unapproved_vendor(self):
+        pending_user = CustomUser.objects.create_user(
+            email='pending-vendor@example.com',
+            password='pass',
+            role=CustomUser.Role.VENDOR,
+            is_verified=True,
+        )
+        pending_vendor = Vendor.objects.create(
+            user=pending_user,
+            plan=self.plan,
+            name='Pending Shop',
+            status=Vendor.Status.PENDING,
+        )
+        pending_product = Product.objects.create(
+            vendor=pending_vendor,
+            name='Produit non approuve',
+            price=Decimal('12000.00'),
+            status=Product.Status.PUBLISHED,
+        )
+
+        response = self.client.post(reverse('order-create'), {
+            'guest_name': 'Client Invite',
+            'guest_email': 'guest-blocked@example.com',
+            'guest_phone': '+221770000002',
+            'delivery_address': 'Medina, Dakar',
+            'region': 'Dakar',
+            'items': [{
+                'product_id': pending_product.id,
+                'quantity': 1,
+            }],
+        }, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('indisponible', response.data['error'])
+
     def test_guest_can_create_order_and_read_it_with_token(self):
         order_response = self.client.post(reverse('order-create'), {
             'guest_name': 'Client Invite',
@@ -178,6 +239,30 @@ class OrderPaymentWalletFlowTests(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data['missing'], ['guest_name', 'guest_email', 'guest_phone'])
+
+    def test_vendor_order_list_exposes_guest_contact_information(self):
+        order_response = self.client.post(reverse('order-create'), {
+            'guest_name': 'Client Invite',
+            'guest_email': 'guest-dashboard@example.com',
+            'guest_phone': '+221770000003',
+            'delivery_address': 'Almadies, Dakar',
+            'region': 'Dakar',
+            'items': [{
+                'product_id': self.product.id,
+                'variant_id': self.variant.id,
+                'quantity': 1,
+            }],
+        }, format='json')
+        self.assertEqual(order_response.status_code, 201)
+
+        self.client.force_authenticate(self.vendor_user)
+        response = self.client.get(reverse('vendor-order-list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['buyer_name'], 'Client Invite')
+        self.assertEqual(response.data[0]['buyer_email'], 'guest-dashboard@example.com')
+        self.assertEqual(response.data[0]['buyer_phone'], '+221770000003')
 
 
 class OrderPermissionTests(APITestCase):
