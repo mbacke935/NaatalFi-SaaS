@@ -56,6 +56,9 @@ Les emails sont enregistres en base avec le statut `PENDING`, puis traites par l
 | `PAYTECH_BASE_URL` | Endpoint PayTech request-payment | `https://paytech.sn/api/payment/request-payment` |
 | `PAYTECH_ENV` | Environnement PayTech | `prod` |
 | `PAYTECH_WEBHOOK_SECRET` | Secret HMAC webhook (fallback uniquement ; la verification principale utilise api_key_sha256/api_secret_sha256 de PayTech) | `xxxxxxxx` |
+| `WAVE_BUSINESS_PAYMENT_URL` | Lien de paiement Wave Business a ouvrir au checkout | `https://pay.wave.com/m/naatalfi` |
+| `WAVE_BUSINESS_ACCOUNT_NAME` | Nom affiche dans les traces internes admin | `NaatalFi` |
+| `WAVE_BUSINESS_PHONE` | Numero Wave Business de la plateforme | `+221771234567` |
 | `BACKEND_URL` | URL publique du backend pour webhook | `https://api.naatalfi.com` |
 | `EMAIL_PROVIDER` | Fournisseur email actif | `brevo` |
 | `BREVO_API_KEY` | Cle API Brevo transactionnelle | `xkeysib-...` |
@@ -265,7 +268,8 @@ Supabase est dÃ©jÃ  configurÃ© depuis le dÃ©veloppement local.
 - [ ] CrÃ©ation boutique + approbation KYC
 - [ ] Publication produit avec images
 - [ ] Commande multi-vendeurs
-- [ ] Paiement PayTech (mode production)
+- [ ] Paiement automatique PayTech/Wave API en pause jusqu'a activation fournisseur
+- [ ] Paiement Wave Business manuel disponible comme fallback temporaire
 - [ ] Webhook PayTech reÃ§u et traitÃ©
 - [ ] Wallet vendeur crÃ©ditÃ© (Phase 10)
 - [ ] Demande de retrait approuvÃ©e
@@ -379,6 +383,17 @@ A executer dans l'ordre, avec tes acces. Chaque etape est bloquante pour la suiv
 - [ ] Test paiement sandbox/reel -> commande passe `PAID`
 - [ ] Verifier wallet vendeur credite (net 92%) + transaction COMMISSION (8%)
 - [ ] **Securite** : sans cle API valide dans l'IPN, le webhook est refuse (403) en prod — c'est attendu
+
+### 5b. Wave Business (paiement manuel)
+- [ ] Compte Wave Business actif
+- [ ] Recuperer le lien de paiement Wave Business
+- [ ] Render : definir `WAVE_BUSINESS_PAYMENT_URL`
+- [ ] Render : definir `WAVE_BUSINESS_ACCOUNT_NAME`
+- [ ] Render : definir `WAVE_BUSINESS_PHONE`
+- [ ] Test paiement Wave Business -> paiement reste `PENDING`
+- [ ] Verifier le paiement recu dans Wave Business
+- [ ] Admin > Paiements : cliquer `Valider` sur le paiement Wave concerne
+- [ ] Apres validation admin : commande passe `PAID`, wallet vendeur credite (net 92%) + transaction COMMISSION (8%)
 
 ### 6. Cron gratuit GitHub Actions
 - [ ] Render : definir `CRON_SECRET`

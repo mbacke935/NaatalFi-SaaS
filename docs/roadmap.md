@@ -323,6 +323,8 @@ Commande client (1 Order)
 - âœ… Commande parent marquÃ©e `PAID` aprÃ¨s confirmation webhook
 - âœ… Checkout frontend redirigÃ© vers PayTech
 - â³ Test paiement rÃ©el PayTech Ã  valider aprÃ¨s configuration finale du compte PayTech
+- â¸ Paiement automatique Wave/PayTech en pause : activation fournisseur requise pour une confirmation serveur fiable
+- âœ… Fallback temporaire Wave Business manuel documente, avec validation admin possible
 - â³ CrÃ©dit wallet vendeur reportÃ© en Phase 10
 
 ---
@@ -666,6 +668,8 @@ Phase 20 â†’ DÃ©ploiement production
 ### Phases 0 a 18 : completement implementees
 
 Toutes les phases techniques sont implementees : conception, auth, vendeurs/KYC, categories, produits, marketplace publique, espace client, panier, commandes multi-vendeurs, paiements PayTech, wallet vendeur, livraison, dashboards vendeur et admin complets, notifications, avis, publicites, litiges et analytics.
+
+Note paiement au 13 juin 2026 : l'automatisation du paiement reel est volontairement en pause jusqu'a activation PayTech ou Wave API. Wave Business reste un fallback manuel temporaire ; il ne doit pas etre considere comme une validation automatique definitive.
 
 ### Phase MVP (appliquee le 12 juin 2026)
 

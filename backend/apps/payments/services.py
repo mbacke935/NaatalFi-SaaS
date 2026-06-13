@@ -13,6 +13,10 @@ def paytech_configured():
     return bool(settings.PAYTECH_API_KEY and settings.PAYTECH_API_SECRET)
 
 
+def wave_business_configured():
+    return bool(settings.WAVE_BUSINESS_PAYMENT_URL)
+
+
 def _extract_payment_url(data):
     url_keys = ('redirect_url', 'redirectUrl', 'payment_url', 'paymentUrl', 'url')
     for key in url_keys:
@@ -40,6 +44,38 @@ def _extract_provider_reference(data):
             if reference:
                 return reference
     return ''
+
+
+def request_wave_payment(payment):
+    if not wave_business_configured():
+        raise PayTechError('Lien Wave Business non configure.')
+
+    payment.payment_url = settings.WAVE_BUSINESS_PAYMENT_URL
+    payment.provider_reference = payment.reference
+    payment.raw_response = {
+        'type': 'wave_business_manual',
+        'account_name': settings.WAVE_BUSINESS_ACCOUNT_NAME,
+        'phone': settings.WAVE_BUSINESS_PHONE,
+        'instructions': 'Paiement Wave Business a confirmer manuellement par admin.',
+    }
+    payment.save(update_fields=['payment_url', 'provider_reference', 'raw_response', 'updated_at'])
+    return payment
+
+
+def _paytech_success(data):
+    value = data.get('success')
+    if value is None:
+        return True
+    return str(value).lower() in {'1', 'true', 'yes', 'success'}
+
+
+def _paytech_error_message(data):
+    message = data.get('message') or data.get('error')
+    if isinstance(message, list):
+        message = ' '.join(str(item) for item in message)
+    if isinstance(message, dict):
+        message = message.get('message') or str(message)
+    return str(message or 'Paiement refuse par PayTech.')
 
 
 def build_paytech_payload(payment, request):
@@ -92,9 +128,8 @@ def request_paytech_payment(payment, request):
     payment.raw_response = data
     payment.save(update_fields=['raw_response', 'updated_at'])
 
-    if response.status_code >= 400 or data.get('success') in [False, 0, '0']:
-        message = data.get('message') or data.get('error') or 'Paiement refuse par PayTech.'
-        raise PayTechError(message)
+    if response.status_code >= 400 or not _paytech_success(data):
+        raise PayTechError(_paytech_error_message(data))
 
     payment_url = _extract_payment_url(data)
     if not payment_url:

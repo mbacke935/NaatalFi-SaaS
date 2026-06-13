@@ -473,26 +473,44 @@ Mettre Ã  jour le statut. **Vendor.**
 ## 9. Paiements â€” `/payments`
 
 ### `POST /payments/initiate`
-Initier un paiement PayTech. **Auth requis.**
+Initier un paiement PayTech ou Wave. **Public pour commande invitee avec `access_token`, auth requis pour commande compte.**
 
 **Body**
 ```json
-{ "order_id": 123, "provider": "PAYTECH" }
+{ "order_id": 123, "provider": "WAVE", "access_token": "token-commande-invitee-optionnel" }
 ```
 **RÃ©ponse 200**
 ```json
 {
   "id": 1,
   "order_id": 123,
-  "provider": "PAYTECH",
+  "provider": "WAVE",
   "amount": "25000.00",
   "currency": "XOF",
   "status": "PENDING",
   "reference": "NF-123-ABCDEF123456",
-  "provider_reference": "paytech-token",
-  "payment_url": "https://paytech.sn/payment/..."
+  "provider_reference": "cos-18qq25rgr100a",
+  "payment_url": "https://pay.wave.com/c/cos-18qq25rgr100a"
 }
 ```
+
+---
+
+### `POST /payments/admin/:id/mark-paid/`
+Valider manuellement un paiement. **Admin.**
+
+Utilise pour Wave Business : le client paie via le lien Wave Business, puis l'admin verifie le paiement recu dans Wave Business avant de confirmer.
+
+**Body optionnel**
+```json
+{ "provider_reference": "reference-wave-business" }
+```
+
+Effets :
+- `Payment.status = PAID`
+- `Order.status = PAID`
+- wallet vendeur credite
+- email `send_payment_confirmation_email`
 
 ---
 

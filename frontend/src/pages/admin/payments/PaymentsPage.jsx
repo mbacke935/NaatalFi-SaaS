@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { FiCreditCard } from 'react-icons/fi'
-import { getAdminPayments } from '../../../services/admin'
+import toast from 'react-hot-toast'
+import { FiCheck, FiCreditCard } from 'react-icons/fi'
+import { getAdminPayments, markAdminPaymentPaid } from '../../../services/admin'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
 
@@ -18,6 +19,7 @@ function PaymentsPage() {
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
+  const [markingId, setMarkingId] = useState(null)
 
   const load = (nextStatus = status) => {
     setLoading(true)
@@ -28,6 +30,20 @@ function PaymentsPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const handleMarkPaid = async (payment) => {
+    if (!window.confirm(`Confirmer le paiement ${payment.reference} comme paye ?`)) return
+    setMarkingId(payment.id)
+    try {
+      await markAdminPaymentPaid(payment.id)
+      toast.success('Paiement marque comme paye.')
+      load(status)
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Impossible de confirmer ce paiement.')
+    } finally {
+      setMarkingId(null)
+    }
+  }
 
   const paidTotal = payments
     .filter((payment) => payment.status === 'PAID')
@@ -82,6 +98,7 @@ function PaymentsPage() {
                 <th className="text-right px-4 py-3">Montant</th>
                 <th className="text-left px-4 py-3">Webhook</th>
                 <th className="text-left px-4 py-3">Date</th>
+                <th className="text-right px-4 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -102,6 +119,20 @@ function PaymentsPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-500">
                     {new Date(payment.created_at).toLocaleDateString('fr-SN')}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {payment.status === 'PENDING' && payment.provider === 'WAVE' ? (
+                      <button
+                        type="button"
+                        onClick={() => handleMarkPaid(payment)}
+                        disabled={markingId === payment.id}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-green-600/15 px-3 py-1.5 text-xs font-semibold text-green-400 hover:bg-green-600/25 disabled:opacity-50"
+                      >
+                        <FiCheck size={13} /> Valider
+                      </button>
+                    ) : (
+                      <span className="text-gray-700">-</span>
+                    )}
                   </td>
                 </tr>
               ))}

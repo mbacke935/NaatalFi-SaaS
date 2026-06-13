@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 
 from apps.orders.models import Order
 from apps.payments.models import Payment
-from apps.payments.services import PayTechError, request_paytech_payment
+from apps.payments.services import PayTechError, request_paytech_payment, request_wave_payment
 from apps.users.models import CustomUser
 
 
@@ -109,6 +109,24 @@ class GuestPaymentApiTests(APITestCase):
         self.assertEqual(allowed.status_code, 200)
         self.assertEqual(allowed.data['reference'], str(payment.reference))
 
+    def test_guest_can_initiate_wave_payment_with_order_token(self):
+        def fake_wave(payment):
+            payment.payment_url = 'https://pay.wave.com/c/cos-test'
+            payment.provider_reference = 'cos-test'
+            payment.save(update_fields=['payment_url', 'provider_reference', 'updated_at'])
+            return payment
+
+        with patch('apps.payments.views.request_wave_payment', side_effect=fake_wave):
+            response = self.client.post(reverse('payment-initiate'), {
+                'order_id': self.order.id,
+                'provider': Payment.Provider.WAVE,
+                'access_token': str(self.order.guest_access_token),
+            }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['provider'], Payment.Provider.WAVE)
+        self.assertEqual(response.data['payment_url'], 'https://pay.wave.com/c/cos-test')
+
 
 @override_settings(
     PAYTECH_API_KEY='testkey',
@@ -178,6 +196,83 @@ class PayTechPaymentRequestTests(APITestCase):
 
         self.payment.refresh_from_db()
         self.assertEqual(self.payment.raw_response, {'success': 1, 'message': 'accepted without url'})
+
+    @patch('apps.payments.services.requests.post')
+    def test_paytech_negative_success_is_rejected_with_provider_message(self, mock_post):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {
+            'success': -1,
+            'error': ['Compte PayTech non active'],
+        }
+
+        with self.assertRaisesMessage(PayTechError, 'Compte PayTech non active'):
+            request_paytech_payment(self.payment, request=None)
+
+        self.payment.refresh_from_db()
+        self.assertEqual(self.payment.raw_response['success'], -1)
+
+
+@override_settings(
+    WAVE_BUSINESS_PAYMENT_URL='https://pay.wave.com/m/naatalfi',
+    WAVE_BUSINESS_ACCOUNT_NAME='NaatalFi',
+    WAVE_BUSINESS_PHONE='+221770000000',
+    FRONTEND_URL='https://naatalfi.test',
+    BACKEND_URL='https://api.naatalfi.test',
+)
+class WaveBusinessPaymentTests(APITestCase):
+    def setUp(self):
+        self.admin = CustomUser.objects.create_user(
+            email='wave-admin@example.com',
+            password='password123',
+            first_name='Wave',
+            last_name='Admin',
+            role=CustomUser.Role.ADMIN,
+            is_verified=True,
+        )
+        self.buyer = CustomUser.objects.create_user(
+            email='wave-buyer@example.com',
+            password='password123',
+            first_name='Wave',
+            last_name='Buyer',
+        )
+        self.order = Order.objects.create(
+            buyer=self.buyer,
+            status=Order.Status.PENDING,
+            total=Decimal('5000.00'),
+            delivery_address='Dakar',
+        )
+        self.payment = Payment.objects.create(
+            order=self.order,
+            buyer=self.buyer,
+            amount=self.order.total,
+            provider=Payment.Provider.WAVE,
+        )
+
+    def test_wave_business_payment_uses_configured_payment_link(self):
+        payment = request_wave_payment(self.payment)
+
+        self.assertEqual(payment.payment_url, 'https://pay.wave.com/m/naatalfi')
+        self.assertEqual(payment.provider_reference, self.payment.reference)
+        self.assertEqual(payment.raw_response['type'], 'wave_business_manual')
+
+    def test_admin_can_mark_wave_business_payment_paid(self):
+        self.payment.provider_reference = self.payment.reference
+        self.payment.save(update_fields=['provider_reference'])
+        self.client.force_authenticate(self.admin)
+
+        response = self.client.post(
+            reverse('admin-payment-mark-paid', args=[self.payment.id]),
+            {'provider_reference': 'wave-business-notification-1'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.payment.refresh_from_db()
+        self.order.refresh_from_db()
+        self.assertEqual(self.payment.status, Payment.Status.PAID)
+        self.assertEqual(self.payment.provider_reference, 'wave-business-notification-1')
+        self.assertTrue(self.payment.raw_webhook['manual_admin_confirmation'])
+        self.assertEqual(self.order.status, Order.Status.PAID)
 
 
 @override_settings(

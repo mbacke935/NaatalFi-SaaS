@@ -12,6 +12,7 @@ from .serializers import InitiatePaymentSerializer, PaymentSerializer, AdminPaym
 from .services import (
     PayTechError,
     request_paytech_payment,
+    request_wave_payment,
     verify_webhook_signature,
     webhook_marks_paid,
 )
@@ -63,18 +64,36 @@ class InitiatePaymentView(APIView):
                 amount=order.total,
             )
 
-        if provider != Payment.Provider.PAYTECH:
+        if provider not in [Payment.Provider.PAYTECH, Payment.Provider.WAVE]:
             return Response(
                 {'error': 'Ce fournisseur de paiement sera active dans une phase ulterieure.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            payment = request_paytech_payment(payment, request)
+            if provider == Payment.Provider.WAVE:
+                payment = request_wave_payment(payment)
+            else:
+                payment = request_paytech_payment(payment, request)
         except PayTechError as exc:
             return Response({'error': str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         return Response(PaymentSerializer(payment).data)
+
+
+def _mark_payment_paid(payment, provider_reference=''):
+    payment.status = Payment.Status.PAID
+    payment.paid_at = timezone.now()
+    if provider_reference:
+        payment.provider_reference = provider_reference
+    payment.save(update_fields=['status', 'paid_at', 'provider_reference', 'updated_at'])
+
+    order = payment.order
+    if order.status != Order.Status.PAID:
+        order.status = Order.Status.PAID
+        order.save(update_fields=['status', 'updated_at'])
+        transaction.on_commit(lambda paid_order=order: credit_wallet_from_order(paid_order))
+    transaction.on_commit(lambda payment_id=payment.id: send_payment_confirmation_email(payment_id))
 
 
 class PaymentStatusView(APIView):
@@ -109,6 +128,36 @@ class AdminPaymentListView(APIView):
         if provider := request.query_params.get('provider'):
             payments = payments.filter(provider=provider.upper())
         return Response(AdminPaymentSerializer(payments[:100], many=True).data)
+
+
+class AdminPaymentMarkPaidView(APIView):
+    permission_classes = [IsAdmin]
+
+    @transaction.atomic
+    def post(self, request, pk):
+        try:
+            payment = (
+                Payment.objects
+                .select_for_update()
+                .select_related('order')
+                .get(pk=pk)
+            )
+        except Payment.DoesNotExist:
+            return Response({'error': 'Paiement introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if payment.status == Payment.Status.PAID:
+            return Response(PaymentSerializer(payment).data)
+
+        provider_reference = request.data.get('provider_reference', '').strip()
+        _mark_payment_paid(payment, provider_reference=provider_reference or payment.provider_reference)
+        payment.raw_webhook = {
+            **(payment.raw_webhook or {}),
+            'manual_admin_confirmation': True,
+            'confirmed_by': str(request.user.id),
+            'provider_reference': provider_reference or payment.provider_reference,
+        }
+        payment.save(update_fields=['raw_webhook', 'updated_at'])
+        return Response(PaymentSerializer(payment).data)
 
 
 class PayTechWebhookView(APIView):

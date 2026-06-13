@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { FiArrowLeft, FiCheck, FiMapPin, FiTruck } from 'react-icons/fi'
+import { FiArrowLeft, FiCheck, FiCreditCard, FiMapPin, FiSmartphone, FiTruck } from 'react-icons/fi'
 import { createOrder } from '../../services/orders'
 import { initiatePayment } from '../../services/payments'
 import { estimateShipping, SENEGAL_REGIONS } from '../../services/shipping'
@@ -25,6 +25,7 @@ function CheckoutPage() {
   const [region, setRegion] = useState('')
   const [notes, setNotes] = useState('')
   const [guest, setGuest] = useState({ name: '', email: '', phone: '' })
+  const [paymentProvider, setPaymentProvider] = useState('WAVE')
   const [loading, setLoading] = useState(false)
   const [savedAddresses, setSavedAddresses] = useState([])
   const [shippingEstimate, setShippingEstimate] = useState({})
@@ -117,7 +118,7 @@ function CheckoutPage() {
         })),
       }
       const { data: order } = await createOrder(payload)
-      const { data: payment } = await initiatePayment(order.id, 'PAYTECH', order.guest_access_token || '')
+      const { data: payment } = await initiatePayment(order.id, paymentProvider, order.guest_access_token || '')
       clearCart()
       toast.success('Redirection vers le paiement...')
       window.location.assign(payment.payment_url)
@@ -235,9 +236,42 @@ function CheckoutPage() {
           </div>
 
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-4 text-sm text-gray-400">
+            <h2 className="text-white font-semibold mb-3">Moyen de paiement</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <button
+                type="button"
+                onClick={() => setPaymentProvider('WAVE')}
+                className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition ${
+                  paymentProvider === 'WAVE'
+                    ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-white'
+                    : 'border-[#2a2a3a] bg-[#0B0B0F] text-gray-400 hover:text-white'
+                }`}
+              >
+                <FiSmartphone size={18} />
+                <span>
+                  <span className="block text-sm font-semibold">Wave Business</span>
+                  <span className="block text-xs text-gray-500">Validation admin apres paiement</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentProvider('PAYTECH')}
+                className={`flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition ${
+                  paymentProvider === 'PAYTECH'
+                    ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-white'
+                    : 'border-[#2a2a3a] bg-[#0B0B0F] text-gray-400 hover:text-white'
+                }`}
+              >
+                <FiCreditCard size={18} />
+                <span>
+                  <span className="block text-sm font-semibold">PayTech</span>
+                  <span className="block text-xs text-gray-500">Carte et mobile money</span>
+                </span>
+              </button>
+            </div>
             <p className="flex items-start gap-2">
               <FiCheck size={14} className="text-green-400 mt-0.5 flex-shrink-0" />
-              Paiement securise via PayTech apres confirmation de la commande.
+              Paiement securise apres confirmation de la commande.
             </p>
           </div>
 
@@ -246,7 +280,7 @@ function CheckoutPage() {
             disabled={loading}
             className="w-full bg-[#D4AF37] hover:bg-[#c49e30] text-black font-bold py-3.5 rounded-xl transition disabled:opacity-50 text-sm"
           >
-            {loading ? 'Preparation du paiement...' : `Payer avec PayTech - ${fmt(grandTotal)}`}
+            {loading ? 'Preparation du paiement...' : `Payer avec ${paymentProvider === 'WAVE' ? 'Wave Business' : 'PayTech'} - ${fmt(grandTotal)}`}
           </button>
         </form>
 
