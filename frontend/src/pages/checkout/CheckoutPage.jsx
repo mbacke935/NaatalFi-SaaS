@@ -338,7 +338,7 @@ function CheckoutPage() {
                       <div key={`${item.product_id}-${item.variant_id ?? 'x'}`} className="flex items-center gap-3 mb-2">
                         <div className="w-9 h-9 rounded-lg bg-[#2a2a3a] overflow-hidden flex-shrink-0">
                           {item.cover_image ? (
-                            <img src={item.cover_image} alt={item.product_name} className="w-full h-full object-cover" />
+                            <img src={item.cover_image} alt={item.product_name} className="product-image-contain p-1" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
                           )}

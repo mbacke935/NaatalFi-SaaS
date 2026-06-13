@@ -156,7 +156,7 @@ function ProductDetailPage() {
         <div>
           <div className="aspect-[4/3] max-h-[440px] bg-[#0B0B0F] border border-[#2a2a3a] rounded-xl overflow-hidden mb-3 relative">
             {product.images.length > 0 ? (
-              <img src={product.images[activeImage]?.image_url} alt={product.name} className="w-full h-full object-contain p-3 transition-opacity duration-500" />
+              <img src={product.images[activeImage]?.image_url} alt={product.name} className="product-image-contain p-3 transition-opacity duration-500" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-700"><FiPackage size={48} /></div>
             )}
@@ -180,7 +180,7 @@ function ProductDetailPage() {
                 <button key={img.id} onClick={() => setActiveImage(i)}
                   className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 bg-[#0B0B0F] transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
                 >
-                  <img src={img.image_url} alt="" className="w-full h-full object-contain p-1" />
+                  <img src={img.image_url} alt="" className="product-image-contain p-1" />
                 </button>
               ))}
             </div>
@@ -348,7 +348,7 @@ function ProductDetailPage() {
               >
                 <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
                   {p.cover_image
-                    ? <img src={p.cover_image} alt={p.name} className="w-full h-full object-contain p-2" />
+                    ? <img src={p.cover_image} alt={p.name} className="product-image-contain p-2" />
                     : <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>
                   }
                 </div>

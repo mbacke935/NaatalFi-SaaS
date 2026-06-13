@@ -140,7 +140,7 @@ function VendorProfilePage() {
             >
               <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
                 {p.cover_image
-                  ? <img src={p.cover_image} alt={p.name} className="w-full h-full object-contain p-2" />
+                  ? <img src={p.cover_image} alt={p.name} className="product-image-contain p-2" />
                   : <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">📦</div>
                 }
               </div>

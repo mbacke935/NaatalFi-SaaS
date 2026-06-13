@@ -129,7 +129,7 @@ function OrderDetailPage() {
             <Link to={`/marketplace/${item.product_slug}`} className="flex-shrink-0">
               <div className="w-14 h-14 rounded-lg bg-[#2a2a3a] overflow-hidden">
                 {item.cover_image ? (
-                  <img src={item.cover_image} alt={item.product_name} className="w-full h-full object-cover" />
+                  <img src={item.cover_image} alt={item.product_name} className="product-image-contain p-1" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>
                 )}

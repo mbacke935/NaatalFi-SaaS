@@ -64,7 +64,7 @@ function OrdersPage() {
                 {/* Cover */}
                 <div className="w-12 h-12 rounded-lg bg-[#2a2a3a] overflow-hidden flex-shrink-0">
                   {order.items[0]?.cover_image ? (
-                    <img src={order.items[0].cover_image} alt="" className="w-full h-full object-cover" />
+                    <img src={order.items[0].cover_image} alt="" className="product-image-contain p-1" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>
                   )}

@@ -36,7 +36,7 @@ function ProductCard({ product }) {
           </span>
         )}
         {images.length > 0 ? (
-          <img src={images[imageIndex]} alt={product.name} className="w-full h-full object-contain p-2 transition-opacity duration-500" />
+          <img src={images[imageIndex]} alt={product.name} className="product-image-contain p-2 transition-opacity duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
         )}
