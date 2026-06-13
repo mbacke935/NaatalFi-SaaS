@@ -140,7 +140,7 @@ function VendorProfilePage() {
             >
               <div className="product-image-frame aspect-[4/3]">
                 {p.cover_image
-                  ? <img src={p.cover_image} alt={p.name} className="product-image-contain p-2" />
+                  ? <div className="product-image-bg" role="img" aria-label={p.name} style={{ backgroundImage: `url("${p.cover_image}")` }} />
                   : <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">📦</div>
                 }
               </div>

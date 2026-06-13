@@ -156,7 +156,12 @@ function ProductDetailPage() {
         <div>
           <div className="product-image-frame aspect-[4/3] max-h-[440px] border border-[#2a2a3a] rounded-xl mb-3 relative">
             {product.images.length > 0 ? (
-              <img src={product.images[activeImage]?.image_url} alt={product.name} className="product-image-contain p-3 transition-opacity duration-500" />
+              <div
+                className="product-image-bg"
+                role="img"
+                aria-label={product.name}
+                style={{ backgroundImage: `url("${product.images[activeImage]?.image_url}")` }}
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-700"><FiPackage size={48} /></div>
             )}
@@ -180,7 +185,7 @@ function ProductDetailPage() {
                 <button key={img.id} onClick={() => setActiveImage(i)}
                   className={`product-image-frame w-16 h-16 rounded-lg flex-shrink-0 border-2 transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
                 >
-                  <img src={img.image_url} alt="" className="product-image-contain p-1" />
+                  <div className="product-image-bg" style={{ backgroundImage: `url("${img.image_url}")` }} />
                 </button>
               ))}
             </div>
@@ -348,7 +353,7 @@ function ProductDetailPage() {
               >
                 <div className="product-image-frame aspect-[4/3]">
                   {p.cover_image
-                    ? <img src={p.cover_image} alt={p.name} className="product-image-contain p-2" />
+                    ? <div className="product-image-bg" role="img" aria-label={p.name} style={{ backgroundImage: `url("${p.cover_image}")` }} />
                     : <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>
                   }
                 </div>

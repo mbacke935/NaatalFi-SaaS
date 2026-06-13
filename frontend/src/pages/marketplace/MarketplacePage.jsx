@@ -36,7 +36,12 @@ function ProductCard({ product }) {
           </span>
         )}
         {images.length > 0 ? (
-          <img src={images[imageIndex]} alt={product.name} className="product-image-contain p-2 transition-opacity duration-500" />
+          <div
+            className="product-image-bg transition-opacity duration-500"
+            role="img"
+            aria-label={product.name}
+            style={{ backgroundImage: `url("${images[imageIndex]}")` }}
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
         )}
