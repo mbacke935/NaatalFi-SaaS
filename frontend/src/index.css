@@ -71,6 +71,44 @@ svg {
   transform: none !important;
 }
 
+.product-image-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  pointer-events: none;
+}
+
+.product-image-preview-panel {
+  max-width: min(92vw, 980px);
+  max-height: min(88vh, 760px);
+  padding: 14px;
+  border: 1px solid #2a2a3a;
+  border-radius: 14px;
+  background: #0B0B0F;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.product-image-preview-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: calc(min(92vw, 980px) - 28px);
+  max-height: calc(min(88vh, 760px) - 28px);
+  object-fit: contain;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-image-frame:hover > .product-image-preview,
+  .product-image-frame:focus-visible > .product-image-preview {
+    display: flex;
+  }
+}
+
 .bg-\[\#16161E\]:has(> table) {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
