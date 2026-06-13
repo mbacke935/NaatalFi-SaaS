@@ -19,6 +19,7 @@ import {
   FiGlobe,
 } from 'react-icons/fi'
 import useAuthStore from '../store/authStore'
+import { logout as logoutSession } from '../services/auth'
 
 const NAV_ITEMS = [
   { to: '/admin',            label: 'Tableau de bord', icon: FiGrid,        end: true },
@@ -43,7 +44,12 @@ function AdminLayout() {
   const user   = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutSession()
+    } catch {
+      // La session locale doit etre nettoyee meme si le cookie a deja expire.
+    }
     logout()
     navigate('/login')
   }

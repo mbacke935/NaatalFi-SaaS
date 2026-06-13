@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fi'
 import useAuthStore from '../store/authStore'
 import { getNotifications } from '../services/notifications'
+import { logout as logoutSession } from '../services/auth'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Accueil', icon: FiGrid, end: true },
@@ -53,7 +54,12 @@ function DashboardLayout() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutSession()
+    } catch {
+      // La session locale doit etre nettoyee meme si le cookie a deja expire.
+    }
     logout()
     navigate('/login')
   }

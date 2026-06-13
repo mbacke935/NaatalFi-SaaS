@@ -107,6 +107,40 @@ class LoginApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('access', response.data)
+        self.assertNotIn('refresh', response.data)
+        refresh_cookie = response.cookies.get('naatalfi_refresh')
+        self.assertIsNotNone(refresh_cookie)
+        self.assertTrue(refresh_cookie['httponly'])
+
+    def test_refresh_uses_httponly_cookie(self):
+        login_response = self.client.post(
+            '/api/v1/auth/login/',
+            {'email': 'login@example.com', 'password': 'password123'},
+            format='json',
+        )
+        self.client.cookies['naatalfi_refresh'] = login_response.cookies['naatalfi_refresh'].value
+
+        response = self.client.post('/api/v1/auth/token/refresh/', {}, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('access', response.data)
+        self.assertNotIn('refresh', response.data)
+        self.assertIsNotNone(response.cookies.get('naatalfi_refresh'))
+
+    def test_logout_clears_refresh_cookie(self):
+        login_response = self.client.post(
+            '/api/v1/auth/login/',
+            {'email': 'login@example.com', 'password': 'password123'},
+            format='json',
+        )
+        self.client.cookies['naatalfi_refresh'] = login_response.cookies['naatalfi_refresh'].value
+
+        response = self.client.post('/api/v1/auth/logout/', {}, format='json')
+
+        self.assertEqual(response.status_code, 204)
+        refresh_cookie = response.cookies.get('naatalfi_refresh')
+        self.assertIsNotNone(refresh_cookie)
+        self.assertEqual(refresh_cookie.value, '')
 
     def test_login_returns_clear_error_for_inactive_user(self):
         self.user.is_active = False

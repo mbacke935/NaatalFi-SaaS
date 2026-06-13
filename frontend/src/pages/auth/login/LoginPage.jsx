@@ -21,7 +21,7 @@ function LoginPage() {
     setLoading(true)
     try {
       const { data } = await login(form.email, form.password)
-      loginStore(data.user, data.access, data.refresh)
+      loginStore(data.user, data.access)
       toast.success(`Bienvenue, ${data.user.first_name} !`)
       const from = location.state?.from
       const redirectTo = from?.pathname

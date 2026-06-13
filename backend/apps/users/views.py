@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
@@ -20,6 +21,38 @@ from .serializers import (
 )
 from .tokens import email_verification_token, password_reset_token
 from tasks.emails import send_password_reset_email, send_verification_email
+
+
+def _refresh_cookie_name():
+    return settings.JWT_REFRESH_COOKIE_NAME
+
+
+def _refresh_cookie_max_age():
+    return int(settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
+
+
+def _set_refresh_cookie(response, refresh_token):
+    response.set_cookie(
+        settings.JWT_REFRESH_COOKIE_NAME,
+        refresh_token,
+        max_age=_refresh_cookie_max_age(),
+        path=settings.JWT_REFRESH_COOKIE_PATH,
+        secure=settings.JWT_REFRESH_COOKIE_SECURE,
+        httponly=True,
+        samesite=settings.JWT_REFRESH_COOKIE_SAMESITE,
+    )
+
+
+def _clear_refresh_cookie(response):
+    response.delete_cookie(
+        settings.JWT_REFRESH_COOKIE_NAME,
+        path=settings.JWT_REFRESH_COOKIE_PATH,
+        samesite=settings.JWT_REFRESH_COOKIE_SAMESITE,
+    )
+
+
+def _get_refresh_token(request):
+    return request.data.get('refresh') or request.COOKIES.get(_refresh_cookie_name())
 
 
 class RegisterView(APIView):
@@ -111,22 +144,52 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
-        return Response({
+        response = Response({
             "access": str(refresh.access_token),
-            "refresh": str(refresh),
             "user": UserSerializer(user).data,
         })
+        _set_refresh_cookie(response, str(refresh))
+        return response
+
+
+class CookieTokenRefreshView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = _get_refresh_token(request)
+        if not refresh_token:
+            return Response(
+                {"detail": "Refresh token manquant."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        serializer = TokenRefreshSerializer(data={'refresh': refresh_token})
+        serializer.is_valid(raise_exception=True)
+
+        response = Response({"access": serializer.validated_data["access"]})
+        rotated_refresh = serializer.validated_data.get("refresh")
+        if rotated_refresh:
+            _set_refresh_cookie(response, rotated_refresh)
+        return response
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
+        refresh_token = _get_refresh_token(request)
+        response = Response(status=status.HTTP_204_NO_CONTENT)
+        if not refresh_token:
+            _clear_refresh_cookie(response)
+            return response
+
         try:
-            RefreshToken(request.data.get('refresh')).blacklist()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            RefreshToken(refresh_token).blacklist()
         except TokenError:
-            return Response({"error": "Token invalide."}, status=status.HTTP_400_BAD_REQUEST)
+            pass
+
+        _clear_refresh_cookie(response)
+        return response
 
 
 class ForgotPasswordView(APIView):

@@ -9,8 +9,8 @@ export const verifyEmail = (uid, token) =>
 export const login = (email, password) =>
   api.post('/auth/login/', { email, password })
 
-export const logout = (refresh) =>
-  api.post('/auth/logout/', { refresh })
+export const logout = () =>
+  api.post('/auth/logout/')
 
 export const forgotPassword = (email) =>
   api.post('/auth/forgot-password/', { email })

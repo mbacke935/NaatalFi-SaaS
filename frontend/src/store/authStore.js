@@ -8,17 +8,26 @@ const useAuthStore = create(
       user: null,
       role: null,
       token: null,
-      refreshToken: null,
-      login: (user, token, refreshToken) =>
-        set({ isAuthenticated: true, user, role: user.role, token, refreshToken }),
+      login: (user, token) =>
+        set({ isAuthenticated: true, user, role: user.role, token }),
       setToken: (token) =>
         set({ token }),
       setUser: (user) =>
         set({ user }),
       logout: () =>
-        set({ isAuthenticated: false, user: null, role: null, token: null, refreshToken: null }),
+        set({ isAuthenticated: false, user: null, role: null, token: null }),
     }),
-    { name: 'naatalfi-auth' }
+    {
+      name: 'naatalfi-auth',
+      version: 2,
+      migrate: (persistedState) => ({
+        isAuthenticated: Boolean(persistedState?.isAuthenticated),
+        user: persistedState?.user ?? null,
+        role: persistedState?.role ?? persistedState?.user?.role ?? null,
+        token: null,
+      }),
+      partialize: ({ isAuthenticated, user, role }) => ({ isAuthenticated, user, role }),
+    }
   )
 )
 
