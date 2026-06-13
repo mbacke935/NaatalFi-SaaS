@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FiBox, FiCreditCard, FiShoppingBag, FiTrendingUp, FiUsers, FiHome, FiArrowRight } from 'react-icons/fi'
-import { getAdminStats, getAdminOrders } from '../../services/admin'
+import { FiAlertTriangle, FiBox, FiCreditCard, FiMail, FiMessageSquare, FiShoppingBag, FiTrendingUp, FiUsers, FiHome, FiArrowRight } from 'react-icons/fi'
+import { getAdminAlertSummary, getAdminStats, getAdminOrders } from '../../services/admin'
 import { adminGetVendors } from '../../services/vendors'
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
@@ -24,6 +24,7 @@ function AdminDashboardPage() {
   const [stats, setStats]           = useState(null)
   const [pendingVendors, setPending] = useState([])
   const [recentOrders, setOrders]   = useState([])
+  const [alerts, setAlerts]         = useState(null)
   const [loading, setLoading]       = useState(true)
 
   useEffect(() => {
@@ -31,10 +32,12 @@ function AdminDashboardPage() {
       getAdminStats(),
       adminGetVendors('PENDING'),
       getAdminOrders({}),
-    ]).then(([statsRes, vendorsRes, ordersRes]) => {
+      getAdminAlertSummary(),
+    ]).then(([statsRes, vendorsRes, ordersRes, alertsRes]) => {
       if (statsRes.status === 'fulfilled')  setStats(statsRes.value.data)
       if (vendorsRes.status === 'fulfilled') setPending(vendorsRes.value.data.slice(0, 5))
       if (ordersRes.status === 'fulfilled')  setOrders(ordersRes.value.data.slice(0, 6))
+      if (alertsRes.status === 'fulfilled') setAlerts(alertsRes.value.data)
     }).finally(() => setLoading(false))
   }, [])
 
@@ -60,6 +63,49 @@ function AdminDashboardPage() {
       sub: stats.pending_payouts > 0 ? fmt(stats.pending_payouts_amount) : null },
     { label: 'Produits',          value: '—',                  icon: FiBox,         tone: 'text-gray-400' },
   ] : []
+
+  const alertItems = alerts ? [
+    {
+      key: 'vendors',
+      label: 'Vendeurs en attente',
+      value: alerts.pending_vendors,
+      to: '/admin/vendors?status=PENDING',
+      icon: FiHome,
+      tone: 'text-yellow-400',
+    },
+    {
+      key: 'payouts',
+      label: 'Retraits en attente',
+      value: alerts.pending_payouts,
+      to: '/admin/wallets',
+      icon: FiCreditCard,
+      tone: 'text-yellow-400',
+    },
+    {
+      key: 'disputes',
+      label: 'Litiges ouverts',
+      value: alerts.open_disputes,
+      to: '/admin/disputes',
+      icon: FiMessageSquare,
+      tone: 'text-red-400',
+    },
+    {
+      key: 'payments',
+      label: 'Paiements a verifier',
+      value: Number(alerts.pending_payments ?? 0) + Number(alerts.failed_payments ?? 0),
+      to: '/admin/payments',
+      icon: FiAlertTriangle,
+      tone: 'text-orange-400',
+    },
+    {
+      key: 'emails',
+      label: 'Emails echoues',
+      value: alerts.failed_emails,
+      to: '/admin/audit-logs',
+      icon: FiMail,
+      tone: 'text-red-400',
+    },
+  ].filter((item) => Number(item.value ?? 0) > 0) : []
 
   return (
     <div className="space-y-6">
@@ -89,6 +135,33 @@ function AdminDashboardPage() {
           )
         })}
       </div>
+
+      {alertItems.length > 0 && (
+        <div className="bg-[#16161E] border border-yellow-500/30 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <FiAlertTriangle className="text-yellow-400" size={18} />
+            <h2 className="font-semibold text-white">Actions a traiter</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-3">
+            {alertItems.map((item) => {
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.key}
+                  to={item.to}
+                  className="rounded-lg border border-[#2a2a3a] bg-[#0B0B0F] px-4 py-3 hover:border-[#D4AF37]/60 transition"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <Icon className={item.tone} size={18} />
+                    <span className="text-lg font-bold text-white">{item.value}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">{item.label}</p>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Recent orders */}

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.users.models import CustomUser
-from .models import AdminAuditLog
+from .models import AdminAuditLog, EmailLog
 from .serializers import AdminAuditLogSerializer
 from .services import run_scheduled_tasks
 
@@ -40,3 +40,24 @@ class AdminAuditLogListView(APIView):
         if target_type := request.query_params.get('target_type'):
             qs = qs.filter(target_type=target_type)
         return Response(AdminAuditLogSerializer(qs[:200], many=True).data)
+
+
+class AdminAlertSummaryView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        from apps.disputes.models import Dispute
+        from apps.payments.models import Payment
+        from apps.vendors.models import Vendor
+        from apps.wallet.models import PayoutRequest
+
+        return Response({
+            'pending_vendors': Vendor.objects.filter(status=Vendor.Status.PENDING).count(),
+            'pending_payouts': PayoutRequest.objects.filter(status=PayoutRequest.Status.PENDING).count(),
+            'open_disputes': Dispute.objects.filter(
+                status__in=[Dispute.Status.OPEN, Dispute.Status.UNDER_REVIEW],
+            ).count(),
+            'pending_payments': Payment.objects.filter(status=Payment.Status.PENDING).count(),
+            'failed_payments': Payment.objects.filter(status=Payment.Status.FAILED).count(),
+            'failed_emails': EmailLog.objects.filter(status=EmailLog.Status.FAILED).count(),
+        })

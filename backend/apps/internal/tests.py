@@ -407,3 +407,42 @@ class AdminAuditLogApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0]['action'], AdminAuditLog.Action.USER_UPDATED)
         self.assertEqual(response.data[0]['actor_email'], self.admin.email)
+
+    def test_only_admin_can_read_alert_summary(self):
+        from apps.disputes.models import Dispute
+        from apps.orders.models import Order, VendorOrder
+        from apps.payments.models import Payment
+        from apps.vendors.models import Vendor
+        from apps.wallet.models import PayoutRequest, Wallet
+
+        vendor_user = CustomUser.objects.create_user(
+            email='alert-vendor@example.com',
+            password='pass',
+            role=CustomUser.Role.VENDOR,
+        )
+        vendor = Vendor.objects.create(user=vendor_user, name='Alert Shop', status=Vendor.Status.PENDING)
+        order = Order.objects.create(buyer=self.customer, delivery_address='Dakar', total='1000.00')
+        vendor_order = VendorOrder.objects.create(order=order, vendor=vendor, subtotal='1000.00')
+        wallet = Wallet.objects.create(vendor=vendor)
+        PayoutRequest.objects.create(wallet=wallet, amount='1000.00')
+        Dispute.objects.create(
+            order=order,
+            vendor_order=vendor_order,
+            initiator=self.customer,
+            reason='Livraison',
+        )
+        Payment.objects.create(order=order, buyer=self.customer, amount='1000.00', status=Payment.Status.FAILED)
+        EmailLog.objects.create(to_email='x@example.com', subject='Erreur', message='x', status=EmailLog.Status.FAILED)
+
+        self.client.force_authenticate(self.customer)
+        denied = self.client.get(reverse('admin-alert-summary'))
+        self.assertEqual(denied.status_code, 403)
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(reverse('admin-alert-summary'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['pending_vendors'], 1)
+        self.assertEqual(response.data['pending_payouts'], 1)
+        self.assertEqual(response.data['open_disputes'], 1)
+        self.assertEqual(response.data['failed_payments'], 1)
+        self.assertEqual(response.data['failed_emails'], 1)
