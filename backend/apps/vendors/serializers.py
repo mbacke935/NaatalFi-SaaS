@@ -15,7 +15,9 @@ class VendorSerializer(serializers.ModelSerializer):
         model  = Vendor
         fields = [
             'id', 'name', 'slug', 'description', 'logo',
-            'phone', 'address', 'status', 'trust_score', 'plan', 'created_at',
+            'phone', 'whatsapp', 'contact_email', 'address', 'city', 'region',
+            'facebook_url', 'instagram_url', 'tiktok_url', 'website_url',
+            'status', 'trust_score', 'plan', 'created_at',
         ]
         read_only_fields = ['id', 'slug', 'status', 'trust_score', 'logo', 'plan', 'created_at']
 
@@ -23,7 +25,11 @@ class VendorSerializer(serializers.ModelSerializer):
 class CreateVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Vendor
-        fields = ['name', 'description', 'phone', 'address']
+        fields = [
+            'name', 'description', 'phone', 'whatsapp', 'contact_email',
+            'address', 'city', 'region', 'facebook_url', 'instagram_url',
+            'tiktok_url', 'website_url',
+        ]
 
 
 class AdminVendorSerializer(serializers.ModelSerializer):
@@ -36,7 +42,9 @@ class AdminVendorSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Vendor
         fields = [
-            'id', 'name', 'slug', 'description', 'logo', 'phone', 'address',
+            'id', 'name', 'slug', 'description', 'logo',
+            'phone', 'whatsapp', 'contact_email', 'address', 'city', 'region',
+            'facebook_url', 'instagram_url', 'tiktok_url', 'website_url',
             'status', 'trust_score', 'plan', 'user_email', 'user_name',
             'wallet', 'stats', 'created_at', 'updated_at',
         ]

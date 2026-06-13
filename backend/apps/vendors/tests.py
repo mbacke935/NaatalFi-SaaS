@@ -49,6 +49,32 @@ class VendorApiTests(APITestCase):
         self.assertEqual(str(vendor.plan.commission_rate), '8.00')
         self.assertIsNone(vendor.plan.max_products)
 
+    def test_vendor_can_update_public_contact_info(self):
+        Vendor.objects.create(user=self.vendor_user, name='Editable Shop')
+        self.client.force_authenticate(self.vendor_user)
+
+        response = self.client.patch(reverse('vendor-me'), {
+            'phone': '+221770000000',
+            'whatsapp': '+221780000000',
+            'contact_email': 'shop@example.com',
+            'address': 'Parcelles Assainies',
+            'city': 'Dakar',
+            'region': 'Dakar',
+            'facebook_url': 'https://facebook.com/editableshop',
+            'instagram_url': 'https://instagram.com/editableshop',
+            'tiktok_url': 'https://www.tiktok.com/@editableshop',
+            'website_url': 'https://example.com',
+        }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        vendor = Vendor.objects.get(user=self.vendor_user)
+        self.assertEqual(vendor.phone, '+221770000000')
+        self.assertEqual(vendor.whatsapp, '+221780000000')
+        self.assertEqual(vendor.contact_email, 'shop@example.com')
+        self.assertEqual(vendor.city, 'Dakar')
+        self.assertEqual(vendor.region, 'Dakar')
+        self.assertEqual(vendor.website_url, 'https://example.com')
+
     def test_admin_can_approve_and_suspend_vendor(self):
         vendor = Vendor.objects.create(user=self.vendor_user, name='Pending Shop')
         self.client.force_authenticate(self.admin)

@@ -11,7 +11,9 @@ class MarketplaceVendorSerializer(serializers.ModelSerializer):
         model  = Vendor
         fields = [
             'id', 'name', 'slug', 'description', 'logo',
-            'phone', 'address', 'trust_score',
+            'phone', 'whatsapp', 'contact_email', 'address', 'city', 'region',
+            'facebook_url', 'instagram_url', 'tiktok_url', 'website_url',
+            'trust_score',
             'product_count', 'plan_name', 'created_at',
         ]
 
@@ -27,7 +29,9 @@ class MarketplaceVendorDetailSerializer(serializers.ModelSerializer):
         model  = Vendor
         fields = [
             'id', 'name', 'slug', 'description', 'logo',
-            'phone', 'address', 'trust_score',
+            'phone', 'whatsapp', 'contact_email', 'address', 'city', 'region',
+            'facebook_url', 'instagram_url', 'tiktok_url', 'website_url',
+            'trust_score',
             'product_count', 'products', 'created_at',
         ]
 

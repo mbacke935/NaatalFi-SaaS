@@ -11,13 +11,14 @@ class VendorPlanAdmin(admin.ModelAdmin):
 class VendorAdmin(admin.ModelAdmin):
     list_display   = ['name', 'user', 'status', 'plan', 'trust_score', 'created_at']
     list_filter    = ['status', 'plan']
-    search_fields  = ['name', 'user__email']
+    search_fields  = ['name', 'user__email', 'phone', 'whatsapp', 'contact_email']
     readonly_fields = ['slug', 'trust_score', 'created_at', 'updated_at']
     ordering       = ['-created_at']
 
     fieldsets = (
         (None,          {'fields': ('user', 'name', 'slug', 'plan', 'status')}),
-        ('Infos',       {'fields': ('description', 'phone', 'address', 'logo')}),
+        ('Infos',       {'fields': ('description', 'phone', 'whatsapp', 'contact_email', 'address', 'city', 'region', 'logo')}),
+        ('Liens publics', {'fields': ('facebook_url', 'instagram_url', 'tiktok_url', 'website_url')}),
         ('Métriques',   {'fields': ('trust_score', 'created_at', 'updated_at')}),
     )
 

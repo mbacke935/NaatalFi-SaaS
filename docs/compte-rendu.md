@@ -1,7 +1,7 @@
 # Compte Rendu - Etat Actuel NaatalFi
 
 **Date :** 12 juin 2026
-**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 79 tests backend OK + 12 tests frontend (Vitest). Pret pour deploiement production.
+**Etat :** phases 0 a 18 completement implementees + MVP simplifie deploye. 89 tests backend OK + 21 tests frontend (Vitest). Pret pour deploiement production.
 
 ---
 
@@ -72,7 +72,7 @@ Le footer public, l'image hero et les categories populaires de l'accueil sont co
 | App | Etat | Detail |
 | :--- | :--- | :--- |
 | `users` | Complet | Auth JWT, verification email, reset password, liste admin, update role/actif, suppression admin |
-| `vendors` | Complet | Boutique, KYC admin, detail enrichi wallet/stats, approbation/suspension |
+| `vendors` | Complet | Boutique, infos publiques/contact modifiables par vendeur, KYC admin, detail enrichi wallet/stats, approbation/suspension |
 | `categories` | Complet | Arbre hierarchique, CRUD admin, image, reorder |
 | `products` | Complet | CRUD vendeur, galerie, variantes, stock, moderation admin |
 | `marketplace` | Complet | Catalogue public, recherche full-text, cache Redis, pagination cursor |
@@ -152,7 +152,7 @@ Couverture :
 - `orders` : 6 tests — validation stock, permissions, flux webhook->wallet complet (18 400 FCFA net sur 20 000 FCFA)
 - `shipping` : estimation region + poids
 - `users` : admin role/actif, protection auto-desactivation
-- `vendors` : creation boutique, unicite, plan FREE 8% illimite, approbation/suspension
+- `vendors` : creation boutique, unicite, plan FREE 8% illimite, modification infos publiques/contact, approbation/suspension
 - `categories` : listing public, protection admin, creation, reorder
 - `products` : route admin, moderation statut, produits illimites
 - `marketplace` : produits publies, recherche, detail vendeur approuve

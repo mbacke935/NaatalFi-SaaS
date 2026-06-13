@@ -23,7 +23,7 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **88 tests OK**.
+Resultat actuel : **89 tests OK**.
 
 ### Detail par module
 
@@ -33,7 +33,7 @@ Resultat actuel : **88 tests OK**.
 | `orders` | `apps/orders/tests.py` | 6 | Validation stock, permissions, flux complet webhook→wallet |
 | `shipping` | `apps/shipping/tests.py` | — | Estimation livraison par region et poids |
 | `users` | `apps/users/tests.py` | 8 | Admin update role/actif, protection auto-desactivation, suppression user, **interdiction suppression admin + non-admin 403**, login casse/inactif, **rate limiting login (429)** |
-| `vendors` | `apps/vendors/tests.py` | — | Creation boutique, unicite, plan FREE 8% illimite, approbation/suspension admin |
+| `vendors` | `apps/vendors/tests.py` | — | Creation boutique, unicite, plan FREE 8% illimite, modification infos publiques/contact, approbation/suspension admin |
 | `categories` | `apps/categories/tests.py` | — | Listing public actif, protection admin, creation, reorder |
 | `products` | `apps/products/tests.py` | — | Route admin produits, moderation statut, produits illimites |
 | `marketplace` | `apps/marketplace/tests.py` | — | Produits publies uniquement, recherche, detail vendeur approuve |

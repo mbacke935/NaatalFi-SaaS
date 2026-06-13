@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiStar, FiPackage, FiMapPin, FiPhone } from 'react-icons/fi'
+import { FiGlobe, FiInstagram, FiMail, FiMapPin, FiPackage, FiPhone, FiStar } from 'react-icons/fi'
 import { getMarketplaceVendor, getVendorReviews } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
 
@@ -96,6 +96,30 @@ function VendorProfilePage() {
                   <FiPhone size={14} />
                   {vendor.phone}
                 </span>
+              )}
+              {vendor.whatsapp && (
+                <a href={`https://wa.me/${vendor.whatsapp.replace(/\D/g, '')}`} className="flex items-center gap-1.5 text-gray-500 hover:text-[#D4AF37] text-sm transition">
+                  <FiPhone size={14} />
+                  WhatsApp
+                </a>
+              )}
+              {vendor.contact_email && (
+                <a href={`mailto:${vendor.contact_email}`} className="flex items-center gap-1.5 text-gray-500 hover:text-[#D4AF37] text-sm transition">
+                  <FiMail size={14} />
+                  Email
+                </a>
+              )}
+              {vendor.instagram_url && (
+                <a href={vendor.instagram_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-gray-500 hover:text-[#D4AF37] text-sm transition">
+                  <FiInstagram size={14} />
+                  Instagram
+                </a>
+              )}
+              {vendor.website_url && (
+                <a href={vendor.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-gray-500 hover:text-[#D4AF37] text-sm transition">
+                  <FiGlobe size={14} />
+                  Site web
+                </a>
               )}
             </div>
           </div>

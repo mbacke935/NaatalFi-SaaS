@@ -1,36 +1,61 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { FiCheck, FiClock, FiAlertTriangle } from 'react-icons/fi'
+import { FiAlertTriangle, FiCheck, FiClock } from 'react-icons/fi'
 import {
-  getMyVendor,
   createVendor,
+  getMyVendor,
   updateMyVendor,
   uploadLogo,
 } from '../../../services/vendors'
 import ImageUpload from '../../../components/ui/ImageUpload'
 
 const STATUS_CONFIG = {
-  PENDING:   { label: 'En attente de validation', icon: FiClock, color: 'text-yellow-400' },
-  APPROVED:  { label: 'Boutique approuvée',        icon: FiCheck, color: 'text-green-400' },
-  SUSPENDED: { label: 'Boutique suspendue',         icon: FiAlertTriangle, color: 'text-red-400' },
+  PENDING: { label: 'En attente de validation', icon: FiClock, color: 'text-yellow-400' },
+  APPROVED: { label: 'Boutique approuvee', icon: FiCheck, color: 'text-green-400' },
+  SUSPENDED: { label: 'Boutique suspendue', icon: FiAlertTriangle, color: 'text-red-400' },
 }
 
+const EMPTY_FORM = {
+  name: '',
+  description: '',
+  phone: '',
+  whatsapp: '',
+  contact_email: '',
+  address: '',
+  city: '',
+  region: '',
+  facebook_url: '',
+  instagram_url: '',
+  tiktok_url: '',
+  website_url: '',
+}
+
+const inputCls = 'w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition'
+
 function ShopSettingsPage() {
-  const [vendor, setVendor]       = useState(null)
-  const [loading, setLoading]     = useState(true)
-  const [saving, setSaving]       = useState(false)
-  const [logoFile, setLogoFile]   = useState(null)
-  const [form, setForm] = useState({ name: '', description: '', phone: '', address: '' })
+  const [vendor, setVendor] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [logoFile, setLogoFile] = useState(null)
+  const [form, setForm] = useState(EMPTY_FORM)
 
   useEffect(() => {
     getMyVendor()
       .then(({ data }) => {
         setVendor(data)
         setForm({
-          name:        data.name        || '',
+          name: data.name || '',
           description: data.description || '',
-          phone:       data.phone       || '',
-          address:     data.address     || '',
+          phone: data.phone || '',
+          whatsapp: data.whatsapp || '',
+          contact_email: data.contact_email || '',
+          address: data.address || '',
+          city: data.city || '',
+          region: data.region || '',
+          facebook_url: data.facebook_url || '',
+          instagram_url: data.instagram_url || '',
+          tiktok_url: data.tiktok_url || '',
+          website_url: data.website_url || '',
         })
       })
       .catch((err) => {
@@ -39,8 +64,9 @@ function ShopSettingsPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const handleChange = (e) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+  const handleChange = (e) => {
+    setForm((current) => ({ ...current, [e.target.name]: e.target.value }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -56,13 +82,14 @@ function ShopSettingsPage() {
 
       if (logoFile) {
         const { data: logoData } = await uploadLogo(logoFile)
-        setVendor((v) => ({ ...v, logo: logoData.logo }))
+        setVendor((current) => ({ ...current, logo: logoData.logo }))
         setLogoFile(null)
       }
 
-      toast.success(vendor ? 'Boutique mise à jour !' : 'Boutique créée ! En attente de validation.')
+      toast.success(vendor ? 'Boutique mise a jour.' : 'Boutique creee. En attente de validation.')
     } catch (err) {
-      const msg = err.response?.data?.error || 'Une erreur est survenue.'
+      const data = err.response?.data
+      const msg = data?.error || data?.contact_email?.[0] || data?.website_url?.[0] || 'Une erreur est survenue.'
       toast.error(msg)
     } finally {
       setSaving(false)
@@ -76,7 +103,7 @@ function ShopSettingsPage() {
   const StatusBadge = vendor ? STATUS_CONFIG[vendor.status] : null
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-bold text-white">Ma boutique</h1>
         {StatusBadge && (
@@ -99,7 +126,7 @@ function ShopSettingsPage() {
           </div>
           <div className="sm:text-right">
             <p className="text-xs text-gray-500">Produits max</p>
-            <p className="text-white font-medium">{vendor.plan.max_products ?? '∞'}</p>
+            <p className="text-white font-medium">{vendor.plan.max_products ?? 'illimite'}</p>
           </div>
         </div>
       )}
@@ -107,11 +134,7 @@ function ShopSettingsPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
           <label className="block text-sm text-gray-400 mb-3">Logo de la boutique</label>
-          <ImageUpload
-            currentUrl={vendor?.logo}
-            onFile={setLogoFile}
-            label="Ajouter un logo"
-          />
+          <ImageUpload currentUrl={vendor?.logo} onFile={setLogoFile} label="Ajouter un logo" />
         </div>
 
         <div>
@@ -122,8 +145,8 @@ function ShopSettingsPage() {
             value={form.name}
             onChange={handleChange}
             required
-            placeholder="Ma Boutique Sénégal"
-            className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition"
+            placeholder="Ma boutique"
+            className={inputCls}
           />
         </div>
 
@@ -134,34 +157,26 @@ function ShopSettingsPage() {
             value={form.description}
             onChange={handleChange}
             rows={4}
-            placeholder="Décrivez votre boutique..."
-            className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition resize-none"
+            placeholder="Decrivez votre boutique..."
+            className={`${inputCls} resize-none`}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Téléphone</label>
-            <input
-              type="tel"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="+221 77 000 00 00"
-              className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">Adresse</label>
-            <input
-              type="text"
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Dakar, Sénégal"
-              className="w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition"
-            />
-          </div>
+          <Field label="Telephone" name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="+221 77 000 00 00" />
+          <Field label="WhatsApp" name="whatsapp" type="tel" value={form.whatsapp} onChange={handleChange} placeholder="+221 77 000 00 00" />
+          <Field label="Email de contact" name="contact_email" type="email" value={form.contact_email} onChange={handleChange} placeholder="boutique@example.com" />
+          <Field label="Ville" name="city" value={form.city} onChange={handleChange} placeholder="Dakar" />
+        </div>
+
+        <Field label="Adresse" name="address" value={form.address} onChange={handleChange} placeholder="Adresse de la boutique" />
+        <Field label="Region / zone principale" name="region" value={form.region} onChange={handleChange} placeholder="Dakar, Thies, Saint-Louis..." />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Facebook" name="facebook_url" type="url" value={form.facebook_url} onChange={handleChange} placeholder="https://facebook.com/..." />
+          <Field label="Instagram" name="instagram_url" type="url" value={form.instagram_url} onChange={handleChange} placeholder="https://instagram.com/..." />
+          <Field label="TikTok" name="tiktok_url" type="url" value={form.tiktok_url} onChange={handleChange} placeholder="https://www.tiktok.com/@..." />
+          <Field label="Site web" name="website_url" type="url" value={form.website_url} onChange={handleChange} placeholder="https://..." />
         </div>
 
         <button
@@ -169,9 +184,25 @@ function ShopSettingsPage() {
           disabled={saving}
           className="bg-[#D4AF37] hover:bg-[#c49e30] text-black font-semibold py-2.5 px-6 rounded-lg transition disabled:opacity-50"
         >
-          {saving ? 'Enregistrement...' : vendor ? 'Mettre à jour' : 'Créer ma boutique'}
+          {saving ? 'Enregistrement...' : vendor ? 'Mettre a jour' : 'Creer ma boutique'}
         </button>
       </form>
+    </div>
+  )
+}
+
+function Field({ label, name, value, onChange, placeholder, type = 'text' }) {
+  return (
+    <div>
+      <label className="block text-sm text-gray-400 mb-1">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={inputCls}
+      />
     </div>
   )
 }
