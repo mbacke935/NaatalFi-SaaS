@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiCheckCircle, FiMessageSquare, FiRefreshCcw } from 'react-icons/fi'
 import { getAdminDisputes, resolveAdminDispute } from '../../../services/admin'
@@ -11,22 +12,32 @@ const statusLabels = {
 }
 
 function AdminDisputesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialStatus = searchParams.get('status') || ''
   const [disputes, setDisputes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [status, setStatus] = useState(initialStatus)
   const [resolveDialog, setResolveDialog] = useState(null) // { dispute, resolution }
   const [adminNote, setAdminNote] = useState('')
 
-  const load = () => {
+  const load = (nextStatus = status) => {
     setLoading(true)
-    getAdminDisputes()
+    getAdminDisputes(nextStatus ? { status: nextStatus } : {})
       .then(({ data }) => setDisputes(Array.isArray(data) ? data : []))
       .catch(() => setDisputes([]))
       .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    load()
-  }, [])
+    const nextStatus = searchParams.get('status') || ''
+    setStatus(nextStatus)
+    load(nextStatus)
+  }, [searchParams])
+
+  const handleStatus = (nextStatus) => {
+    setStatus(nextStatus)
+    setSearchParams(nextStatus ? { status: nextStatus } : {})
+  }
 
   const openResolveDialog = (dispute, resolution) => {
     setResolveDialog({ dispute, resolution })
@@ -53,6 +64,22 @@ function AdminDisputesPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">Litiges</h1>
         <p className="text-sm text-gray-500 mt-1">Arbitrage des reclamations acheteur/vendeur.</p>
+      </div>
+
+      <div className="flex gap-2 mb-5 flex-wrap">
+        {['', 'OPEN', 'UNDER_REVIEW', 'RESOLVED', 'CLOSED'].map((filter) => (
+          <button
+            key={filter || 'ALL'}
+            onClick={() => handleStatus(filter)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
+              status === filter
+                ? 'bg-[#D4AF37] text-black'
+                : 'bg-[#16161E] text-gray-400 border border-[#2a2a3a] hover:border-[#D4AF37]'
+            }`}
+          >
+            {filter ? (statusLabels[filter] || filter) : 'Tous'}
+          </button>
+        ))}
       </div>
 
       <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiCheck, FiCreditCard } from 'react-icons/fi'
 import { getAdminPayments, markAdminPaymentPaid } from '../../../services/admin'
@@ -16,9 +17,11 @@ const STATUS_COLORS = {
 const FILTERS = ['', 'PENDING', 'PAID', 'FAILED', 'CANCELLED', 'EXPIRED']
 
 function PaymentsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialStatus = searchParams.get('status') || ''
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState(initialStatus)
   const [markingId, setMarkingId] = useState(null)
 
   const load = (nextStatus = status) => {
@@ -29,7 +32,11 @@ function PaymentsPage() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    const nextStatus = searchParams.get('status') || ''
+    setStatus(nextStatus)
+    load(nextStatus)
+  }, [searchParams])
 
   const handleMarkPaid = async (payment) => {
     if (!window.confirm(`Confirmer le paiement ${payment.reference} comme paye ?`)) return
@@ -66,7 +73,7 @@ function PaymentsPage() {
         {FILTERS.map((filter) => (
           <button
             key={filter || 'ALL'}
-            onClick={() => { setStatus(filter); load(filter) }}
+            onClick={() => { setStatus(filter); setSearchParams(filter ? { status: filter } : {}) }}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
               status === filter
                 ? 'bg-[#D4AF37] text-black'

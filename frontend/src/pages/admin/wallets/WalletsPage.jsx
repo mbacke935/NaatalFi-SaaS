@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiCheck, FiCreditCard, FiX } from 'react-icons/fi'
 import {
@@ -18,9 +19,18 @@ const STATUS_COLORS = {
   REJECTED: 'bg-red-900/40 text-red-400',
 }
 
+const STATUS_LABELS = {
+  PENDING: 'En attente',
+  APPROVED: 'Approuves',
+  REJECTED: 'Rejetes',
+}
+
 function WalletsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialStatus = searchParams.get('status') || 'PENDING'
   const [wallets, setWallets] = useState([])
   const [payouts, setPayouts] = useState([])
+  const [payoutStatus, setPayoutStatus] = useState(initialStatus)
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
   const [confirmApprove, setConfirmApprove] = useState(null)
@@ -36,9 +46,13 @@ function WalletsPage() {
     instructions: '',
   })
 
-  const load = () => {
+  const load = (nextStatus = payoutStatus) => {
     setLoading(true)
-    Promise.allSettled([adminGetWallets(), adminGetPayouts({ status: 'PENDING' }), adminGetPlatformAccount()])
+    Promise.allSettled([
+      adminGetWallets(),
+      adminGetPayouts(nextStatus ? { status: nextStatus } : {}),
+      adminGetPlatformAccount(),
+    ])
       .then(([walletRes, payoutRes, accountRes]) => {
         if (walletRes.status === 'fulfilled') setWallets(walletRes.value.data)
         if (payoutRes.status === 'fulfilled') setPayouts(payoutRes.value.data)
@@ -57,7 +71,16 @@ function WalletsPage() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    const nextStatus = searchParams.get('status') || 'PENDING'
+    setPayoutStatus(nextStatus)
+    load(nextStatus)
+  }, [searchParams])
+
+  const handlePayoutStatus = (nextStatus) => {
+    setPayoutStatus(nextStatus)
+    setSearchParams(nextStatus ? { status: nextStatus } : {})
+  }
 
   const approve = async (payout) => {
     setConfirmApprove(null)
@@ -202,12 +225,30 @@ function WalletsPage() {
       </form>
 
       <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#2a2a3a] flex items-center gap-2">
-          <FiCreditCard className="text-[#D4AF37]" size={18} />
-          <h2 className="font-semibold text-white">Demandes de retrait</h2>
+        <div className="px-5 py-4 border-b border-[#2a2a3a] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <FiCreditCard className="text-[#D4AF37]" size={18} />
+            <h2 className="font-semibold text-white">Demandes de retrait</h2>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {['', 'PENDING', 'APPROVED', 'REJECTED'].map((filter) => (
+              <button
+                key={filter || 'ALL'}
+                type="button"
+                onClick={() => handlePayoutStatus(filter)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  payoutStatus === filter
+                    ? 'bg-[#D4AF37] text-black'
+                    : 'bg-[#0B0B0F] text-gray-400 border border-[#2a2a3a] hover:border-[#D4AF37]'
+                }`}
+              >
+                {filter ? (STATUS_LABELS[filter] || filter) : 'Tous'}
+              </button>
+            ))}
+          </div>
         </div>
         {payouts.length === 0 ? (
-          <p className="p-6 text-sm text-gray-500">Aucune demande en attente.</p>
+          <p className="p-6 text-sm text-gray-500">Aucune demande trouvee.</p>
         ) : (
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">

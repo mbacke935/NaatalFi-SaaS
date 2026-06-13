@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiCheck, FiClock, FiAlertTriangle, FiEye } from 'react-icons/fi'
 import { adminGetVendors } from '../../../services/vendors'
@@ -11,9 +11,11 @@ const STATUS = {
 }
 
 function VendorsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialStatus = searchParams.get('status') || ''
   const [vendors, setVendors]     = useState([])
   const [loading, setLoading]     = useState(true)
-  const [filter, setFilter]       = useState('')
+  const [filter, setFilter]       = useState(initialStatus)
 
   const load = (f = filter) => {
     setLoading(true)
@@ -23,11 +25,15 @@ function VendorsPage() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    const status = searchParams.get('status') || ''
+    setFilter(status)
+    load(status)
+  }, [searchParams])
 
   const handleFilter = (f) => {
     setFilter(f)
-    load(f)
+    setSearchParams(f ? { status: f } : {})
   }
 
   return (
