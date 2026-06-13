@@ -93,6 +93,16 @@ class AccountApiTests(APITestCase):
         self.assertEqual(delete_response.status_code, 204)
         self.assertFalse(Favorite.objects.filter(user=self.user, product=self.product).exists())
 
+    def test_cannot_favorite_product_from_unapproved_vendor(self):
+        self.vendor.status = Vendor.Status.SUSPENDED
+        self.vendor.save(update_fields=['status'])
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(f'/api/v1/account/favorites/{self.product.id}/')
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(Favorite.objects.filter(user=self.user, product=self.product).exists())
+
     def test_avatar_upload_rejects_file_with_spoofed_image_mime(self):
         self.client.force_authenticate(self.user)
         fake_image = SimpleUploadedFile(

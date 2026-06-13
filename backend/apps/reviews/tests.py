@@ -130,3 +130,11 @@ class ReviewApiTests(APITestCase):
         self.assertEqual(self.product.total_reviews, 0)
         self.assertEqual(str(self.product.average_rating), '0.0')
         self.assertEqual(str(self.vendor.trust_score), '0.0')
+
+    def test_public_reviews_hide_products_from_unapproved_vendor(self):
+        self.vendor.status = Vendor.Status.SUSPENDED
+        self.vendor.save(update_fields=['status'])
+
+        response = self.client.get(reverse('review-product-list', args=[self.product.slug]))
+
+        self.assertEqual(response.status_code, 404)

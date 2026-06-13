@@ -8,6 +8,7 @@ from rest_framework import status
 from .models import Address, Favorite
 from .serializers import AddressSerializer, FavoriteSerializer
 from apps.products.models import Product
+from apps.vendors.models import Vendor
 from apps.orders.models import Order
 from apps.orders.serializers import OrderSerializer
 from apps.users.serializers import UserSerializer
@@ -170,7 +171,11 @@ class FavoriteDetailView(APIView):
 
     def post(self, request, product_id):
         try:
-            product = Product.objects.get(pk=product_id, status=Product.Status.PUBLISHED)
+            product = Product.objects.get(
+                pk=product_id,
+                status=Product.Status.PUBLISHED,
+                vendor__status=Vendor.Status.APPROVED,
+            )
         except Product.DoesNotExist:
             return Response({'error': 'Produit introuvable.'}, status=status.HTTP_404_NOT_FOUND)
 

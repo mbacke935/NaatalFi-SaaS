@@ -58,7 +58,11 @@ class ProductReviewListView(APIView):
 
     def get(self, request, slug):
         try:
-            product = Product.objects.get(slug=slug, status=Product.Status.PUBLISHED)
+            product = Product.objects.get(
+                slug=slug,
+                status=Product.Status.PUBLISHED,
+                vendor__status=Vendor.Status.APPROVED,
+            )
         except Product.DoesNotExist:
             return Response({'error': 'Produit introuvable.'}, status=status.HTTP_404_NOT_FOUND)
         reviews = _review_queryset().filter(product=product)
@@ -101,4 +105,3 @@ class AdminReviewDetailView(APIView):
         recalculate_review_scores(product, vendor)
         cache.clear()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
