@@ -41,6 +41,16 @@ describe('cartStore', () => {
     expect(items.find((item) => item.variant_id === 5).quantity).toBe(1)
   })
 
+  it('remplace la quantite quand la fiche produit definit une quantite exacte', () => {
+    useCartStore.getState().addItem({ ...productA, quantity: 1 })
+    useCartStore.getState().setItem({ ...productA, quantity: 1 })
+    expect(useCartStore.getState().items).toHaveLength(1)
+    expect(useCartStore.getState().items[0].quantity).toBe(1)
+
+    useCartStore.getState().setItem({ ...productA, quantity: 3 })
+    expect(useCartStore.getState().items[0].quantity).toBe(3)
+  })
+
   it('traite deux variantes du même produit comme des lignes distinctes', () => {
     useCartStore.getState().addItem(productA)
     useCartStore.getState().addItem(productAVariant)

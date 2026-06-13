@@ -17,7 +17,7 @@ function ProductDetailPage() {
   const [selectedVariantId, setSelectedVariantId] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [reviews, setReviews] = useState([])
-  const addItem = useCartStore((s) => s.addItem)
+  const setItem = useCartStore((s) => s.setItem)
   const [added, setAdded] = useState(false)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const [isFavorited, setIsFavorited] = useState(false)
@@ -109,7 +109,7 @@ function ProductDetailPage() {
     const primaryVariant = selectedVariant
     const variantLabel = primaryVariant ? `${primaryVariant.name}: ${primaryVariant.value}` : ''
 
-    addItem({
+    setItem({
       product_id:   product.id,
       product_name: product.name,
       product_slug: product.slug,

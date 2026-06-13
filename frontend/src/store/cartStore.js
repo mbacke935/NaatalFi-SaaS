@@ -41,6 +41,24 @@ const useCartStore = create(
         }
       },
 
+      setItem: (item) => {
+        const qty   = item.quantity ?? 1
+        const k     = key(item.product_id, item.variant_id)
+        const items = normalizeCartItems(get().items)
+        const exists = items.some((i) => key(i.product_id, i.variant_id) === k)
+        if (exists) {
+          set({
+            items: items.map((i) =>
+              key(i.product_id, i.variant_id) === k
+                ? { ...i, ...item, quantity: qty }
+                : i
+            ),
+          })
+        } else {
+          set({ items: [...items, { ...item, quantity: qty }] })
+        }
+      },
+
       removeItem: (product_id, variant_id = null) => {
         const k = key(product_id, variant_id)
         set({ items: normalizeCartItems(get().items).filter((i) => key(i.product_id, i.variant_id) !== k) })
