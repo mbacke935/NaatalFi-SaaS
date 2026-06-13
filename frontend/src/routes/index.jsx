@@ -74,6 +74,7 @@ const AdminAnalyticsPage  = lazy(() => import('../pages/admin/analytics/Analytic
 const AdminDisputesPage   = lazy(() => import('../pages/admin/disputes/DisputesPage'))
 const AdminAdsPage        = lazy(() => import('../pages/admin/ads/AdsPage'))
 const PlatformSettingsPage = lazy(() => import('../pages/admin/platform/PlatformSettingsPage'))
+const AuditLogsPage       = lazy(() => import('../pages/admin/audit/AuditLogsPage'))
 
 // ── Erreurs ────────────────────────────────────────────────────────
 const NotFoundPage        = lazy(() => import('../pages/errors/NotFoundPage'))
@@ -181,6 +182,7 @@ function AppRoutes() {
               <Route path="/admin/reviews" element={<ReviewsPage />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
               <Route path="/admin/platform" element={<PlatformSettingsPage />} />
+              <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
               <Route path="/admin/disputes" element={<AdminDisputesPage />} />
               <Route path="/admin/ads" element={<AdminAdsPage />} />
             </Route>

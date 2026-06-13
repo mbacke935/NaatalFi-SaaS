@@ -16,3 +16,4 @@ export const getAdminDisputes = (params) => api.get('/disputes/admin/', { params
 export const resolveAdminDispute = (id, data) => api.post(`/disputes/admin/${id}/resolve/`, data)
 export const getAdminAnalyticsOverview = (params) => api.get('/analytics/admin/overview/', { params })
 export const getAdminAnalyticsVendors = (params) => api.get('/analytics/admin/vendors/', { params })
+export const getAdminAuditLogs = (params) => api.get('/internal/admin/audit-logs/', { params })
