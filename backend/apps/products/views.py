@@ -23,7 +23,7 @@ class PublicProductListView(APIView):
     def get(self, request):
         qs = (
             Product.objects
-            .filter(status=Product.Status.PUBLISHED)
+            .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
             .select_related('vendor', 'category')
             .prefetch_related('images')
         )
@@ -45,7 +45,7 @@ class PublicProductDetailView(APIView):
         try:
             product = (
                 Product.objects
-                .filter(status=Product.Status.PUBLISHED)
+                .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
                 .select_related('vendor', 'category')
                 .prefetch_related('images', 'variants')
                 .get(slug=slug)

@@ -88,3 +88,24 @@ class AdsApiTests(APITestCase):
         self.assertEqual(response.data[0]['id'], self.product.id)
         self.assertTrue(response.data[0]['is_sponsored'])
         self.assertEqual(response.data[0]['ad_campaign_id'], campaign.id)
+
+    def test_suspended_vendor_campaign_is_not_returned_as_sponsored_product(self):
+        today = timezone.localdate()
+        campaign = AdCampaign.objects.create(
+            vendor=self.vendor,
+            product=self.product,
+            budget='5000.00',
+            cost_per_click='50.00',
+            start_date=today,
+            end_date=today + timedelta(days=7),
+            status=AdCampaign.Status.ACTIVE,
+        )
+        self.vendor.status = Vendor.Status.SUSPENDED
+        self.vendor.save(update_fields=['status'])
+
+        response = self.client.get('/api/v1/ads/sponsored/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, [])
+        campaign.refresh_from_db()
+        self.assertEqual(campaign.impressions, 0)

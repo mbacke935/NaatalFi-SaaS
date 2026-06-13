@@ -122,7 +122,7 @@ class MarketplaceProductListView(APIView):
 
         qs = (
             Product.objects
-            .filter(status=Product.Status.PUBLISHED)
+            .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
             .select_related('vendor', 'category')
             .prefetch_related('images')
         )
@@ -193,7 +193,7 @@ class MarketplaceProductDetailView(APIView):
         try:
             product = (
                 Product.objects
-                .filter(status=Product.Status.PUBLISHED)
+                .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
                 .select_related('vendor', 'category')
                 .prefetch_related('images', 'variants')
                 .get(slug=slug)
@@ -206,7 +206,7 @@ class MarketplaceProductDetailView(APIView):
         # Related products (same category or same vendor)
         related = (
             Product.objects
-            .filter(status=Product.Status.PUBLISHED)
+            .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
             .exclude(pk=product.pk)
             .filter(
                 Q(category=product.category) | Q(vendor=product.vendor)
@@ -306,7 +306,7 @@ class MarketplaceSearchView(APIView):
         # Full-text search via PostgreSQL icontains (compatible sans configuration)
         qs = (
             Product.objects
-            .filter(status=Product.Status.PUBLISHED)
+            .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
             .filter(
                 Q(name__icontains=q)
                 | Q(description__icontains=q)
@@ -324,7 +324,7 @@ class MarketplaceSearchView(APIView):
             from django.contrib.postgres.search import SearchVector, SearchQuery
             fts_qs = (
                 Product.objects
-                .filter(status=Product.Status.PUBLISHED)
+                .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
                 .annotate(search=SearchVector('name', 'description', config='simple'))
                 .filter(search=SearchQuery(q, config='simple'))
                 .select_related('vendor', 'category')
@@ -355,7 +355,7 @@ class MarketplaceFeaturedView(APIView):
 
         products = (
             Product.objects
-            .filter(status=Product.Status.PUBLISHED)
+            .filter(status=Product.Status.PUBLISHED, vendor__status=Vendor.Status.APPROVED)
             .select_related('vendor', 'category')
             .prefetch_related('images')
             .order_by('-trust_score', '-created_at')[:8]

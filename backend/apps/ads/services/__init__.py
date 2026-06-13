@@ -17,6 +17,8 @@ def active_campaigns_queryset():
             start_date__lte=today,
             end_date__gte=today,
             product__status='PUBLISHED',
+            product__vendor__status='APPROVED',
+            vendor__status='APPROVED',
             spent__lt=F('budget'),
         )
         .select_related('vendor', 'product', 'product__category')

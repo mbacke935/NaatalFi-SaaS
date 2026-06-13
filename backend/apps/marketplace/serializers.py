@@ -18,7 +18,7 @@ class MarketplaceVendorSerializer(serializers.ModelSerializer):
         ]
 
     def get_product_count(self, obj):
-        return obj.products.filter(status='PUBLISHED').count()
+        return obj.products.filter(status='PUBLISHED', vendor__status=Vendor.Status.APPROVED).count()
 
 
 class MarketplaceVendorDetailSerializer(serializers.ModelSerializer):
@@ -36,12 +36,12 @@ class MarketplaceVendorDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_product_count(self, obj):
-        return obj.products.filter(status='PUBLISHED').count()
+        return obj.products.filter(status='PUBLISHED', vendor__status=Vendor.Status.APPROVED).count()
 
     def get_products(self, obj):
         qs = (
             obj.products
-            .filter(status='PUBLISHED')
+            .filter(status='PUBLISHED', vendor__status=Vendor.Status.APPROVED)
             .prefetch_related('images')
             .select_related('category')
             .order_by('-created_at')[:12]

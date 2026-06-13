@@ -43,6 +43,26 @@ class MarketplaceApiTests(APITestCase):
             price=Decimal('1000.00'),
             status=Product.Status.DRAFT,
         )
+        self.pending_user = CustomUser.objects.create_user(
+            email='pending-market-vendor@example.com',
+            password='pass',
+            role=CustomUser.Role.VENDOR,
+            is_verified=True,
+        )
+        self.pending_vendor = Vendor.objects.create(
+            user=self.pending_user,
+            name='Pending Market Shop',
+            status=Vendor.Status.PENDING,
+        )
+        self.pending_product = Product.objects.create(
+            vendor=self.pending_vendor,
+            category=self.category,
+            name='Produit cache vendeur non approuve',
+            description='Ne doit pas apparaitre publiquement',
+            price=Decimal('30000.00'),
+            status=Product.Status.PUBLISHED,
+            trust_score=5,
+        )
 
     def test_marketplace_only_exposes_published_products(self):
         response = self.client.get(reverse('mp-products'), {'page_size': 10})
@@ -50,6 +70,21 @@ class MarketplaceApiTests(APITestCase):
         names = [item['name'] for item in response.data['results']]
         self.assertIn('Boubou brode', names)
         self.assertNotIn('Produit brouillon', names)
+        self.assertNotIn('Produit cache vendeur non approuve', names)
+
+    def test_public_product_endpoints_hide_unapproved_vendor_products(self):
+        list_response = self.client.get('/api/v1/products/')
+        self.assertEqual(list_response.status_code, 200)
+        names = [item['name'] for item in list_response.data]
+        self.assertNotIn('Produit cache vendeur non approuve', names)
+
+        detail_response = self.client.get(f'/api/v1/products/{self.pending_product.slug}/')
+        self.assertEqual(detail_response.status_code, 404)
+
+        featured_response = self.client.get(reverse('mp-featured'))
+        self.assertEqual(featured_response.status_code, 200)
+        featured_names = [item['name'] for item in featured_response.data]
+        self.assertNotIn('Produit cache vendeur non approuve', featured_names)
 
     def test_search_requires_two_characters_and_finds_product(self):
         short_response = self.client.get(reverse('mp-search'), {'q': 'b'})
@@ -59,6 +94,11 @@ class MarketplaceApiTests(APITestCase):
         response = self.client.get(reverse('mp-search'), {'q': 'boubou'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['results'][0]['name'], 'Boubou brode')
+
+        hidden_response = self.client.get(reverse('mp-search'), {'q': 'cache vendeur'})
+        self.assertEqual(hidden_response.status_code, 200)
+        hidden_names = [item['name'] for item in hidden_response.data['results']]
+        self.assertNotIn('Produit cache vendeur non approuve', hidden_names)
 
     def test_vendor_detail_only_approved_vendor(self):
         response = self.client.get(reverse('mp-vendor-detail', args=[self.vendor.slug]))
