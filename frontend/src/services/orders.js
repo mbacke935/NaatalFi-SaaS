@@ -8,7 +8,9 @@ export const createOrder       = (data)           => api.post('/orders/', data)
 export const getMyOrders       = ()               => api.get('/orders/me/')
 export const getMyOrder        = (id)             => api.get(`/orders/me/${id}/`)
 export const cancelOrder       = (id)             => api.post(`/orders/me/${id}/cancel/`)
-export const getGuestOrder     = (id, token)      => api.get(`/orders/guest/${id}/`, { params: { token } })
+export const getGuestOrder     = (id, token)      => api.get(`/orders/guest/${id}/`, {
+  headers: token ? { 'X-Guest-Token': token } : {},
+})
 
 // Vendeur
 export const getVendorOrders   = (params)         => api.get('/vendors/me/orders/', { params })

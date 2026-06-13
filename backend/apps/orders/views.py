@@ -296,7 +296,7 @@ class GuestOrderDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        token = request.query_params.get('token', '')
+        token = request.headers.get('X-Guest-Token') or request.query_params.get('token', '')
         try:
             order = (
                 Order.objects

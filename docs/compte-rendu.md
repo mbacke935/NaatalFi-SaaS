@@ -90,8 +90,8 @@ Resultats :
 
 - Build frontend OK.
 - Tests frontend : 21 OK.
-- Tests backend complets : 112 OK.
-- Tests securite ajoutes : produits publics limites aux vendeurs approuves, variante incompatible bloquee, vendeur non approuve bloque, commandes invitees impayees expirees avec restauration stock, uploads image MIME usurpes rejetes, mots de passe hashes et non exposes.
+- Tests backend complets : 113 OK.
+- Tests securite ajoutes : produits publics limites aux vendeurs approuves, variante incompatible bloquee, vendeur non approuve bloque, commandes invitees impayees expirees avec restauration stock, uploads image MIME usurpes rejetes, mots de passe hashes et non exposes, tokens invites retires des query strings.
 
 ## Points Restants Prioritaires
 

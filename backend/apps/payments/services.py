@@ -86,7 +86,7 @@ def build_paytech_payload(payment, request):
     else:
         success_url = (
             f"{frontend}/guest/orders/{payment.order_id}"
-            f"?token={payment.order.guest_access_token}&payment=success"
+            f"?payment=success#token={payment.order.guest_access_token}"
         )
     return {
         'item_name': f"Commande #{payment.order_id}",

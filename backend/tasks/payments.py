@@ -18,7 +18,7 @@ def send_payment_confirmation_email(payment_id):
     else:
         buyer_name = payment.order.guest_name
         buyer_email = payment.order.guest_email
-        order_url = f"{settings.FRONTEND_URL}/guest/orders/{payment.order_id}?token={payment.order.guest_access_token}"
+        order_url = f"{settings.FRONTEND_URL}/guest/orders/{payment.order_id}#token={payment.order.guest_access_token}"
 
     queue_email(
         subject=f"Paiement confirme #{payment.reference} - NaatalFi",

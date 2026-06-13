@@ -111,7 +111,7 @@ class PaymentStatusView(APIView):
             ):
                 return Response({'error': 'Acces refuse.'}, status=status.HTTP_403_FORBIDDEN)
         else:
-            token = request.query_params.get('token', '')
+            token = request.headers.get('X-Guest-Token') or request.query_params.get('token', '')
             if not token or str(payment.order.guest_access_token) != token:
                 return Response({'error': 'Acces refuse.'}, status=status.HTTP_403_FORBIDDEN)
 

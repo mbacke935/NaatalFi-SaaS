@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { FiArrowLeft, FiPackage } from 'react-icons/fi'
 import { getGuestOrder } from '../../services/orders'
 import { useMeta } from '../../hooks/useMeta'
@@ -9,18 +9,30 @@ const fmt = (n) => Number(n ?? 0).toLocaleString('fr-SN') + ' FCFA'
 function GuestOrderDetailPage() {
   useMeta({ title: 'Suivi commande' })
   const { id } = useParams()
-  const [params] = useSearchParams()
-  const token = params.get('token') || ''
   const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const storageKey = `naatalfi-guest-order-${id}`
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const hashToken = hashParams.get('token') || ''
+    const queryToken = new URLSearchParams(window.location.search).get('token') || ''
+    const token = hashToken || queryToken || window.sessionStorage.getItem(storageKey) || ''
+
+    if (hashToken || queryToken) {
+      window.sessionStorage.setItem(storageKey, token)
+      const cleanUrl = new URL(window.location.href)
+      cleanUrl.searchParams.delete('token')
+      cleanUrl.hash = ''
+      window.history.replaceState(null, '', `${cleanUrl.pathname}${cleanUrl.search}`)
+    }
+
     getGuestOrder(id, token)
       .then(({ data }) => setOrder(data))
       .catch(() => setError('Commande introuvable ou lien invalide.'))
       .finally(() => setLoading(false))
-  }, [id, token])
+  }, [id])
 
   if (loading) {
     return <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 text-gray-400 text-sm">Chargement...</div>

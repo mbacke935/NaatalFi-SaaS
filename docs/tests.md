@@ -23,7 +23,7 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **112 tests OK**.
+Resultat actuel : **113 tests OK**.
 
 ### Detail par module
 
@@ -49,7 +49,7 @@ Resultat actuel : **112 tests OK**.
 
 Note 13 juin 2026 : `apps/orders/tests.py` contient maintenant 10 tests. Les ajouts couvrent la variante incompatible avec le produit, le blocage des produits de vendeurs non approuves, et l'affichage des coordonnees client invite dans les commandes vendeur.
 
-Note securite 13 juin 2026 : la suite backend contient maintenant 112 tests. Les ajouts couvrent aussi l'expiration/restauration stock des commandes invitees impayees, le rejet des uploads image avec MIME usurpe, les produits publics limites aux vendeurs approuves, les campagnes sponsorisees de vendeurs approuves uniquement, et la garantie que les mots de passe sont hashes et jamais exposes par serializers.
+Note securite 13 juin 2026 : la suite backend contient maintenant 113 tests. Les ajouts couvrent aussi l'expiration/restauration stock des commandes invitees impayees, le rejet des uploads image avec MIME usurpe, les produits publics limites aux vendeurs approuves, les campagnes sponsorisees de vendeurs approuves uniquement, la garantie que les mots de passe sont hashes et jamais exposes par serializers, et les liens invites avec token en fragment URL + API via `X-Guest-Token`.
 
 ---
 

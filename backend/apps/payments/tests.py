@@ -104,7 +104,7 @@ class GuestPaymentApiTests(APITestCase):
 
         allowed = self.client.get(
             reverse('payment-status', args=[payment.reference]),
-            {'token': str(self.order.guest_access_token)},
+            HTTP_X_GUEST_TOKEN=str(self.order.guest_access_token),
         )
         self.assertEqual(allowed.status_code, 200)
         self.assertEqual(allowed.data['reference'], str(payment.reference))
@@ -210,6 +210,26 @@ class PayTechPaymentRequestTests(APITestCase):
 
         self.payment.refresh_from_db()
         self.assertEqual(self.payment.raw_response['success'], -1)
+
+    @patch('apps.payments.services.requests.post')
+    def test_guest_paytech_success_url_uses_fragment_token(self, mock_post):
+        self.order.buyer = None
+        self.order.guest_name = 'Invite'
+        self.order.guest_email = 'invite-paytech@example.com'
+        self.order.guest_phone = '+221770000000'
+        self.order.save(update_fields=['buyer', 'guest_name', 'guest_email', 'guest_phone'])
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {
+            'success': 1,
+            'token': 'paytech-token',
+            'redirect_url': 'https://paytech.sn/payment/checkout/paytech-token',
+        }
+
+        request_paytech_payment(self.payment, request=None)
+
+        payload = mock_post.call_args.kwargs['json']
+        self.assertIn(f'/guest/orders/{self.order.id}?payment=success#token=', payload['success_url'])
+        self.assertNotIn('?token=', payload['success_url'])
 
 
 @override_settings(

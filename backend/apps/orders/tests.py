@@ -217,7 +217,7 @@ class OrderPaymentWalletFlowTests(APITestCase):
 
         detail_response = self.client.get(
             reverse('guest-order-detail', args=[order.id]),
-            {'token': order_response.data['guest_access_token']},
+            HTTP_X_GUEST_TOKEN=order_response.data['guest_access_token'],
         )
         self.assertEqual(detail_response.status_code, 200)
         self.assertEqual(detail_response.data['buyer_email'], 'guest-checkout@example.com')

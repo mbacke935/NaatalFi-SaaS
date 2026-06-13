@@ -25,7 +25,7 @@ def send_order_confirmation_email(order_id):
     if order.buyer_id:
         order_url = f"{settings.FRONTEND_URL}/account/orders/{order.id}"
     else:
-        order_url = f"{settings.FRONTEND_URL}/guest/orders/{order.id}?token={order.guest_access_token}"
+        order_url = f"{settings.FRONTEND_URL}/guest/orders/{order.id}#token={order.guest_access_token}"
 
     lines = [
         f"Bonjour {buyer_name},",

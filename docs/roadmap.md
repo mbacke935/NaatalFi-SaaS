@@ -707,6 +707,6 @@ venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 
 Couverture : wallet, shipping, users, vendors, categories, products, marketplace, account, orders, payments, notifications, reviews, ads, disputes, analytics.
 
-Resultat actuel : backend complet **112 tests OK** ; frontend **21 tests OK** ; build Vite OK. Derniers ajouts securite : produits publics limites aux vendeurs approuves, checkout invite expire/restaure le stock, variante incompatible bloquee, uploads image MIME usurpes rejetes, mots de passe hashes et non exposes.
+Resultat actuel : backend complet **113 tests OK** ; frontend **21 tests OK** ; build Vite OK. Derniers ajouts securite : produits publics limites aux vendeurs approuves, checkout invite expire/restaure le stock, variante incompatible bloquee, uploads image MIME usurpes rejetes, mots de passe hashes et non exposes, tokens invites transmis via fragment URL puis header `X-Guest-Token`.
 
 Dont 16 tests wallet specifiques a la commission 8% (idempotence, multi-vendeur, vendeur sans plan, revenue admin comptable, coordonnees versement plateforme) et le flux complet webhook PayTech → credit wallet (20 000 FCFA → commission 1 600 → net vendeur 18 400).
