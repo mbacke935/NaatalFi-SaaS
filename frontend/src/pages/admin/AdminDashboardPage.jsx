@@ -101,7 +101,7 @@ function AdminDashboardPage() {
       key: 'emails',
       label: 'Emails echoues',
       value: alerts.failed_emails,
-      to: '/admin/audit-logs',
+      to: '/admin/emails?status=FAILED',
       icon: FiMail,
       tone: 'text-red-400',
     },

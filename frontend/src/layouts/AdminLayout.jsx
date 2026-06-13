@@ -18,6 +18,7 @@ import {
   FiStar,
   FiGlobe,
   FiShield,
+  FiMail,
 } from 'react-icons/fi'
 import useAuthStore from '../store/authStore'
 import { logout as logoutSession } from '../services/auth'
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { to: '/admin/analytics',  label: 'Analytics',        icon: FiBarChart2 },
   { to: '/admin/platform',   label: 'Plateforme',       icon: FiGlobe },
   { to: '/admin/audit-logs', label: 'Audit',            icon: FiShield },
+  { to: '/admin/emails',     label: 'Emails',           icon: FiMail },
   { to: '/admin/disputes',   label: 'Litiges',          icon: FiMessageSquare },
   { to: '/admin/ads',        label: 'Publicités',       icon: FiZap },
 ]

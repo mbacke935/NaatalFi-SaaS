@@ -12,6 +12,7 @@ const ACTION_LABELS = {
   VENDOR_SUSPENDED: 'Vendeur suspendu',
   PAYOUT_APPROVED: 'Retrait approuve',
   PAYOUT_REJECTED: 'Retrait rejete',
+  EMAIL_RETRY_REQUESTED: 'Email relance',
 }
 
 const ACTION_FILTERS = [
@@ -24,9 +25,10 @@ const ACTION_FILTERS = [
   'VENDOR_SUSPENDED',
   'PAYOUT_APPROVED',
   'PAYOUT_REJECTED',
+  'EMAIL_RETRY_REQUESTED',
 ]
 
-const TARGET_FILTERS = ['', 'PlatformSettings', 'PlatformPayoutAccount', 'CustomUser', 'Vendor', 'PayoutRequest']
+const TARGET_FILTERS = ['', 'PlatformSettings', 'PlatformPayoutAccount', 'CustomUser', 'Vendor', 'PayoutRequest', 'EmailLog']
 
 function formatDate(value) {
   if (!value) return '-'

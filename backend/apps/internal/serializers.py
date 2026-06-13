@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AdminAuditLog
+from .models import AdminAuditLog, EmailLog
 
 
 class AdminAuditLogSerializer(serializers.ModelSerializer):
@@ -22,3 +22,30 @@ class AdminAuditLogSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = fields
+
+
+class EmailLogSerializer(serializers.ModelSerializer):
+    message_preview = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmailLog
+        fields = [
+            'id',
+            'to_email',
+            'subject',
+            'message_preview',
+            'from_email',
+            'status',
+            'attempts',
+            'max_attempts',
+            'last_error',
+            'scheduled_at',
+            'sent_at',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = fields
+
+    def get_message_preview(self, obj):
+        message = obj.message or ''
+        return message[:180]

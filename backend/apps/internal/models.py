@@ -44,6 +44,7 @@ class AdminAuditLog(models.Model):
         VENDOR_SUSPENDED = 'VENDOR_SUSPENDED', 'Vendor suspended'
         PAYOUT_APPROVED = 'PAYOUT_APPROVED', 'Payout approved'
         PAYOUT_REJECTED = 'PAYOUT_REJECTED', 'Payout rejected'
+        EMAIL_RETRY_REQUESTED = 'EMAIL_RETRY_REQUESTED', 'Email retry requested'
 
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,

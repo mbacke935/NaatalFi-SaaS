@@ -446,3 +446,71 @@ class AdminAuditLogApiTests(APITestCase):
         self.assertEqual(response.data['open_disputes'], 1)
         self.assertEqual(response.data['failed_payments'], 1)
         self.assertEqual(response.data['failed_emails'], 1)
+
+    def test_only_admin_can_read_email_logs(self):
+        EmailLog.objects.create(
+            to_email='failed@example.com',
+            subject='Erreur',
+            message='Bonjour',
+            status=EmailLog.Status.FAILED,
+            attempts=3,
+            last_error='Brevo API 401',
+        )
+        EmailLog.objects.create(
+            to_email='sent@example.com',
+            subject='Envoye',
+            message='Bonjour',
+            status=EmailLog.Status.SENT,
+        )
+
+        self.client.force_authenticate(self.customer)
+        denied = self.client.get(reverse('admin-email-log-list'))
+        self.assertEqual(denied.status_code, 403)
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(reverse('admin-email-log-list'), {'status': 'FAILED'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['to_email'], 'failed@example.com')
+        self.assertEqual(response.data[0]['last_error'], 'Brevo API 401')
+
+    def test_admin_can_retry_failed_email(self):
+        email = EmailLog.objects.create(
+            to_email='failed@example.com',
+            subject='Verification',
+            message='Bonjour',
+            status=EmailLog.Status.FAILED,
+            attempts=3,
+            last_error='timed out',
+        )
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(reverse('admin-email-log-retry', args=[email.id]))
+
+        self.assertEqual(response.status_code, 200)
+        email.refresh_from_db()
+        self.assertEqual(email.status, EmailLog.Status.PENDING)
+        self.assertEqual(email.attempts, 0)
+        self.assertEqual(email.last_error, '')
+        self.assertIsNone(email.sent_at)
+        self.assertTrue(AdminAuditLog.objects.filter(
+            action=AdminAuditLog.Action.EMAIL_RETRY_REQUESTED,
+            target_type='EmailLog',
+            target_id=str(email.id),
+        ).exists())
+
+    def test_admin_cannot_retry_sent_email(self):
+        email = EmailLog.objects.create(
+            to_email='sent@example.com',
+            subject='Envoye',
+            message='Bonjour',
+            status=EmailLog.Status.SENT,
+            sent_at=timezone.now(),
+        )
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.post(reverse('admin-email-log-retry', args=[email.id]))
+
+        self.assertEqual(response.status_code, 400)
+        email.refresh_from_db()
+        self.assertEqual(email.status, EmailLog.Status.SENT)
