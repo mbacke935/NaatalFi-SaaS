@@ -125,7 +125,7 @@ class CreateOrderSerializer(serializers.Serializer):
     def validate_items(self, value):
         if not value:
             raise serializers.ValidationError("Au moins un article est requis.")
-        return value
+        return normalize_cart_items(value)
 
 
 class CartValidateSerializer(serializers.Serializer):
@@ -134,4 +134,20 @@ class CartValidateSerializer(serializers.Serializer):
     def validate_items(self, value):
         if not value:
             raise serializers.ValidationError("Au moins un article est requis.")
-        return value
+        return normalize_cart_items(value)
+
+
+def normalize_cart_items(items):
+    merged = {}
+    for item in items:
+        key = (item['product_id'], item.get('variant_id'))
+        if key not in merged:
+            merged[key] = {**item}
+            continue
+        merged[key]['quantity'] += item['quantity']
+
+    normalized = list(merged.values())
+    for item in normalized:
+        if item['quantity'] > 99:
+            raise serializers.ValidationError("La quantite maximale par article est 99.")
+    return normalized

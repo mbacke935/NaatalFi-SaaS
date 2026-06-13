@@ -228,6 +228,35 @@ class OrderPaymentWalletFlowTests(APITestCase):
         )
         self.assertEqual(forbidden_response.status_code, 404)
 
+    def test_order_create_merges_duplicate_cart_lines(self):
+        order_response = self.client.post(reverse('order-create'), {
+            'guest_name': 'Client Invite',
+            'guest_email': 'guest-duplicates@example.com',
+            'guest_phone': '+221770000006',
+            'delivery_address': 'Ouakam, Dakar',
+            'region': 'Dakar',
+            'items': [
+                {
+                    'product_id': self.product.id,
+                    'variant_id': self.variant.id,
+                    'quantity': 1,
+                },
+                {
+                    'product_id': self.product.id,
+                    'variant_id': self.variant.id,
+                    'quantity': 2,
+                },
+            ],
+        }, format='json')
+
+        self.assertEqual(order_response.status_code, 201)
+        order = Order.objects.get(pk=order_response.data['id'])
+        item = OrderItem.objects.get(vendor_order__order=order)
+        self.assertEqual(item.quantity, 3)
+        self.assertEqual(order.total, Decimal('30000.00'))
+        self.variant.refresh_from_db()
+        self.assertEqual(self.variant.stock, 2)
+
     def test_guest_order_requires_contact_information(self):
         response = self.client.post(reverse('order-create'), {
             'delivery_address': 'Ouakam, Dakar',

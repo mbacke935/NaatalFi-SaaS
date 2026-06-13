@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiCheck, FiCreditCard, FiMapPin, FiSmartphone, FiTruck } from 'react-icons/fi'
@@ -6,7 +6,7 @@ import { createOrder } from '../../services/orders'
 import { initiatePayment } from '../../services/payments'
 import { estimateShipping, SENEGAL_REGIONS } from '../../services/shipping'
 import { getAddresses } from '../../services/account'
-import useCartStore from '../../store/cartStore'
+import useCartStore, { normalizeCartItems } from '../../store/cartStore'
 import useAuthStore from '../../store/authStore'
 import { useMeta } from '../../hooks/useMeta'
 
@@ -30,6 +30,7 @@ function CheckoutPage() {
   const [savedAddresses, setSavedAddresses] = useState([])
   const [shippingEstimate, setShippingEstimate] = useState({})
   const [estimating, setEstimating] = useState(false)
+  const submittingRef = useRef(false)
 
   const groups = byVendor()
   const cartTotal = totalPrice()
@@ -93,6 +94,7 @@ function CheckoutPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (submittingRef.current) return
     if (!address.trim()) {
       toast.error("L'adresse de livraison est requise.")
       return
@@ -102,8 +104,10 @@ function CheckoutPage() {
       return
     }
 
+    submittingRef.current = true
     setLoading(true)
     try {
+      const normalizedItems = normalizeCartItems(items)
       const payload = {
         delivery_address: address.trim(),
         region: region || '',
@@ -111,7 +115,7 @@ function CheckoutPage() {
         guest_name: isAuthenticated ? '' : guest.name.trim(),
         guest_email: isAuthenticated ? '' : guest.email.trim(),
         guest_phone: isAuthenticated ? '' : guest.phone.trim(),
-        items: items.map((item) => ({
+        items: normalizedItems.map((item) => ({
           product_id: item.product_id,
           variant_id: item.variant_id ?? null,
           quantity: item.quantity,
@@ -127,6 +131,7 @@ function CheckoutPage() {
       toast.error(msg)
     } finally {
       setLoading(false)
+      submittingRef.current = false
     }
   }
 

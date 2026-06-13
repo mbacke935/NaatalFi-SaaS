@@ -3,6 +3,21 @@ import { persist } from 'zustand/middleware'
 
 const key = (product_id, variant_id) => `${product_id}-${variant_id ?? 'x'}`
 
+export const normalizeCartItems = (items = []) => {
+  const merged = new Map()
+  for (const item of items) {
+    const k = key(item.product_id, item.variant_id)
+    const qty = Number(item.quantity ?? 1)
+    if (merged.has(k)) {
+      const existing = merged.get(k)
+      merged.set(k, { ...existing, quantity: existing.quantity + qty })
+    } else {
+      merged.set(k, { ...item, quantity: qty })
+    }
+  }
+  return Array.from(merged.values())
+}
+
 const useCartStore = create(
   persist(
     (set, get) => ({
@@ -11,30 +26,31 @@ const useCartStore = create(
       addItem: (item) => {
         const qty      = item.quantity ?? 1
         const k        = key(item.product_id, item.variant_id)
-        const existing = get().items.find((i) => key(i.product_id, i.variant_id) === k)
+        const items    = normalizeCartItems(get().items)
+        const existing = items.find((i) => key(i.product_id, i.variant_id) === k)
         if (existing) {
           set({
-            items: get().items.map((i) =>
+            items: items.map((i) =>
               key(i.product_id, i.variant_id) === k
                 ? { ...i, quantity: i.quantity + qty }
                 : i
             ),
           })
         } else {
-          set({ items: [...get().items, { ...item, quantity: qty }] })
+          set({ items: [...items, { ...item, quantity: qty }] })
         }
       },
 
       removeItem: (product_id, variant_id = null) => {
         const k = key(product_id, variant_id)
-        set({ items: get().items.filter((i) => key(i.product_id, i.variant_id) !== k) })
+        set({ items: normalizeCartItems(get().items).filter((i) => key(i.product_id, i.variant_id) !== k) })
       },
 
       updateQuantity: (product_id, variant_id, quantity) => {
         if (quantity < 1) { get().removeItem(product_id, variant_id); return }
         const k = key(product_id, variant_id)
         set({
-          items: get().items.map((i) =>
+          items: normalizeCartItems(get().items).map((i) =>
             key(i.product_id, i.variant_id) === k ? { ...i, quantity } : i
           ),
         })
@@ -42,13 +58,13 @@ const useCartStore = create(
 
       clearCart: () => set({ items: [] }),
 
-      countItems: () => get().items.reduce((s, i) => s + i.quantity, 0),
+      countItems: () => normalizeCartItems(get().items).reduce((s, i) => s + i.quantity, 0),
 
-      totalPrice: () => get().items.reduce((s, i) => s + i.unit_price * i.quantity, 0),
+      totalPrice: () => normalizeCartItems(get().items).reduce((s, i) => s + i.unit_price * i.quantity, 0),
 
       byVendor: () => {
         const groups = {}
-        for (const item of get().items) {
+        for (const item of normalizeCartItems(get().items)) {
           if (!groups[item.vendor_id]) {
             groups[item.vendor_id] = {
               vendor_id:   item.vendor_id,
@@ -62,7 +78,14 @@ const useCartStore = create(
         return Object.values(groups)
       },
     }),
-    { name: 'naatalfi-cart' }
+    {
+      name: 'naatalfi-cart',
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...persistedState,
+        items: normalizeCartItems(persistedState?.items ?? []),
+      }),
+    }
   )
 )
 

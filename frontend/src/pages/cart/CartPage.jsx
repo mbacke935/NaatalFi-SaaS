@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiTrash2, FiMinus, FiPlus, FiShoppingCart, FiArrowRight, FiAlertCircle } from 'react-icons/fi'
-import useCartStore from '../../store/cartStore'
+import useCartStore, { normalizeCartItems } from '../../store/cartStore'
 import { validateCart } from '../../services/orders'
 import { useMeta } from '../../hooks/useMeta'
 
@@ -28,7 +28,7 @@ function CartPage() {
     setStockErrors([])
     setValidating(true)
     try {
-      const payload = items.map((i) => ({
+      const payload = normalizeCartItems(items).map((i) => ({
         product_id: i.product_id,
         variant_id: i.variant_id ?? null,
         quantity:   i.quantity,

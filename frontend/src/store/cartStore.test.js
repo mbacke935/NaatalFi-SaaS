@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import useCartStore from './cartStore'
+import useCartStore, { normalizeCartItems } from './cartStore'
 
 const productA = {
   product_id: 1, variant_id: null, unit_price: 1000,
@@ -27,6 +27,18 @@ describe('cartStore', () => {
     useCartStore.getState().addItem({ ...productA, quantity: 2 })
     expect(useCartStore.getState().items).toHaveLength(1)
     expect(useCartStore.getState().items[0].quantity).toBe(3)
+  })
+
+  it('fusionne les doublons deja presents dans le panier persistant', () => {
+    const items = normalizeCartItems([
+      { ...productA, quantity: 1 },
+      { ...productA, quantity: 2 },
+      { ...productAVariant, quantity: 1 },
+    ])
+
+    expect(items).toHaveLength(2)
+    expect(items.find((item) => item.variant_id === null).quantity).toBe(3)
+    expect(items.find((item) => item.variant_id === 5).quantity).toBe(1)
   })
 
   it('traite deux variantes du même produit comme des lignes distinctes', () => {
