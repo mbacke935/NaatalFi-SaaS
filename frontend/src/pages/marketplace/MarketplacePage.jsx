@@ -4,6 +4,7 @@ import { FiFilter, FiX } from 'react-icons/fi'
 import { getMarketplaceProducts, getMarketplaceCategories } from '../../services/marketplace'
 import { trackAdClick } from '../../services/ads'
 import { useMeta } from '../../hooks/useMeta'
+import ProductPhoto from '../../components/ProductPhoto'
 
 function ProductCard({ product }) {
   const images = product.images?.length ? product.images : (product.cover_image ? [product.cover_image] : [])
@@ -29,21 +30,12 @@ function ProductCard({ product }) {
       onClick={handleClick}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="product-image-frame aspect-[4/3] relative">
+      <div className="relative">
+        <ProductPhoto src={images[imageIndex]} alt={product.name} className="aspect-[4/3]" />
         {product.is_sponsored && (
           <span className="absolute left-2 top-2 z-10 bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-1 rounded">
             Sponsorise
           </span>
-        )}
-        {images.length > 0 ? (
-          <div
-            className="product-image-bg transition-opacity duration-500"
-            role="img"
-            aria-label={product.name}
-            style={{ backgroundImage: `url("${images[imageIndex]}")` }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
         )}
         {images.length > 1 && (
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">

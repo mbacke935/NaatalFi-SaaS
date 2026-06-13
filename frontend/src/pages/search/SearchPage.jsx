@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { FiSearch } from 'react-icons/fi'
 import { searchMarketplace } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
+import ProductPhoto from '../../components/ProductPhoto'
 
 function ProductResultCard({ product }) {
   return (
@@ -10,13 +11,7 @@ function ProductResultCard({ product }) {
       to={`/marketplace/${product.slug}`}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="product-image-frame aspect-[4/3]">
-        {product.cover_image ? (
-          <div className="product-image-bg" role="img" aria-label={product.name} style={{ backgroundImage: `url("${product.cover_image}")` }} />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
-        )}
-      </div>
+      <ProductPhoto src={product.cover_image} alt={product.name} className="aspect-[4/3]" />
       <div className="p-3">
         {product.category_name && <p className="text-xs text-gray-500 mb-0.5">{product.category_name}</p>}
         <h3 className="text-white text-sm font-medium line-clamp-2 leading-snug">{product.name}</h3>
