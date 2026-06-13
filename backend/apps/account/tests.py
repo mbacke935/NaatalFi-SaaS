@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 
 from apps.account.models import Address, Favorite
@@ -91,3 +92,16 @@ class AccountApiTests(APITestCase):
         delete_response = self.client.delete(url)
         self.assertEqual(delete_response.status_code, 204)
         self.assertFalse(Favorite.objects.filter(user=self.user, product=self.product).exists())
+
+    def test_avatar_upload_rejects_file_with_spoofed_image_mime(self):
+        self.client.force_authenticate(self.user)
+        fake_image = SimpleUploadedFile(
+            'avatar.jpg',
+            b'<script>alert("xss")</script>',
+            content_type='image/jpeg',
+        )
+
+        response = self.client.post('/api/v1/account/profile/avatar/', {'avatar': fake_image}, format='multipart')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('image valide', response.data['error'])

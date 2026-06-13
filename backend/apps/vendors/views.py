@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Vendor, VendorPlan
 from .serializers import VendorSerializer, CreateVendorSerializer, AdminVendorSerializer
 from apps.users.models import CustomUser
+from utils.image_validation import validate_uploaded_image
 from utils.storage import upload_to_supabase
 from tasks.vendors import send_vendor_approval_email, send_vendor_rejection_email
 
@@ -83,6 +84,8 @@ class UploadLogoView(APIView):
         file = request.FILES.get('logo')
         if not file:
             return Response({"error": "Aucun fichier fourni."}, status=status.HTTP_400_BAD_REQUEST)
+        if error := validate_uploaded_image(file):
+            return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
 
         allowed_types = ['image/jpeg', 'image/png', 'image/webp']
         if file.content_type not in allowed_types:

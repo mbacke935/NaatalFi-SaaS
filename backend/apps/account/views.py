@@ -11,6 +11,7 @@ from apps.products.models import Product
 from apps.orders.models import Order
 from apps.orders.serializers import OrderSerializer
 from apps.users.serializers import UserSerializer
+from utils.image_validation import validate_uploaded_image
 from utils.storage import upload_to_supabase
 
 
@@ -37,6 +38,8 @@ class UploadAvatarView(APIView):
         file = request.FILES.get('avatar')
         if not file:
             return Response({'error': 'Aucun fichier fourni.'}, status=status.HTTP_400_BAD_REQUEST)
+        if error := validate_uploaded_image(file):
+            return Response({'error': error}, status=status.HTTP_400_BAD_REQUEST)
 
         if file.content_type not in ['image/jpeg', 'image/png', 'image/webp']:
             return Response(

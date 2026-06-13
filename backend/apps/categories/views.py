@@ -7,6 +7,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Category
 from .serializers import CategoryTreeSerializer, CategoryWriteSerializer, ReorderSerializer
 from apps.users.models import CustomUser
+from utils.image_validation import validate_uploaded_image
 from utils.storage import upload_to_supabase
 
 
@@ -94,6 +95,8 @@ class AdminCategoryImageView(APIView):
         file = request.FILES.get('image')
         if not file:
             return Response({"error": "Aucun fichier fourni."}, status=status.HTTP_400_BAD_REQUEST)
+        if error := validate_uploaded_image(file):
+            return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
 
         if file.content_type not in ['image/jpeg', 'image/png', 'image/webp']:
             return Response({"error": "Format non supporté (JPG, PNG, WebP)."}, status=status.HTTP_400_BAD_REQUEST)

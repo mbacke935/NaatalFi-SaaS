@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest.mock import patch
 
 from rest_framework.test import APITestCase
@@ -74,6 +75,20 @@ class VendorApiTests(APITestCase):
         self.assertEqual(vendor.city, 'Dakar')
         self.assertEqual(vendor.region, 'Dakar')
         self.assertEqual(vendor.website_url, 'https://example.com')
+
+    def test_logo_upload_rejects_file_with_spoofed_image_mime(self):
+        Vendor.objects.create(user=self.vendor_user, name='Logo Shop')
+        self.client.force_authenticate(self.vendor_user)
+        fake_image = SimpleUploadedFile(
+            'logo.png',
+            b'not a png file',
+            content_type='image/png',
+        )
+
+        response = self.client.post(reverse('vendor-upload-logo'), {'logo': fake_image}, format='multipart')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('image valide', response.data['error'])
 
     def test_admin_can_approve_and_suspend_vendor(self):
         vendor = Vendor.objects.create(user=self.vendor_user, name='Pending Shop')
