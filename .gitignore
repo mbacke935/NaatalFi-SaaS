@@ -1,6 +1,7 @@
 
 
 frontend/node_modules/
+frontend/audit-screens/
 # python
 
 __pycache__/

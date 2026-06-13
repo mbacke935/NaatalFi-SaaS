@@ -16,6 +16,19 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
+# ── Sécurité HTTPS (production uniquement) ──────────────────────────
+# Render/Vercel terminent le TLS en amont : on fait confiance au header
+# X-Forwarded-Proto pour détecter HTTPS et on force la redirection.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
 # ── Applications ────────────────────────────────────────────────────
 DJANGO_APPS = [
     'django.contrib.admin',

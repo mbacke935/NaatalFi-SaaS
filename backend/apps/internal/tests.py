@@ -201,6 +201,37 @@ class InternalCronTests(APITestCase):
         response = self.client.post(reverse('internal-cron-run'))
         self.assertEqual(response.status_code, 403)
 
+    def test_cron_rejects_invalid_secret(self):
+        """Un secret incorrect (pas seulement absent) doit etre refuse."""
+        response = self.client.post(
+            reverse('internal-cron-run'),
+            HTTP_X_CRON_SECRET='wrong-secret',
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_cron_rejects_authenticated_user_without_secret(self):
+        """Un utilisateur JWT (meme admin) ne peut pas declencher le cron sans le header secret."""
+        from apps.users.models import CustomUser
+        admin = CustomUser.objects.create_user(
+            email='cron-admin@example.com',
+            password='pass',
+            role=CustomUser.Role.ADMIN,
+            is_verified=True,
+        )
+        self.client.force_authenticate(admin)
+
+        response = self.client.post(reverse('internal-cron-run'))
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(CRON_SECRET='')
+    def test_cron_disabled_when_secret_not_configured(self):
+        """Sans CRON_SECRET configure cote serveur, l'endpoint est ferme (403)."""
+        response = self.client.post(
+            reverse('internal-cron-run'),
+            HTTP_X_CRON_SECRET='',
+        )
+        self.assertEqual(response.status_code, 403)
+
     def test_cron_runs_with_secret(self):
         queue_email(subject='Cron', message='Message', recipient='client@example.com')
 
@@ -212,3 +243,98 @@ class InternalCronTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data['emails']['ok'])
         self.assertEqual(response.data['emails']['result']['sent'], 1)
+
+    # ── Couverture supplementaire (audit 2026-06-13) ────────────────────
+
+    def test_queue_email_creates_pending_entry(self):
+        email = queue_email(
+            subject='Bienvenue',
+            message='Bonjour et bienvenue.',
+            recipient='nouveau@example.com',
+        )
+
+        self.assertEqual(email.status, EmailLog.Status.PENDING)
+        self.assertEqual(email.to_email, 'nouveau@example.com')
+        self.assertEqual(email.subject, 'Bienvenue')
+        self.assertEqual(email.attempts, 0)
+        self.assertIsNotNone(email.scheduled_at)
+        self.assertIsNone(email.sent_at)
+
+    def test_process_pending_emails_skips_email_at_max_attempts(self):
+        """Un email FAILED ayant epuise ses tentatives n'est plus retraite."""
+        email = queue_email(
+            subject='Epuise',
+            message='Bonjour',
+            recipient='client@example.com',
+        )
+        EmailLog.objects.filter(pk=email.pk).update(
+            status=EmailLog.Status.FAILED,
+            attempts=3,  # max_attempts par defaut = 3
+        )
+
+        result = process_pending_emails()
+
+        email.refresh_from_db()
+        self.assertEqual(result['sent'], 0)
+        self.assertEqual(result['failed'], 0)
+        self.assertEqual(email.status, EmailLog.Status.FAILED)
+        self.assertEqual(email.attempts, 3)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_run_scheduled_tasks_reports_all_four_tasks(self):
+        """run_scheduled_tasks retourne le statut des 4 taches, toutes OK sur base vide."""
+        from apps.internal.services import run_scheduled_tasks
+
+        report = run_scheduled_tasks()
+
+        self.assertEqual(set(report.keys()), {'emails', 'wallet_released', 'analytics', 'ads'})
+        for name, outcome in report.items():
+            self.assertTrue(outcome['ok'], f"Tache {name} en echec: {outcome}")
+
+    def test_expire_ad_campaigns_expires_past_campaigns(self):
+        """Une campagne ACTIVE dont end_date est passee devient EXPIRED via la tache cron."""
+        from apps.ads.models import AdCampaign
+        from apps.products.models import Product
+        from apps.users.models import CustomUser
+        from apps.vendors.models import Vendor
+        from tasks.analytics import expire_ad_campaigns
+
+        vendor_user = CustomUser.objects.create_user(
+            email='ads-vendor@example.com',
+            password='pass',
+            role=CustomUser.Role.VENDOR,
+        )
+        vendor = Vendor.objects.create(
+            user=vendor_user,
+            name='Ads Shop',
+            status=Vendor.Status.APPROVED,
+        )
+        product = Product.objects.create(
+            vendor=vendor,
+            name='Produit Ad',
+            price='5000.00',
+            status=Product.Status.PUBLISHED,
+        )
+        today = timezone.localdate()
+        past = AdCampaign.objects.create(
+            vendor=vendor, product=product,
+            budget='5000.00',
+            start_date=today - timezone.timedelta(days=10),
+            end_date=today - timezone.timedelta(days=1),
+            status=AdCampaign.Status.ACTIVE,
+        )
+        current = AdCampaign.objects.create(
+            vendor=vendor, product=product,
+            budget='5000.00',
+            start_date=today,
+            end_date=today + timezone.timedelta(days=7),
+            status=AdCampaign.Status.ACTIVE,
+        )
+
+        result = expire_ad_campaigns()
+
+        past.refresh_from_db()
+        current.refresh_from_db()
+        self.assertEqual(result['expired'], 1)
+        self.assertEqual(past.status, AdCampaign.Status.EXPIRED)
+        self.assertEqual(current.status, AdCampaign.Status.ACTIVE)

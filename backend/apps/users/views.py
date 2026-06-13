@@ -243,5 +243,11 @@ class AdminUserDetailView(APIView):
         if user.pk == request.user.pk:
             return Response({'error': 'Impossible de supprimer votre propre compte.'}, status=400)
 
+        if user.role == CustomUser.Role.ADMIN:
+            return Response(
+                {'error': 'Impossible de supprimer un compte administrateur. Retirez-lui d\'abord le role admin.'},
+                status=400,
+            )
+
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

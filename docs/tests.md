@@ -23,7 +23,7 @@ Depuis `C:\NaatalFi-SaaS\backend` :
 venv\Scripts\python manage.py test --settings=config.test_settings --verbosity 2
 ```
 
-Resultat actuel : **79 tests OK**.
+Resultat actuel : **88 tests OK**.
 
 ### Detail par module
 
@@ -32,7 +32,7 @@ Resultat actuel : **79 tests OK**.
 | `wallet` | `apps/wallet/tests.py` | 16 | Voir detail ci-dessous |
 | `orders` | `apps/orders/tests.py` | 6 | Validation stock, permissions, flux complet webhook→wallet |
 | `shipping` | `apps/shipping/tests.py` | — | Estimation livraison par region et poids |
-| `users` | `apps/users/tests.py` | 5 | Admin update role/actif, protection auto-desactivation, login casse/inactif, **rate limiting login (429)** |
+| `users` | `apps/users/tests.py` | 8 | Admin update role/actif, protection auto-desactivation, suppression user, **interdiction suppression admin + non-admin 403**, login casse/inactif, **rate limiting login (429)** |
 | `vendors` | `apps/vendors/tests.py` | — | Creation boutique, unicite, plan FREE 8% illimite, approbation/suspension admin |
 | `categories` | `apps/categories/tests.py` | — | Listing public actif, protection admin, creation, reorder |
 | `products` | `apps/products/tests.py` | — | Route admin produits, moderation statut, produits illimites |
@@ -45,7 +45,7 @@ Resultat actuel : **79 tests OK**.
 | `disputes` | `apps/disputes/tests.py` | — | Ouverture litige, gel wallet, resolution refund/no-refund |
 | `analytics` | `apps/analytics/tests.py` | — | Overview admin, top vendeurs, analytics vendeur |
 | `platform` | `apps/platform/tests.py` | 2 | Lecture publique footer/hero/categories populaires, modification admin des infos plateforme |
-| `internal` | `apps/internal/tests.py` | 11 | Cron securise, EmailLog, reprise des emails `SENDING`, envoi Brevo/AWS SES/Resend/fallback SMTP |
+| `internal` | `apps/internal/tests.py` | 18 | Cron securise (**secret absent/invalide/non configure, refus user JWT**), EmailLog, reprise des emails `SENDING`, **email a max_attempts ignore**, **queue_email PENDING**, **run_scheduled_tasks 4 taches**, **expire_ad_campaigns**, envoi Brevo/AWS SES/Resend/fallback SMTP |
 
 ---
 
@@ -130,11 +130,13 @@ npm test          # vitest run (une passe)
 npm run test:watch  # mode watch
 ```
 
-Resultat actuel : **12 tests OK**.
+Resultat actuel : **21 tests OK**.
 
 | Fichier | Tests | Couverture |
 | :--- | :---: | :--- |
 | `src/store/cartStore.test.js` | 8 | Ajout/dedup par variante, update quantite (suppression si < 1), suppression ciblee, total/compte, regroupement par vendeur, vidage |
+| `src/store/authStore.test.js` | 6 | Etat initial deconnecte, login (user/role/tokens), setToken, setUser, logout, persistance localStorage |
+| `src/hooks/useMeta.test.jsx` | 3 | Titre document avec suffixe, titre par defaut, meta og:title + description |
 | `src/components/ui/ComingSoon.test.jsx` | 4 | Titre par defaut + badge, titre personnalise, description conditionnelle |
 
 Note technique : `esbuild.jsx = 'automatic'` dans la config (runtime JSX automatique), `localStorage` mocke en memoire dans le setup pour zustand/persist.

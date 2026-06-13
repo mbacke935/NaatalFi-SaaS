@@ -61,6 +61,31 @@ class AdminUserApiTests(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertTrue(CustomUser.objects.filter(pk=self.admin.pk).exists())
 
+    def test_admin_cannot_delete_another_admin(self):
+        """Un compte ADMIN ne peut pas etre supprime directement (il faut d'abord retirer le role)."""
+        other_admin = CustomUser.objects.create_user(
+            email='admin2@example.com',
+            password='password123',
+            first_name='Admin',
+            last_name='Two',
+            role=CustomUser.Role.ADMIN,
+            is_verified=True,
+        )
+
+        response = self.client.delete(f'/api/v1/auth/admin/users/{other_admin.id}/')
+
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(CustomUser.objects.filter(pk=other_admin.pk).exists())
+
+    def test_non_admin_cannot_delete_user(self):
+        """Un client authentifie sans role ADMIN recoit 403 sur DELETE."""
+        self.client.force_authenticate(self.user)
+
+        response = self.client.delete(f'/api/v1/auth/admin/users/{self.admin.id}/')
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(CustomUser.objects.filter(pk=self.admin.pk).exists())
+
 
 class LoginApiTests(APITestCase):
     def setUp(self):
