@@ -214,7 +214,7 @@ function MarketplacePage() {
       <div className="flex gap-8">
         <aside className="hidden lg:block w-56 flex-shrink-0">
           <div className="bg-[#16161E] border border-[#2a2a3a] rounded-xl p-5 sticky top-24">
-            <SidebarContent />
+            {SidebarContent()}
           </div>
         </aside>
 
@@ -226,7 +226,7 @@ function MarketplacePage() {
                 <h2 className="text-white font-bold">Filtres</h2>
                 <button type="button" onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-white"><FiX size={20} /></button>
               </div>
-              <SidebarContent />
+              {SidebarContent()}
             </div>
           </div>
         )}
