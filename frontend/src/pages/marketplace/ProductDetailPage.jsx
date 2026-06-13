@@ -81,8 +81,9 @@ function ProductDetailPage() {
   }
 
   const selectedVariant = product.variants.find((v) => v.id === selectedVariantId) ?? null
-  const totalDelta = selectedVariant ? Number(selectedVariant.price_delta) : 0
-  const finalPrice = Number(product.price) + totalDelta
+  const basePrice = Number(product.price)
+  const variantPrice = Number(selectedVariant?.price_delta ?? 0)
+  const finalPrice = selectedVariant && variantPrice > 0 ? variantPrice : basePrice
   const canAddToCart = product.variants.length === 0 || Boolean(selectedVariant)
 
   const handleToggleFavorite = async () => {
@@ -184,9 +185,6 @@ function ProductDetailPage() {
 
           <div className="flex items-baseline gap-3 mb-4">
             <span className="text-3xl font-bold text-[#D4AF37]">{finalPrice.toLocaleString('fr-SN')} FCFA</span>
-            {totalDelta !== 0 && (
-              <span className="text-sm text-gray-500 line-through">{Number(product.price).toLocaleString('fr-SN')} FCFA</span>
-            )}
           </div>
 
           {product.description && (
@@ -211,7 +209,7 @@ function ProductDetailPage() {
                     }`}
                   >
                     {opt.name === opt.value ? opt.value : `${opt.name}: ${opt.value}`}
-                    {Number(opt.price_delta) > 0 && <span className="text-gray-500 ml-1 text-xs">+{Number(opt.price_delta).toLocaleString('fr-SN')}</span>}
+                    {Number(opt.price_delta) > 0 && <span className="text-gray-500 ml-1 text-xs">{Number(opt.price_delta).toLocaleString('fr-SN')} FCFA</span>}
                   </button>
                 ))}
               </div>

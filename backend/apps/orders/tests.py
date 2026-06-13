@@ -160,6 +160,28 @@ class OrderPaymentWalletFlowTests(APITestCase):
         self.assertFalse(response.data['valid'])
         self.assertEqual(response.data['errors'][0]['error'], 'Variante incompatible avec ce produit.')
 
+    def test_variant_price_is_final_price_not_added_to_product_price(self):
+        ProductVariant.objects.filter(pk=self.variant.pk).update(price_delta=Decimal('45000.00'))
+
+        response = self.client.post(reverse('order-create'), {
+            'guest_name': 'Client Invite',
+            'guest_email': 'guest-variant-price@example.com',
+            'guest_phone': '+221770000007',
+            'delivery_address': 'Medina, Dakar',
+            'region': 'Dakar',
+            'items': [{
+                'product_id': self.product.id,
+                'variant_id': self.variant.id,
+                'quantity': 1,
+            }],
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        order = Order.objects.get(pk=response.data['id'])
+        item = OrderItem.objects.get(vendor_order__order=order)
+        self.assertEqual(item.unit_price, Decimal('45000.00'))
+        self.assertEqual(order.total, Decimal('45000.00'))
+
     def test_guest_cannot_order_product_from_unapproved_vendor(self):
         pending_user = CustomUser.objects.create_user(
             email='pending-vendor@example.com',

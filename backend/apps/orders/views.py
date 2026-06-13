@@ -34,6 +34,12 @@ VALID_TRANSITIONS = {
 }
 
 
+def _item_unit_price(product, variant):
+    if variant and variant.price_delta > 0:
+        return variant.price_delta
+    return product.price
+
+
 def _restore_stock_for_vendor_order(vendor_order):
     restore_stock_for_vendor_order(vendor_order)
 
@@ -206,9 +212,7 @@ class CreateOrderView(APIView):
         for vendor_id, vitems in by_vendor.items():
             subtotal = Decimal('0.00')
             for item in vitems:
-                price     = item['product'].price
-                price    += item['variant'].price_delta if item['variant'] else Decimal('0.00')
-                subtotal += price * item['quantity']
+                subtotal += _item_unit_price(item['product'], item['variant']) * item['quantity']
 
             shipping_cost, _ = get_shipping_rate(vendor_id, region)
 
@@ -222,7 +226,7 @@ class CreateOrderView(APIView):
             vendor_order_ids.append(vendor_order.id)
 
             for item in vitems:
-                unit_price    = item['product'].price + (item['variant'].price_delta if item['variant'] else Decimal('0.00'))
+                unit_price    = _item_unit_price(item['product'], item['variant'])
                 variant_label = f"{item['variant'].name}: {item['variant'].value}" if item['variant'] else ''
                 cover         = item['product'].images.filter(is_cover=True).first() or item['product'].images.first()
 

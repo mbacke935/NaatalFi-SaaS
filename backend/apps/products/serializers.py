@@ -79,3 +79,8 @@ class ProductVariantWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model  = ProductVariant
         fields = ['name', 'value', 'stock', 'price_delta']
+
+    def validate_price_delta(self, value):
+        if value < 0:
+            raise serializers.ValidationError('Le prix de variante ne peut pas etre negatif.')
+        return value

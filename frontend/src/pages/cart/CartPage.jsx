@@ -40,7 +40,8 @@ function CartPage() {
       getMarketplaceProduct(item.product_slug)
         .then(({ data }) => {
           const variant = data.variants?.find((v) => v.id === item.variant_id)
-          const unitPrice = Number(data.price) + Number(variant?.price_delta ?? 0)
+          const variantPrice = Number(variant?.price_delta ?? 0)
+          const unitPrice = variant && variantPrice > 0 ? variantPrice : Number(data.price)
           if (Number(item.unit_price) !== unitPrice) {
             setItem({
               ...item,

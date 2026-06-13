@@ -240,7 +240,7 @@ function VariantsManager({ productId, variants, onUpdate }) {
       {variants.length > 0 && (
         <div className="mb-4">
           <div className="grid grid-cols-[1fr_1fr_80px_100px_60px] gap-2 text-xs text-gray-500 uppercase px-1 mb-1">
-            <span>Attribut</span><span>Valeur</span><span>Stock</span><span>+Prix (FCFA)</span><span />
+            <span>Attribut</span><span>Valeur</span><span>Stock</span><span>Prix (FCFA)</span><span />
           </div>
           {variants.map((v) =>
             editId === v.id ? (
@@ -260,7 +260,7 @@ function VariantsManager({ productId, variants, onUpdate }) {
                 <span className="text-white text-sm px-2 py-1.5 bg-[#0B0B0F] rounded border border-[#2a2a3a]">{v.value}</span>
                 <span className="text-white text-sm px-2 py-1.5 bg-[#0B0B0F] rounded border border-[#2a2a3a]">{v.stock}</span>
                 <span className="text-white text-sm px-2 py-1.5 bg-[#0B0B0F] rounded border border-[#2a2a3a]">
-                  {Number(v.price_delta) >= 0 ? '+' : ''}{Number(v.price_delta).toLocaleString('fr-SN')}
+                  {Number(v.price_delta).toLocaleString('fr-SN')}
                 </span>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
                   <button
@@ -294,7 +294,7 @@ function VariantsManager({ productId, variants, onUpdate }) {
           <input className={inputCls} type="number" min="0" placeholder="10" value={newRow.stock} onChange={(e) => setNewRow((r) => ({ ...r, stock: e.target.value }))} required />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">+Prix FCFA</label>
+          <label className="block text-xs text-gray-500 mb-1">Prix FCFA</label>
           <input className={inputCls} type="number" placeholder="0" value={newRow.price_delta} onChange={(e) => setNewRow((r) => ({ ...r, price_delta: e.target.value }))} />
         </div>
         <button
