@@ -93,6 +93,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'config.security_headers.ExtraSecurityHeadersMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -249,8 +250,24 @@ CACHES = {
 # ── CORS ─────────────────────────────────────────────────────────────
 _default_cors = 'http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:5173,http://localhost:5173'
 CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', _default_cors)
+if FRONTEND_URL.startswith(('http://', 'https://')) and FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', '')
+if FRONTEND_URL.startswith('https://') and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+
+SECURITY_HEADERS_ENABLED = env_bool('SECURITY_HEADERS_ENABLED', not DEBUG)
+EXTRA_SECURITY_HEADERS = {
+    'Cross-Origin-Opener-Policy': os.getenv('SECURE_CROSS_ORIGIN_OPENER_POLICY', 'same-origin'),
+    'Permissions-Policy': os.getenv(
+        'SECURE_PERMISSIONS_POLICY',
+        'accelerometer=(), autoplay=(), camera=(), display-capture=(), '
+        'encrypted-media=(), geolocation=(), gyroscope=(), magnetometer=(), '
+        'microphone=(), midi=(), payment=(), usb=()',
+    ),
+    'X-Permitted-Cross-Domain-Policies': 'none',
+}
 
 # ── Django REST Framework ────────────────────────────────────────────
 REST_FRAMEWORK = {

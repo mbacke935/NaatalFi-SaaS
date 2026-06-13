@@ -1,4 +1,5 @@
 from django.core import mail
+from django.test import Client
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -338,3 +339,36 @@ class InternalCronTests(APITestCase):
         self.assertEqual(result['expired'], 1)
         self.assertEqual(past.status, AdCampaign.Status.EXPIRED)
         self.assertEqual(current.status, AdCampaign.Status.ACTIVE)
+
+
+class SecurityHeadersTests(APITestCase):
+    @override_settings(
+        SECURITY_HEADERS_ENABLED=True,
+        EXTRA_SECURITY_HEADERS={
+            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+            'X-Permitted-Cross-Domain-Policies': 'none',
+        },
+    )
+    def test_extra_security_headers_are_added_to_api_responses(self):
+        response = self.client.get('/api/v1/platform/public/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Cross-Origin-Opener-Policy'], 'same-origin')
+        self.assertEqual(response['Permissions-Policy'], 'camera=(), microphone=(), geolocation=()')
+        self.assertEqual(response['X-Permitted-Cross-Domain-Policies'], 'none')
+
+    @override_settings(
+        SECURITY_HEADERS_ENABLED=True,
+        EXTRA_SECURITY_HEADERS={
+            'Cross-Origin-Opener-Policy': 'same-origin',
+            'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+            'X-Permitted-Cross-Domain-Policies': 'none',
+        },
+    )
+    def test_extra_security_headers_do_not_break_django_admin_login(self):
+        response = Client().get('/admin/login/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Cross-Origin-Opener-Policy'], 'same-origin')
+        self.assertIn('text/html', response['Content-Type'])
