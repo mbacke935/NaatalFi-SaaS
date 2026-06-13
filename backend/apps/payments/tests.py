@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 
 from apps.orders.models import Order
 from apps.payments.models import Payment
-from apps.payments.services import request_paytech_payment
+from apps.payments.services import PayTechError, request_paytech_payment
 from apps.users.models import CustomUser
 
 
@@ -151,6 +151,33 @@ class PayTechPaymentRequestTests(APITestCase):
 
         self.assertEqual(payment.payment_url, 'https://paytech.sn/payment/checkout/paytech-token')
         self.assertEqual(payment.provider_reference, 'paytech-token')
+
+    @patch('apps.payments.services.requests.post')
+    def test_paytech_nested_redirect_url_is_accepted(self, mock_post):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {
+            'success': 1,
+            'data': {
+                'token': 'nested-token',
+                'redirect_url': 'https://paytech.sn/payment/checkout/nested-token',
+            },
+        }
+
+        payment = request_paytech_payment(self.payment, request=None)
+
+        self.assertEqual(payment.payment_url, 'https://paytech.sn/payment/checkout/nested-token')
+        self.assertEqual(payment.provider_reference, 'nested-token')
+
+    @patch('apps.payments.services.requests.post')
+    def test_paytech_response_is_saved_when_url_is_missing(self, mock_post):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {'success': 1, 'message': 'accepted without url'}
+
+        with self.assertRaises(PayTechError):
+            request_paytech_payment(self.payment, request=None)
+
+        self.payment.refresh_from_db()
+        self.assertEqual(self.payment.raw_response, {'success': 1, 'message': 'accepted without url'})
 
 
 @override_settings(

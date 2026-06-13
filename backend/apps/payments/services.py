@@ -13,6 +13,35 @@ def paytech_configured():
     return bool(settings.PAYTECH_API_KEY and settings.PAYTECH_API_SECRET)
 
 
+def _extract_payment_url(data):
+    url_keys = ('redirect_url', 'redirectUrl', 'payment_url', 'paymentUrl', 'url')
+    for key in url_keys:
+        if data.get(key):
+            return data[key]
+
+    for nested_key in ('data', 'result', 'response'):
+        nested = data.get(nested_key)
+        if isinstance(nested, dict):
+            nested_url = _extract_payment_url(nested)
+            if nested_url:
+                return nested_url
+    return ''
+
+
+def _extract_provider_reference(data):
+    for key in ('token', 'reference', 'transaction_id', 'payment_reference'):
+        if data.get(key):
+            return str(data[key])
+
+    for nested_key in ('data', 'result', 'response'):
+        nested = data.get(nested_key)
+        if isinstance(nested, dict):
+            reference = _extract_provider_reference(nested)
+            if reference:
+                return reference
+    return ''
+
+
 def build_paytech_payload(payment, request):
     frontend = settings.FRONTEND_URL.rstrip('/')
     backend = settings.BACKEND_URL.rstrip('/')
@@ -58,44 +87,39 @@ def request_paytech_payment(payment, request):
     try:
         data = response.json()
     except ValueError as exc:
-        raise PayTechError('Réponse PayTech invalide.') from exc
+        raise PayTechError('Reponse PayTech invalide.') from exc
+
+    payment.raw_response = data
+    payment.save(update_fields=['raw_response', 'updated_at'])
 
     if response.status_code >= 400 or data.get('success') in [False, 0, '0']:
-        message = data.get('message') or data.get('error') or 'Paiement refusé par PayTech.'
+        message = data.get('message') or data.get('error') or 'Paiement refuse par PayTech.'
         raise PayTechError(message)
 
-    payment_url = (
-        data.get('redirect_url')
-        or data.get('redirectUrl')
-        or data.get('payment_url')
-        or data.get('paymentUrl')
-        or data.get('url')
-    )
+    payment_url = _extract_payment_url(data)
     if not payment_url:
-        raise PayTechError('PayTech n’a pas retourné d’URL de paiement.')
+        raise PayTechError('PayTech n a pas retourne d URL de paiement.')
 
     payment.payment_url = payment_url
-    payment.provider_reference = str(data.get('token') or data.get('reference') or '')
-    payment.raw_response = data
-    payment.save(update_fields=['payment_url', 'provider_reference', 'raw_response', 'updated_at'])
+    payment.provider_reference = _extract_provider_reference(data)
+    payment.save(update_fields=['payment_url', 'provider_reference', 'updated_at'])
     return payment
 
 
 def verify_webhook_signature(request):
     """
-    Vérifie l'authenticité d'un IPN PayTech.
+    Verifie l'authenticite d'un IPN PayTech.
 
-    1. Méthode native PayTech : le corps de l'IPN contient `api_key_sha256` et
-       `api_secret_sha256` (SHA256 des clés API). C'est la méthode officielle.
+    1. Methode native PayTech : le corps de l'IPN contient `api_key_sha256` et
+       `api_secret_sha256` (SHA256 des cles API).
     2. Fallback : signature HMAC custom dans un header `X-PayTech-Signature`.
-    3. Si aucune méthode n'est configurée/présente : refus en production,
-       acceptation uniquement en DEBUG (pour faciliter les tests locaux).
+    3. Si aucune methode n'est configuree/presente : refus en production,
+       acceptation uniquement en DEBUG pour les tests locaux.
     """
     payload = getattr(request, 'data', None) or {}
     received_key = payload.get('api_key_sha256')
     received_secret = payload.get('api_secret_sha256')
 
-    # ── 1. Vérification native PayTech ──────────────────────────────────
     if received_key and received_secret:
         api_key = settings.PAYTECH_API_KEY
         api_secret = settings.PAYTECH_API_SECRET
@@ -108,7 +132,6 @@ def verify_webhook_signature(request):
             and hmac.compare_digest(received_secret, expected_secret)
         )
 
-    # ── 2. Fallback : signature HMAC dans un header ─────────────────────
     secret = settings.PAYTECH_WEBHOOK_SECRET
     if secret:
         signature = request.headers.get('X-PayTech-Signature') or request.headers.get('X-Signature')
@@ -119,7 +142,6 @@ def verify_webhook_signature(request):
             signature = signature.removeprefix('sha256=')
         return hmac.compare_digest(signature, expected)
 
-    # ── 3. Aucune méthode disponible ────────────────────────────────────
     return settings.DEBUG
 
 
