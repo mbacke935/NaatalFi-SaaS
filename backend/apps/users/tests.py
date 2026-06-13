@@ -5,6 +5,7 @@ from rest_framework.test import APITestCase
 from rest_framework.throttling import ScopedRateThrottle
 
 from apps.users.models import CustomUser
+from apps.users.serializers import AdminUserSerializer, UserSerializer
 from apps.users.views import LoginView
 
 
@@ -119,6 +120,38 @@ class LoginApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertIn('desactive', response.data['error'])
+
+
+class PasswordStorageTests(APITestCase):
+    def test_create_user_hashes_password_and_serializers_do_not_expose_it(self):
+        user = CustomUser.objects.create_user(
+            email='hash@example.com',
+            password='plain-password-123',
+            first_name='Hash',
+            last_name='User',
+            is_verified=True,
+        )
+
+        self.assertNotEqual(user.password, 'plain-password-123')
+        self.assertTrue(user.check_password('plain-password-123'))
+        self.assertTrue(user.password.startswith(('pbkdf2_', 'argon2', 'bcrypt', 'md5$')))
+        self.assertNotIn('password', UserSerializer(user).data)
+        self.assertNotIn('password', AdminUserSerializer(user).data)
+
+    def test_register_api_never_returns_or_stores_plain_password(self):
+        response = self.client.post('/api/v1/auth/register/', {
+            'email': 'register-hash@example.com',
+            'password': 'plain-password-456',
+            'first_name': 'Register',
+            'last_name': 'Hash',
+            'role': CustomUser.Role.CUSTOMER,
+        }, format='json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertNotIn('password', response.data)
+        user = CustomUser.objects.get(email='register-hash@example.com')
+        self.assertNotEqual(user.password, 'plain-password-456')
+        self.assertTrue(user.check_password('plain-password-456'))
 
 
 class _LoginRateThrottle(ScopedRateThrottle):
