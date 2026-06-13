@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from rest_framework.test import APITestCase
 
+from apps.internal.models import AdminAuditLog
 from apps.users.models import CustomUser
 from apps.vendors.models import Vendor, VendorPlan
 
@@ -105,3 +106,13 @@ class VendorApiTests(APITestCase):
         vendor.refresh_from_db()
         self.assertEqual(suspend.status_code, 200)
         self.assertEqual(vendor.status, Vendor.Status.SUSPENDED)
+        self.assertTrue(AdminAuditLog.objects.filter(
+            action=AdminAuditLog.Action.VENDOR_APPROVED,
+            actor=self.admin,
+            target_id=str(vendor.id),
+        ).exists())
+        self.assertTrue(AdminAuditLog.objects.filter(
+            action=AdminAuditLog.Action.VENDOR_SUSPENDED,
+            actor=self.admin,
+            target_id=str(vendor.id),
+        ).exists())

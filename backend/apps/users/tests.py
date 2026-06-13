@@ -4,6 +4,7 @@ from django.core.cache import cache
 from rest_framework.test import APITestCase
 from rest_framework.throttling import ScopedRateThrottle
 
+from apps.internal.models import AdminAuditLog
 from apps.users.models import CustomUser
 from apps.users.serializers import AdminUserSerializer, UserSerializer
 from apps.users.views import LoginView
@@ -38,6 +39,10 @@ class AdminUserApiTests(APITestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.role, CustomUser.Role.VENDOR)
         self.assertFalse(self.user.is_active)
+        audit = AdminAuditLog.objects.get(action=AdminAuditLog.Action.USER_UPDATED)
+        self.assertEqual(audit.actor, self.admin)
+        self.assertEqual(audit.target_id, str(self.user.id))
+        self.assertEqual(audit.metadata['changed_fields'], ['is_active', 'role'])
 
     def test_admin_cannot_deactivate_self(self):
         response = self.client.patch(
@@ -55,6 +60,9 @@ class AdminUserApiTests(APITestCase):
 
         self.assertEqual(response.status_code, 204)
         self.assertFalse(CustomUser.objects.filter(pk=self.user.pk).exists())
+        audit = AdminAuditLog.objects.get(action=AdminAuditLog.Action.USER_DELETED)
+        self.assertEqual(audit.actor, self.admin)
+        self.assertEqual(audit.metadata['email'], 'customer@example.com')
 
     def test_admin_cannot_delete_self(self):
         response = self.client.delete(f'/api/v1/auth/admin/users/{self.admin.id}/')

@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from apps.orders.models import Order, VendorOrder
+from apps.internal.models import AdminAuditLog
 from apps.platform.models import PlatformSettings
 from apps.users.models import CustomUser
 from apps.vendors.models import Vendor, VendorPlan
@@ -338,3 +339,10 @@ class PlatformPayoutAccountApiTests(APITestCase):
         self.assertEqual(bank.status_code, 200)
         self.assertEqual(bank.data['bank_name'], 'Banque Test')
         self.assertEqual(PlatformPayoutAccount.objects.count(), 1)
+        self.assertEqual(
+            AdminAuditLog.objects.filter(
+                action=AdminAuditLog.Action.PLATFORM_PAYOUT_ACCOUNT_UPDATED,
+                actor=self.admin,
+            ).count(),
+            2,
+        )

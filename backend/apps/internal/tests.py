@@ -6,7 +6,9 @@ from django.utils import timezone
 from unittest.mock import Mock, patch
 from rest_framework.test import APITestCase
 
+from apps.users.models import CustomUser
 from apps.internal.models import EmailLog
+from apps.internal.models import AdminAuditLog
 from apps.internal.services import process_pending_emails, queue_email
 
 
@@ -372,3 +374,36 @@ class SecurityHeadersTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Cross-Origin-Opener-Policy'], 'same-origin')
         self.assertIn('text/html', response['Content-Type'])
+
+
+class AdminAuditLogApiTests(APITestCase):
+    def setUp(self):
+        self.admin = CustomUser.objects.create_user(
+            email='audit-admin@example.com',
+            password='pass',
+            role=CustomUser.Role.ADMIN,
+            is_verified=True,
+        )
+        self.customer = CustomUser.objects.create_user(
+            email='audit-customer@example.com',
+            password='pass',
+            is_verified=True,
+        )
+        AdminAuditLog.objects.create(
+            actor=self.admin,
+            action=AdminAuditLog.Action.USER_UPDATED,
+            target_type='CustomUser',
+            target_id=str(self.customer.id),
+            target_repr=self.customer.email,
+        )
+
+    def test_only_admin_can_read_audit_logs(self):
+        self.client.force_authenticate(self.customer)
+        denied = self.client.get(reverse('admin-audit-log-list'))
+        self.assertEqual(denied.status_code, 403)
+
+        self.client.force_authenticate(self.admin)
+        response = self.client.get(reverse('admin-audit-log-list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]['action'], AdminAuditLog.Action.USER_UPDATED)
+        self.assertEqual(response.data[0]['actor_email'], self.admin.email)

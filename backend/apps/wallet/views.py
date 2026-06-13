@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from apps.users.models import CustomUser
+from apps.internal.audit import log_admin_action
+from apps.internal.models import AdminAuditLog
 from apps.notifications.models import Notification
 from apps.notifications.services import create_notification
 from .models import PlatformPayoutAccount, Wallet, Transaction, PayoutRequest
@@ -159,6 +161,13 @@ class AdminApprovePayoutView(APIView):
         payout.status     = PayoutRequest.Status.APPROVED
         payout.admin_note = request.data.get('admin_note', '')
         payout.save(update_fields=['status', 'admin_note', 'updated_at'])
+        log_admin_action(
+            request,
+            AdminAuditLog.Action.PAYOUT_APPROVED,
+            target=payout,
+            target_repr=f"Retrait #{payout.id}",
+            metadata={'amount': str(payout.amount), 'vendor_id': payout.wallet.vendor_id},
+        )
         create_notification(
             user=payout.wallet.vendor.user,
             type=Notification.Type.WALLET,
@@ -186,6 +195,13 @@ class AdminRejectPayoutView(APIView):
         payout.status     = PayoutRequest.Status.REJECTED
         payout.admin_note = request.data.get('admin_note', '')
         payout.save(update_fields=['status', 'admin_note', 'updated_at'])
+        log_admin_action(
+            request,
+            AdminAuditLog.Action.PAYOUT_REJECTED,
+            target=payout,
+            target_repr=f"Retrait #{payout.id}",
+            metadata={'amount': str(payout.amount), 'vendor_id': payout.wallet.vendor_id},
+        )
 
         # Rembourser le montant dans le solde disponible
         Wallet.objects.filter(pk=payout.wallet_id).update(
@@ -241,7 +257,14 @@ class PlatformPayoutAccountView(APIView):
 
     def patch(self, request):
         account = self.get_object()
+        changed_fields = sorted(request.data.keys())
         serializer = PlatformPayoutAccountSerializer(account, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        log_admin_action(
+            request,
+            AdminAuditLog.Action.PLATFORM_PAYOUT_ACCOUNT_UPDATED,
+            target=account,
+            metadata={'changed_fields': changed_fields},
+        )
         return Response(serializer.data)

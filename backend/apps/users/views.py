@@ -10,6 +10,8 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from apps.internal.audit import log_admin_action
+from apps.internal.models import AdminAuditLog
 from .models import CustomUser
 from .serializers import (
     ForgotPasswordSerializer,
@@ -295,6 +297,13 @@ class AdminUserDetailView(APIView):
         if update_fields:
             update_fields.append('updated_at')
             user.save(update_fields=update_fields)
+            log_admin_action(
+                request,
+                AdminAuditLog.Action.USER_UPDATED,
+                target=user,
+                target_repr=user.email,
+                metadata={'changed_fields': sorted(set(update_fields) - {'updated_at'})},
+            )
         return Response(AdminUserSerializer(user).data)
 
     def delete(self, request, pk):
@@ -312,5 +321,15 @@ class AdminUserDetailView(APIView):
                 status=400,
             )
 
+        target_email = user.email
+        target_role = user.role
+        target_id = str(user.pk)
+        log_admin_action(
+            request,
+            AdminAuditLog.Action.USER_DELETED,
+            target=user,
+            target_repr=target_email,
+            metadata={'email': target_email, 'role': target_role, 'user_id': target_id},
+        )
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

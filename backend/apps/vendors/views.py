@@ -6,6 +6,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import Vendor, VendorPlan
 from .serializers import VendorSerializer, CreateVendorSerializer, AdminVendorSerializer
+from apps.internal.audit import log_admin_action
+from apps.internal.models import AdminAuditLog
 from apps.users.models import CustomUser
 from utils.image_validation import validate_uploaded_image
 from utils.storage import upload_to_supabase
@@ -148,6 +150,12 @@ class AdminApproveVendorView(APIView):
 
         vendor.status = Vendor.Status.APPROVED
         vendor.save(update_fields=['status'])
+        log_admin_action(
+            request,
+            AdminAuditLog.Action.VENDOR_APPROVED,
+            target=vendor,
+            metadata={'vendor_user_id': str(vendor.user_id)},
+        )
         send_vendor_approval_email(str(vendor.user.id))
         return Response(AdminVendorSerializer(vendor).data)
 
@@ -164,5 +172,11 @@ class AdminSuspendVendorView(APIView):
         reason = request.data.get('reason', '')
         vendor.status = Vendor.Status.SUSPENDED
         vendor.save(update_fields=['status'])
+        log_admin_action(
+            request,
+            AdminAuditLog.Action.VENDOR_SUSPENDED,
+            target=vendor,
+            metadata={'vendor_user_id': str(vendor.user_id), 'has_reason': bool(reason)},
+        )
         send_vendor_rejection_email(str(vendor.user.id), reason)
         return Response(AdminVendorSerializer(vendor).data)

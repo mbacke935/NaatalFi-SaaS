@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 
+from apps.internal.models import AdminAuditLog
 from apps.platform.models import PlatformSettings
 from apps.users.models import CustomUser
 from apps.vendors.models import VendorPlan
@@ -87,6 +88,10 @@ class PlatformSettingsApiTests(APITestCase):
         self.assertEqual(response.data['popular_categories'][0]['title'], 'Mode')
         self.assertEqual(PlatformSettings.objects.count(), 1)
         self.assertEqual(str(VendorPlan.objects.get(name=VendorPlan.Name.FREE).commission_rate), '9.50')
+        audit = AdminAuditLog.objects.get(action=AdminAuditLog.Action.PLATFORM_COMMISSION_UPDATED)
+        self.assertEqual(audit.actor, self.admin)
+        self.assertEqual(audit.metadata['before'], '8.00')
+        self.assertEqual(audit.metadata['after'], '9.50')
 
     def test_admin_commission_rate_must_be_between_0_and_100(self):
         self.client.force_authenticate(self.admin)
