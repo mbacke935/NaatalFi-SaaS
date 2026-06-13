@@ -138,9 +138,9 @@ function VendorProfilePage() {
             <Link key={p.id} to={`/marketplace/${p.slug}`}
               className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
             >
-              <div className="aspect-square bg-[#2a2a3a] overflow-hidden">
+              <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
                 {p.cover_image
-                  ? <img src={p.cover_image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ? <img src={p.cover_image} alt={p.name} className="w-full h-full object-contain p-2" />
                   : <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">📦</div>
                 }
               </div>
