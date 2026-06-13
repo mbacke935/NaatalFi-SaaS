@@ -64,7 +64,13 @@ def request_paytech_payment(payment, request):
         message = data.get('message') or data.get('error') or 'Paiement refusé par PayTech.'
         raise PayTechError(message)
 
-    payment_url = data.get('redirect_url') or data.get('payment_url') or data.get('url')
+    payment_url = (
+        data.get('redirect_url')
+        or data.get('redirectUrl')
+        or data.get('payment_url')
+        or data.get('paymentUrl')
+        or data.get('url')
+    )
     if not payment_url:
         raise PayTechError('PayTech n’a pas retourné d’URL de paiement.')
 

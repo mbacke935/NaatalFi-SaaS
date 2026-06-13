@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 
 from apps.orders.models import Order
 from apps.payments.models import Payment
+from apps.payments.services import request_paytech_payment
 from apps.users.models import CustomUser
 
 
@@ -107,6 +108,49 @@ class GuestPaymentApiTests(APITestCase):
         )
         self.assertEqual(allowed.status_code, 200)
         self.assertEqual(allowed.data['reference'], str(payment.reference))
+
+
+@override_settings(
+    PAYTECH_API_KEY='testkey',
+    PAYTECH_API_SECRET='testsecret',
+    PAYTECH_BASE_URL='https://paytech.example.test',
+    PAYTECH_ENV='test',
+    FRONTEND_URL='https://naatalfi.test',
+    BACKEND_URL='https://api.naatalfi.test',
+)
+class PayTechPaymentRequestTests(APITestCase):
+    def setUp(self):
+        self.buyer = CustomUser.objects.create_user(
+            email='paytech-buyer@example.com',
+            password='password123',
+            first_name='PayTech',
+            last_name='Buyer',
+        )
+        self.order = Order.objects.create(
+            buyer=self.buyer,
+            status=Order.Status.PENDING,
+            total=Decimal('5000.00'),
+            delivery_address='Dakar',
+        )
+        self.payment = Payment.objects.create(
+            order=self.order,
+            buyer=self.buyer,
+            amount=self.order.total,
+        )
+
+    @patch('apps.payments.services.requests.post')
+    def test_paytech_redirect_url_camel_case_is_accepted(self, mock_post):
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = {
+            'success': 1,
+            'token': 'paytech-token',
+            'redirectUrl': 'https://paytech.sn/payment/checkout/paytech-token',
+        }
+
+        payment = request_paytech_payment(self.payment, request=None)
+
+        self.assertEqual(payment.payment_url, 'https://paytech.sn/payment/checkout/paytech-token')
+        self.assertEqual(payment.provider_reference, 'paytech-token')
 
 
 @override_settings(
