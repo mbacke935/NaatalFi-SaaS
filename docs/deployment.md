@@ -39,6 +39,7 @@ Les emails sont enregistres en base avec le statut `PENDING`, puis traites par l
 | `DEBUG` | Mode debug | `False` |
 | `SECRET_KEY` | ClÃ© Django secrÃ¨te | `django-insecure-xxxxx` |
 | `ALLOWED_HOSTS` | Domaines autorisÃ©s | `api.naatalfi.com,naatalfi.onrender.com` |
+| `CSRF_TRUSTED_ORIGINS` | Origines HTTPS autorisees pour l'admin Django / CSRF | `https://naatalfi-backend.onrender.com,https://naatalfi.vercel.app` |
 | `DB_HOST` | Host Supabase (pooler) | `aws-0-eu-west-1.pooler.supabase.com` |
 | `DB_NAME` | Nom de la base | `postgres` |
 | `DB_USER` | User Supabase | `postgres.uwlczpjq...` |
@@ -85,6 +86,7 @@ ALLOWED_HOSTS=naatalfi-backend.onrender.com
 BACKEND_URL=https://naatalfi-backend.onrender.com
 FRONTEND_URL=https://naatalfi.vercel.app
 CORS_ALLOWED_ORIGINS=https://naatalfi.vercel.app
+CSRF_TRUSTED_ORIGINS=https://naatalfi-backend.onrender.com,https://naatalfi.vercel.app
 CELERY_TASK_ALWAYS_EAGER=True
 CRON_SECRET=long-secret-random
 EMAIL_PROVIDER=brevo
@@ -244,6 +246,8 @@ Supabase est dÃ©jÃ  configurÃ© depuis le dÃ©veloppement local.
 - [ ] `SECRET_KEY` diffÃ©rente de la clÃ© de dÃ©veloppement
 - [ ] `ALLOWED_HOSTS` restreint aux domaines de production
 - [ ] `CORS_ALLOWED_ORIGINS` restreint au domaine Vercel
+- [ ] `CSRF_TRUSTED_ORIGINS` contient le backend Render et le frontend Vercel en HTTPS
+- [ ] `python manage.py check --deploy` retourne `System check identified no issues`
 - [ ] Signature HMAC webhook PayTech vÃ©rifiÃ©e
 - [ ] Pas de `.env` commitÃ© en Git (vÃ©rifiÃ© dans `.gitignore`)
 - [ ] HTTPS forcÃ© (gÃ©rÃ© par Render et Vercel)
