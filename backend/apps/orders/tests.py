@@ -2,9 +2,11 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from apps.orders.models import Order, OrderItem, VendorOrder
+from apps.orders.services import expire_unpaid_guest_orders
 from apps.payments.models import Payment
 from apps.products.models import Product, ProductVariant
 from apps.users.models import CustomUser
@@ -263,6 +265,71 @@ class OrderPaymentWalletFlowTests(APITestCase):
         self.assertEqual(response.data[0]['buyer_name'], 'Client Invite')
         self.assertEqual(response.data[0]['buyer_email'], 'guest-dashboard@example.com')
         self.assertEqual(response.data[0]['buyer_phone'], '+221770000003')
+
+    def test_expire_unpaid_guest_orders_cancels_order_and_restores_stock(self):
+        order_response = self.client.post(reverse('order-create'), {
+            'guest_name': 'Client Invite',
+            'guest_email': 'guest-expire@example.com',
+            'guest_phone': '+221770000004',
+            'delivery_address': 'Liberte 6, Dakar',
+            'region': 'Dakar',
+            'items': [{
+                'product_id': self.product.id,
+                'variant_id': self.variant.id,
+                'quantity': 2,
+            }],
+        }, format='json')
+        self.assertEqual(order_response.status_code, 201)
+        order = Order.objects.get(pk=order_response.data['id'])
+        Order.objects.filter(pk=order.pk).update(
+            created_at=timezone.now() - timezone.timedelta(minutes=90)
+        )
+
+        self.variant.refresh_from_db()
+        self.assertEqual(self.variant.stock, 3)
+
+        expired = expire_unpaid_guest_orders(minutes=60)
+
+        self.assertEqual(expired, 1)
+        order.refresh_from_db()
+        self.variant.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.CANCELLED)
+        self.assertEqual(order.vendor_orders.first().status, VendorOrder.Status.CANCELLED)
+        self.assertEqual(self.variant.stock, 5)
+
+    def test_expire_unpaid_guest_orders_keeps_paid_order_and_stock(self):
+        order_response = self.client.post(reverse('order-create'), {
+            'guest_name': 'Client Invite',
+            'guest_email': 'guest-paid@example.com',
+            'guest_phone': '+221770000005',
+            'delivery_address': 'Mermoz, Dakar',
+            'region': 'Dakar',
+            'items': [{
+                'product_id': self.product.id,
+                'variant_id': self.variant.id,
+                'quantity': 1,
+            }],
+        }, format='json')
+        self.assertEqual(order_response.status_code, 201)
+        order = Order.objects.get(pk=order_response.data['id'])
+        Order.objects.filter(pk=order.pk).update(
+            created_at=timezone.now() - timezone.timedelta(minutes=90)
+        )
+        Payment.objects.create(
+            order=order,
+            buyer=None,
+            amount=order.total,
+            status=Payment.Status.PAID,
+            provider=Payment.Provider.WAVE,
+        )
+
+        expired = expire_unpaid_guest_orders(minutes=60)
+
+        self.assertEqual(expired, 0)
+        order.refresh_from_db()
+        self.variant.refresh_from_db()
+        self.assertEqual(order.status, Order.Status.PENDING)
+        self.assertEqual(self.variant.stock, 4)
 
 
 class OrderPermissionTests(APITestCase):

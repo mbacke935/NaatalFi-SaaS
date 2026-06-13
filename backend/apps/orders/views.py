@@ -16,6 +16,7 @@ from .serializers import (
     CreateOrderSerializer,
     CartValidateSerializer,
 )
+from .services import restore_stock_for_vendor_order
 from apps.products.models import Product, ProductVariant
 from apps.shipping.services import get_shipping_rate
 from apps.users.models import CustomUser
@@ -34,10 +35,7 @@ VALID_TRANSITIONS = {
 
 
 def _restore_stock_for_vendor_order(vendor_order):
-    for item in vendor_order.items.filter(variant__isnull=False):
-        ProductVariant.objects.filter(pk=item.variant_id).update(
-            stock=F('stock') + item.quantity
-        )
+    restore_stock_for_vendor_order(vendor_order)
 
 
 # ── Phase 7 — Validation du panier ────────────────────────────────────
@@ -116,6 +114,7 @@ class CartValidateView(APIView):
 
 class CreateOrderView(APIView):
     permission_classes = [AllowAny]
+    throttle_scope = 'checkout_guest'
 
     @transaction.atomic
     def post(self, request):

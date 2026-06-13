@@ -185,6 +185,7 @@ WAVE_BUSINESS_ACCOUNT_NAME = os.getenv('WAVE_BUSINESS_ACCOUNT_NAME', '')
 WAVE_BUSINESS_PHONE = os.getenv('WAVE_BUSINESS_PHONE', '')
 BACKEND_URL            = os.getenv('BACKEND_URL', 'http://127.0.0.1:8000')
 CRON_SECRET            = os.getenv('CRON_SECRET', '')
+GUEST_ORDER_EXPIRATION_MINUTES = int(os.getenv('GUEST_ORDER_EXPIRATION_MINUTES', 60))
 
 # ── Email ────────────────────────────────────────────────────────────
 if DEBUG:
@@ -268,6 +269,7 @@ REST_FRAMEWORK = {
         'login': '10/min',
         'register': '5/min',
         'password_reset': '5/min',
+        'checkout_guest': '10/hour',
     },
 }
 

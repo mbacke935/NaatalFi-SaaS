@@ -281,13 +281,13 @@ class InternalCronTests(APITestCase):
         self.assertEqual(email.attempts, 3)
         self.assertEqual(len(mail.outbox), 0)
 
-    def test_run_scheduled_tasks_reports_all_four_tasks(self):
-        """run_scheduled_tasks retourne le statut des 4 taches, toutes OK sur base vide."""
+    def test_run_scheduled_tasks_reports_all_tasks(self):
+        """run_scheduled_tasks retourne le statut des taches, toutes OK sur base vide."""
         from apps.internal.services import run_scheduled_tasks
 
         report = run_scheduled_tasks()
 
-        self.assertEqual(set(report.keys()), {'emails', 'wallet_released', 'analytics', 'ads'})
+        self.assertEqual(set(report.keys()), {'emails', 'orders_expired', 'wallet_released', 'analytics', 'ads'})
         for name, outcome in report.items():
             self.assertTrue(outcome['ok'], f"Tache {name} en echec: {outcome}")
 
