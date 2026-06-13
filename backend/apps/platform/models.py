@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class PlatformSettings(models.Model):
@@ -11,6 +12,13 @@ class PlatformSettings(models.Model):
     linkedin_url = models.URLField(max_length=500, blank=True)
     hero_image_url = models.URLField(max_length=1000, blank=True)
     popular_categories = models.JSONField(default=list, blank=True)
+    commission_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=8,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text='Commission plateforme en pourcentage appliquee aux ventes.',
+    )
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

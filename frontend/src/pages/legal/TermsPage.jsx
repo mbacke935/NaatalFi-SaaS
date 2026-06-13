@@ -15,7 +15,7 @@ const SECTIONS = [
   },
   {
     title: '3. Vendeurs',
-    body: `Les vendeurs sont responsables des produits qu'ils mettent en vente, de leur description, de leur prix, de leur disponibilité et de leur livraison. NaatalFi prélève une commission de 8 % sur chaque vente. Les vendeurs s'interdisent de proposer des produits illicites, contrefaits ou interdits à la vente.`,
+    body: `Les vendeurs sont responsables des produits qu'ils mettent en vente, de leur description, de leur prix, de leur disponibilité et de leur livraison. NaatalFi prélève une commission de {commissionRate} % sur chaque vente. Les vendeurs s'interdisent de proposer des produits illicites, contrefaits ou interdits à la vente.`,
   },
   {
     title: '4. Commandes et paiement',
@@ -42,11 +42,18 @@ const SECTIONS = [
 function TermsPage() {
   useMeta({ title: "Conditions Générales d'Utilisation" })
   const [email, setEmail] = useState(null)
+  const [commissionRate, setCommissionRate] = useState('8.00')
 
   useEffect(() => {
     getPublicPlatformSettings()
-      .then(({ data }) => setEmail(data?.contact_email ?? null))
-      .catch(() => setEmail(null))
+      .then(({ data }) => {
+        setEmail(data?.contact_email ?? null)
+        setCommissionRate(data?.commission_rate || '8.00')
+      })
+      .catch(() => {
+        setEmail(null)
+        setCommissionRate('8.00')
+      })
   }, [])
 
   return (
@@ -62,7 +69,9 @@ function TermsPage() {
         {SECTIONS.map((s) => (
           <section key={s.title}>
             <h2 className="text-white font-semibold mb-2">{s.title}</h2>
-            <p className="text-sm text-gray-400 leading-relaxed">{s.body}</p>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              {s.body.replace('{commissionRate}', commissionRate)}
+            </p>
           </section>
         ))}
 

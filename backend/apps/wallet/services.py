@@ -7,18 +7,25 @@ from django.utils import timezone
 
 from .models import Wallet, Transaction
 
-# Taux de commission plateforme MVP — 8% flat, pas de plan
+# Taux de commission plateforme par defaut, utilise si les settings n'existent pas encore.
 PLATFORM_COMMISSION_RATE = Decimal('8.00')
+
+
+def get_platform_commission_rate():
+    from apps.platform.services import get_platform_settings
+
+    settings = get_platform_settings()
+    return Decimal(settings.commission_rate)
 
 
 def credit_wallet_from_order(order):
     """
     Credite le wallet de chaque vendeur implique dans une commande PAID.
-    Net = subtotal - commission (8%) + shipping_cost -> pending_balance.
+    Net = subtotal - commission plateforme + shipping_cost -> pending_balance.
     """
+    rate = get_platform_commission_rate()
     for vendor_order in order.vendor_orders.select_related('vendor').all():
         vendor = vendor_order.vendor
-        rate = PLATFORM_COMMISSION_RATE
 
         product_amount = vendor_order.subtotal
         commission = (product_amount * rate / Decimal('100')).quantize(Decimal('0.01'))

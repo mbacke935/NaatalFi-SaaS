@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok } from 'react-icons/fa'
-import { FiGlobe, FiImage, FiMail, FiPhone, FiPlus, FiSave, FiTrash2 } from 'react-icons/fi'
+import { FiGlobe, FiImage, FiMail, FiPercent, FiPhone, FiPlus, FiSave, FiTrash2 } from 'react-icons/fi'
 import { getAdminPlatformSettings, updateAdminPlatformSettings } from '../../../services/platform'
 
 const inputCls = 'w-full bg-[#0B0B0F] border border-[#2a2a3a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#D4AF37] transition'
@@ -33,6 +33,7 @@ function PlatformSettingsPage() {
     tiktok_url: '',
     linkedin_url: '',
     hero_image_url: '',
+    commission_rate: '8.00',
     popular_categories: [],
   })
   const [loading, setLoading] = useState(true)
@@ -49,6 +50,7 @@ function PlatformSettingsPage() {
           tiktok_url: data.tiktok_url || '',
           linkedin_url: data.linkedin_url || '',
           hero_image_url: data.hero_image_url || '',
+          commission_rate: data.commission_rate || '8.00',
           popular_categories: Array.isArray(data.popular_categories) ? data.popular_categories : [],
         })
       })
@@ -130,6 +132,19 @@ function PlatformSettingsPage() {
           </Field>
           <Field icon={FaLinkedinIn} label="LinkedIn">
             <input name="linkedin_url" value={form.linkedin_url} onChange={handleChange} placeholder="https://linkedin.com/company/..." className={inputCls} />
+          </Field>
+          <Field icon={FiPercent} label="Commission plateforme (%)">
+            <input
+              type="number"
+              name="commission_rate"
+              value={form.commission_rate}
+              onChange={handleChange}
+              min="0"
+              max="100"
+              step="0.01"
+              placeholder="8.00"
+              className={inputCls}
+            />
           </Field>
           <div className="md:col-span-2">
             <Field icon={FiImage} label="Image du hero de la page d'accueil">

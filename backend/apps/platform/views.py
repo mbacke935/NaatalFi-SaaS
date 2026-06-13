@@ -3,14 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.users.models import CustomUser
+from apps.vendors.models import VendorPlan
 
-from .models import PlatformSettings
 from .serializers import PlatformSettingsSerializer
-
-
-def get_platform_settings():
-    obj, _ = PlatformSettings.objects.get_or_create(singleton_key='default')
-    return obj
+from .services import get_platform_settings
 
 
 class IsAdmin(IsAuthenticated):
@@ -37,5 +33,6 @@ class AdminPlatformSettingsView(APIView):
         serializer = PlatformSettingsSerializer(settings, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        if 'commission_rate' in serializer.validated_data:
+            VendorPlan.objects.update(commission_rate=serializer.validated_data['commission_rate'])
         return Response(serializer.data)
-

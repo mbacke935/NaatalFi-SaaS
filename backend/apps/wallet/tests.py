@@ -7,12 +7,14 @@ from django.utils import timezone
 from rest_framework.test import APITestCase
 
 from apps.orders.models import Order, VendorOrder
+from apps.platform.models import PlatformSettings
 from apps.users.models import CustomUser
 from apps.vendors.models import Vendor, VendorPlan
 from apps.wallet.models import PlatformPayoutAccount, Transaction, Wallet
 from apps.wallet.services import (
     PLATFORM_COMMISSION_RATE,
     credit_wallet_from_order,
+    get_platform_commission_rate,
     release_pending_balances,
 )
 
@@ -72,6 +74,23 @@ class WalletServiceTests(TestCase):
     def test_platform_commission_rate_is_8_percent(self):
         """Le taux de commission plateforme doit être exactement 8%."""
         self.assertEqual(PLATFORM_COMMISSION_RATE, Decimal('8.00'))
+        self.assertEqual(get_platform_commission_rate(), Decimal('8.00'))
+
+    def test_admin_configured_commission_rate_is_used_for_wallet_credit(self):
+        PlatformSettings.objects.update_or_create(
+            singleton_key='default',
+            defaults={'commission_rate': Decimal('12.00')},
+        )
+
+        credit_wallet_from_order(self.order)
+
+        wallet = Wallet.objects.get(vendor=self.vendor)
+        sale = Transaction.objects.get(type=Transaction.Type.SALE)
+        commission = Transaction.objects.get(type=Transaction.Type.COMMISSION)
+        self.assertEqual(wallet.pending_balance, Decimal('9300.00'))
+        self.assertEqual(sale.amount, Decimal('9300.00'))
+        self.assertEqual(commission.amount, Decimal('1200.00'))
+        self.assertIn('12.00', commission.description)
 
     # ── credit_wallet_from_order ────────────────────────────────────────
 

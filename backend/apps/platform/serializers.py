@@ -21,6 +21,7 @@ class PlatformSettingsSerializer(serializers.ModelSerializer):
             'linkedin_url',
             'hero_image_url',
             'popular_categories',
+            'commission_rate',
             'created_at',
             'updated_at',
         ]

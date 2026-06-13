@@ -157,6 +157,7 @@ function HomePage() {
   }, [categories, platformSettings])
 
   const heroImage = platformSettings?.hero_image_url || fallbackHeroImage
+  const commissionRate = platformSettings?.commission_rate || '8.00'
 
   return (
     <div>
@@ -202,7 +203,7 @@ function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
         <div className="bg-[#16161E] border border-[#D4AF37]/30 rounded-lg px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-white text-sm sm:text-base font-medium">
-            Lancement NaatalFi : inscription vendeur gratuite, produits illimites, commission fixe de 8%.
+            Lancement NaatalFi : inscription vendeur gratuite, produits illimites, commission fixe de {commissionRate}%.
           </p>
           <Link
             to="/register?role=VENDOR"
