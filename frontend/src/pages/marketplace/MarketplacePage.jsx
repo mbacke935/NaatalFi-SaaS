@@ -6,17 +6,6 @@ import { trackAdClick } from '../../services/ads'
 import { useMeta } from '../../hooks/useMeta'
 
 function ProductCard({ product }) {
-  const images = product.images?.length ? product.images : (product.cover_image ? [product.cover_image] : [])
-  const [imageIndex, setImageIndex] = useState(0)
-
-  useEffect(() => {
-    if (images.length <= 1) return undefined
-    const timer = window.setInterval(() => {
-      setImageIndex((index) => (index + 1) % images.length)
-    }, 2600)
-    return () => window.clearInterval(timer)
-  }, [images.length])
-
   const handleClick = () => {
     if (product.is_sponsored && product.ad_campaign_id) {
       trackAdClick(product.ad_campaign_id).catch(() => {})
@@ -29,23 +18,16 @@ function ProductCard({ product }) {
       onClick={handleClick}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden relative">
+      <div className="aspect-square bg-[#2a2a3a] overflow-hidden relative">
         {product.is_sponsored && (
           <span className="absolute left-2 top-2 z-10 bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-1 rounded">
             Sponsorise
           </span>
         )}
-        {images.length > 0 ? (
-          <img src={images[imageIndex]} alt={product.name} className="w-full h-full object-contain p-2 transition-opacity duration-500" />
+        {product.cover_image ? (
+          <img src={product.cover_image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
-        )}
-        {images.length > 1 && (
-          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-            {images.map((_, index) => (
-              <span key={index} className={`h-1 w-1.5 rounded-full ${index === imageIndex ? 'bg-[#D4AF37]' : 'bg-white/30'}`} />
-            ))}
-          </div>
         )}
       </div>
       <div className="p-3">

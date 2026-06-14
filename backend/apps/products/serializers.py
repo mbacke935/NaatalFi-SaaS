@@ -16,7 +16,6 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 
 class ProductListSerializer(serializers.ModelSerializer):
     cover_image   = serializers.SerializerMethodField()
-    images        = serializers.SerializerMethodField()
     category_name = serializers.CharField(source='category.name', read_only=True, default=None)
     vendor_name   = serializers.CharField(source='vendor.name', read_only=True)
     image_count   = serializers.IntegerField(source='images.count', read_only=True)
@@ -30,16 +29,13 @@ class ProductListSerializer(serializers.ModelSerializer):
             'id', 'name', 'slug', 'price', 'status',
             'average_rating', 'total_reviews',
             'is_sponsored', 'ad_campaign_id',
-            'cover_image', 'images', 'image_count', 'variant_count',
+            'cover_image', 'image_count', 'variant_count',
             'category', 'category_name', 'vendor_name', 'created_at',
         ]
 
     def get_cover_image(self, obj):
         img = obj.images.filter(is_cover=True).first() or obj.images.first()
         return img.image_url if img else None
-
-    def get_images(self, obj):
-        return [img.image_url for img in obj.images.all()]
 
     def get_is_sponsored(self, obj):
         return bool(getattr(obj, 'is_sponsored', False))

@@ -56,14 +56,6 @@ function ProductDetailPage() {
       .catch(() => setReviews([]))
   }, [slug, isAuthenticated])
 
-  useEffect(() => {
-    if (!product?.images || product.images.length <= 1) return undefined
-    const timer = window.setInterval(() => {
-      setActiveImage((index) => (index + 1) % product.images.length)
-    }, 3200)
-    return () => window.clearInterval(timer)
-  }, [product?.images])
-
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
@@ -154,33 +146,20 @@ function ProductDetailPage() {
       <div className="grid md:grid-cols-2 gap-10 mb-16">
         {/* Images */}
         <div>
-          <div className="aspect-[4/3] max-h-[440px] bg-[#0B0B0F] border border-[#2a2a3a] rounded-xl overflow-hidden mb-3 relative">
+          <div className="aspect-square bg-[#16161E] rounded-xl overflow-hidden mb-3">
             {product.images.length > 0 ? (
-              <img src={product.images[activeImage]?.image_url} alt={product.name} className="w-full h-full object-contain p-3 transition-opacity duration-500" />
+              <img src={product.images[activeImage]?.image_url} alt={product.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-700"><FiPackage size={48} /></div>
-            )}
-            {product.images.length > 1 && (
-              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-                {product.images.map((img, index) => (
-                  <button
-                    key={img.id}
-                    type="button"
-                    onClick={() => setActiveImage(index)}
-                    className={`h-1.5 rounded-full transition-all ${index === activeImage ? 'w-5 bg-[#D4AF37]' : 'w-2 bg-white/30 hover:bg-white/60'}`}
-                    aria-label={`Image ${index + 1}`}
-                  />
-                ))}
-              </div>
             )}
           </div>
           {product.images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
               {product.images.map((img, i) => (
                 <button key={img.id} onClick={() => setActiveImage(i)}
-                  className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 bg-[#0B0B0F] transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
+                  className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
                 >
-                  <img src={img.image_url} alt="" className="w-full h-full object-contain p-1" />
+                  <img src={img.image_url} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -346,9 +325,9 @@ function ProductDetailPage() {
               <Link key={p.id} to={`/marketplace/${p.slug}`}
                 className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
               >
-                <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
+                <div className="aspect-square bg-[#2a2a3a] overflow-hidden">
                   {p.cover_image
-                    ? <img src={p.cover_image} alt={p.name} className="w-full h-full object-contain p-2" />
+                    ? <img src={p.cover_image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     : <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>
                   }
                 </div>
