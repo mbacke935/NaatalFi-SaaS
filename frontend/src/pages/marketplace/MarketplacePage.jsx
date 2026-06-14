@@ -29,7 +29,7 @@ function ProductCard({ product }) {
       onClick={handleClick}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="product-image-frame aspect-[4/3] relative">
+      <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden relative">
         {product.is_sponsored && (
           <span className="absolute left-2 top-2 z-10 bg-[#D4AF37] text-black text-[10px] font-bold px-2 py-1 rounded">
             Sponsorise

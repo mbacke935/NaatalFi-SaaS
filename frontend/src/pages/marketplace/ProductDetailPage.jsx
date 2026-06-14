@@ -154,7 +154,7 @@ function ProductDetailPage() {
       <div className="grid md:grid-cols-2 gap-10 mb-16">
         {/* Images */}
         <div>
-          <div className="product-image-frame aspect-[4/3] max-h-[440px] border border-[#2a2a3a] rounded-xl mb-3 relative">
+          <div className="aspect-[4/3] max-h-[440px] bg-[#0B0B0F] border border-[#2a2a3a] rounded-xl overflow-hidden mb-3 relative">
             {product.images.length > 0 ? (
               <img src={product.images[activeImage]?.image_url} alt={product.name} className="product-image-contain p-3 transition-opacity duration-500" />
             ) : (
@@ -178,7 +178,7 @@ function ProductDetailPage() {
             <div className="flex gap-2 overflow-x-auto pb-1">
               {product.images.map((img, i) => (
                 <button key={img.id} onClick={() => setActiveImage(i)}
-                  className={`product-image-frame w-16 h-16 rounded-lg flex-shrink-0 border-2 transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
+                  className={`w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 bg-[#0B0B0F] transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
                 >
                   <img src={img.image_url} alt="" className="product-image-contain p-1" />
                 </button>
@@ -346,7 +346,7 @@ function ProductDetailPage() {
               <Link key={p.id} to={`/marketplace/${p.slug}`}
                 className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
               >
-                <div className="product-image-frame aspect-[4/3]">
+                <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
                   {p.cover_image
                     ? <img src={p.cover_image} alt={p.name} className="product-image-contain p-2" />
                     : <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>
