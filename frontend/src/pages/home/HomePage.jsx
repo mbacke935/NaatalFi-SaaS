@@ -4,7 +4,6 @@ import { FiArrowRight, FiShoppingBag } from 'react-icons/fi'
 import { getFeaturedProducts, getMarketplaceCategories, getMarketplaceVendors } from '../../services/marketplace'
 import { getPublicPlatformSettings } from '../../services/platform'
 import { useMeta } from '../../hooks/useMeta'
-import ProductPhoto from '../../components/ProductPhoto'
 
 const fallbackHeroImage = 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=1800&q=85'
 
@@ -64,8 +63,17 @@ function ProductCard({ product }) {
       to={`/marketplace/${product.slug}`}
       className="group bg-[#16161E] border border-[#2a2a3a] rounded-lg overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
     >
-      <div className="relative">
-        <ProductPhoto src={images[imageIndex]} alt={product.name} className="aspect-[4/3]" fallback="Image" />
+      <div className="product-image-frame aspect-[4/3] relative">
+        {images.length > 0 ? (
+          <div
+            className="product-image-bg transition-opacity duration-500"
+            role="img"
+            aria-label={product.name}
+            style={{ backgroundImage: `url("${images[imageIndex]}")` }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-700 text-sm">Image</div>
+        )}
         {images.length > 1 && (
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
             {images.map((_, index) => (

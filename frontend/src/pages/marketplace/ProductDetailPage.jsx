@@ -7,7 +7,6 @@ import { addFavorite, removeFavorite, getFavorites } from '../../services/accoun
 import { useMeta } from '../../hooks/useMeta'
 import useCartStore from '../../store/cartStore'
 import useAuthStore from '../../store/authStore'
-import ProductPhoto from '../../components/ProductPhoto'
 
 function ProductDetailPage() {
   const { slug }               = useParams()
@@ -155,13 +154,17 @@ function ProductDetailPage() {
       <div className="grid md:grid-cols-2 gap-10 mb-16">
         {/* Images */}
         <div>
-          <div className="relative mb-3">
-            <ProductPhoto
-              src={product.images[activeImage]?.image_url}
-              alt={product.name}
-              className="aspect-[4/3] max-h-[440px] border border-[#2a2a3a] rounded-xl"
-              fallback={<FiPackage size={48} />}
-            />
+          <div className="product-image-frame aspect-[4/3] max-h-[440px] border border-[#2a2a3a] rounded-xl mb-3 relative">
+            {product.images.length > 0 ? (
+              <div
+                className="product-image-bg"
+                role="img"
+                aria-label={product.name}
+                style={{ backgroundImage: `url("${product.images[activeImage]?.image_url}")` }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-700"><FiPackage size={48} /></div>
+            )}
             {product.images.length > 1 && (
               <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
                 {product.images.map((img, index) => (
@@ -180,9 +183,9 @@ function ProductDetailPage() {
             <div className="flex gap-2 overflow-x-auto pb-1">
               {product.images.map((img, i) => (
                 <button key={img.id} onClick={() => setActiveImage(i)}
-                  className={`w-16 h-16 rounded-lg flex-shrink-0 border-2 transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
+                  className={`product-image-frame w-16 h-16 rounded-lg flex-shrink-0 border-2 transition ${i === activeImage ? 'border-[#D4AF37]' : 'border-transparent'}`}
                 >
-                  <ProductPhoto src={img.image_url} alt="" className="w-full h-full rounded-md" fallback="" />
+                  <div className="product-image-bg" style={{ backgroundImage: `url("${img.image_url}")` }} />
                 </button>
               ))}
             </div>
@@ -348,8 +351,7 @@ function ProductDetailPage() {
               <Link key={p.id} to={`/marketplace/${p.slug}`}
                 className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
               >
-                <ProductPhoto src={p.cover_image} alt={p.name} className="aspect-[4/3]" fallback="IMG" />
-                <div className="hidden">
+                <div className="product-image-frame aspect-[4/3]">
                   {p.cover_image
                     ? <div className="product-image-bg" role="img" aria-label={p.name} style={{ backgroundImage: `url("${p.cover_image}")` }} />
                     : <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>

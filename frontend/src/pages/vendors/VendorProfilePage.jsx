@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom'
 import { FiGlobe, FiInstagram, FiMail, FiMapPin, FiPackage, FiPhone, FiStar } from 'react-icons/fi'
 import { getMarketplaceVendor, getVendorReviews } from '../../services/marketplace'
 import { useMeta } from '../../hooks/useMeta'
-import ProductPhoto from '../../components/ProductPhoto'
 
 function VendorProfilePage() {
   const { slug }              = useParams()
@@ -139,8 +138,7 @@ function VendorProfilePage() {
             <Link key={p.id} to={`/marketplace/${p.slug}`}
               className="group bg-[#16161E] border border-[#2a2a3a] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all hover:-translate-y-0.5"
             >
-              <ProductPhoto src={p.cover_image} alt={p.name} className="aspect-[4/3]" fallback="IMG" />
-              <div className="hidden">
+              <div className="product-image-frame aspect-[4/3]">
                 {p.cover_image
                   ? <div className="product-image-bg" role="img" aria-label={p.name} style={{ backgroundImage: `url("${p.cover_image}")` }} />
                   : <div className="w-full h-full flex items-center justify-center text-gray-700 text-4xl">📦</div>
