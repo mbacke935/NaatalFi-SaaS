@@ -110,7 +110,7 @@ function AdminProductsPage() {
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-[#2a2a3a] overflow-hidden flex-shrink-0">
                         {p.cover_image
-                          ? <img src={p.cover_image} alt="" className="product-image-contain p-1" />
+                          ? <img src={p.cover_image} alt="" className="w-full h-full object-cover" />
                           : <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs">📦</div>
                         }
                       </div>

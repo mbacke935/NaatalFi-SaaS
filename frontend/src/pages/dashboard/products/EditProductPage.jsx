@@ -120,7 +120,7 @@ function ImageGallery({ productId, images: initialImages, onUpdate }) {
               draggingId === img.id ? 'opacity-40' : ''
             }`}
           >
-            <img src={img.image_url} alt="" className="product-image-contain pointer-events-none p-1" />
+            <img src={img.image_url} alt="" className="w-full h-full object-cover pointer-events-none" />
             {img.is_cover && (
               <div className="absolute top-1 left-1 bg-[#D4AF37] rounded text-black p-0.5">
                 <FiStar size={10} />

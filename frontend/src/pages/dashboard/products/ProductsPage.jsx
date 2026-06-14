@@ -139,7 +139,7 @@ function ProductsPage() {
                   <tr key={p.id} className="border-b border-[#2a2a3a] last:border-0 hover:bg-white/5 group">
                     <td className="px-4 py-3">
                       {p.cover_image ? (
-                        <img src={p.cover_image} alt="" className="w-10 h-10 rounded-lg product-image-contain bg-[#0B0B0F] p-1" />
+                        <img src={p.cover_image} alt="" className="w-10 h-10 rounded-lg object-cover" />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-[#2a2a3a] flex items-center justify-center">
                           <FiImage size={14} className="text-gray-600" />

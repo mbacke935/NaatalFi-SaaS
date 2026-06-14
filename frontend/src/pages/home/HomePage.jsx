@@ -68,7 +68,7 @@ function ProductCard({ product }) {
           <img
             src={images[imageIndex]}
             alt={product.name}
-            className="product-image-contain p-2 transition-opacity duration-500"
+            className="w-full h-full object-contain p-2 transition-opacity duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-700 text-sm">Image</div>

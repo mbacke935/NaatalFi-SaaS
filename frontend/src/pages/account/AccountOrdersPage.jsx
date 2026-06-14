@@ -59,7 +59,7 @@ function AccountOrdersPage() {
                 {/* Cover */}
                 <div className="w-12 h-12 rounded-lg bg-[#2a2a3a] flex-shrink-0 overflow-hidden">
                   {cover
-                    ? <img src={cover} alt="" className="product-image-contain p-1" />
+                    ? <img src={cover} alt="" className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center text-gray-700 text-lg">📦</div>
                   }
                 </div>

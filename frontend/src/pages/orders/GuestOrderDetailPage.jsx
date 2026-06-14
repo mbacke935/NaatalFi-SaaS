@@ -80,7 +80,7 @@ function GuestOrderDetailPage() {
               {vendorOrder.items.map((item) => (
                 <div key={item.id} className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-lg bg-[#2a2a3a] overflow-hidden flex items-center justify-center text-gray-600">
-                    {item.cover_image ? <img src={item.cover_image} alt="" className="product-image-contain p-1" /> : <FiPackage />}
+                    {item.cover_image ? <img src={item.cover_image} alt="" className="w-full h-full object-cover" /> : <FiPackage />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white truncate">{item.product_name}</p>

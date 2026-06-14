@@ -151,7 +151,7 @@ function VendorOrderDetailPage() {
           <div key={item.id} className="flex items-center gap-4 px-4 py-4 border-b border-[#2a2a3a] last:border-0">
             <div className="w-12 h-12 rounded-lg bg-[#2a2a3a] overflow-hidden flex-shrink-0">
               {item.cover_image ? (
-                <img src={item.cover_image} alt={item.product_name} className="product-image-contain p-1" />
+                <img src={item.cover_image} alt={item.product_name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-700">📦</div>
               )}

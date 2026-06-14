@@ -12,7 +12,7 @@ function ProductResultCard({ product }) {
     >
       <div className="aspect-[4/3] bg-[#0B0B0F] overflow-hidden">
         {product.cover_image ? (
-          <img src={product.cover_image} alt={product.name} className="product-image-contain p-2" />
+          <img src={product.cover_image} alt={product.name} className="w-full h-full object-contain p-2" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
         )}
