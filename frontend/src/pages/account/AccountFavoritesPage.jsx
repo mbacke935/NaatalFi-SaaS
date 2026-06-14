@@ -70,7 +70,7 @@ function AccountFavoritesPage() {
                 <Link to={`/marketplace/${product.slug}`}>
                   <div className="product-image-frame aspect-[4/3]">
                     {cover
-                      ? <div className="product-image-bg" role="img" aria-label={product.name} style={{ backgroundImage: `url("${cover}")` }} />
+                      ? <img src={cover} alt={product.name} className="product-image-contain p-2" />
                       : <div className="w-full h-full flex items-center justify-center text-gray-700 text-3xl">📦</div>
                     }
                   </div>

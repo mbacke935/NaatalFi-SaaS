@@ -12,7 +12,7 @@ function ProductResultCard({ product }) {
     >
       <div className="product-image-frame aspect-[4/3]">
         {product.cover_image ? (
-          <div className="product-image-bg" role="img" aria-label={product.name} style={{ backgroundImage: `url("${product.cover_image}")` }} />
+          <img src={product.cover_image} alt={product.name} className="product-image-contain p-2" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-700 text-xs font-semibold">IMG</div>
         )}
